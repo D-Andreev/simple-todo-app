@@ -120,4 +120,33 @@ describe('Storage', () => {
       'Todo with id nonexistent not found'
     );
   });
+
+  test('clearTodos with no state removes all todos and returns count', () => {
+    storage.addTodo('First', 'id-1');
+    storage.addTodo('Second', 'id-2');
+
+    const count = storage.clearTodos();
+    expect(count).toBe(2);
+    expect(storage.getTodos()).toEqual([]);
+  });
+
+  test('clearTodos with a state removes only matching todos and returns count', () => {
+    storage.addTodo('First', 'id-1');
+    storage.addTodo('Second', 'id-2');
+    storage.markTodoDone('id-1');
+
+    const count = storage.clearTodos('done');
+    expect(count).toBe(1);
+    const remaining = storage.getTodos();
+    expect(remaining).toHaveLength(1);
+    expect(remaining[0].id).toBe('id-2');
+  });
+
+  test('clearTodos returns 0 and leaves storage untouched when nothing matches', () => {
+    storage.addTodo('First', 'id-1');
+
+    const count = storage.clearTodos('done');
+    expect(count).toBe(0);
+    expect(storage.getTodos()).toHaveLength(1);
+  });
 });

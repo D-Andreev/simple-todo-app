@@ -214,6 +214,47 @@ describe('CLI e2e', () => {
     expect(result.stderr).toContain('Invalid state. Valid values: pending, done');
   });
 
+  test('clear with no flag deletes all todos', () => {
+    runCli(['add', 'Buy milk'], TEST_HOME);
+    runCli(['add', 'Walk dog'], TEST_HOME);
+
+    const result = runCli(['clear'], TEST_HOME);
+    expect(result.status).toBe(0);
+    expect(result.stdout.trim()).toBe('Cleared 2 todo(s).');
+
+    const list = runCli(['list'], TEST_HOME);
+    expect(list.stdout.trim()).toBe('No todos.');
+  });
+
+  test('clear --state done deletes only done todos', () => {
+    const add1 = runCli(['add', 'Buy milk'], TEST_HOME);
+    const id1 = add1.stdout.trim().split(' ')[1];
+    runCli(['add', 'Walk dog'], TEST_HOME);
+    runCli(['done', id1], TEST_HOME);
+
+    const result = runCli(['clear', '--state', 'done'], TEST_HOME);
+    expect(result.status).toBe(0);
+    expect(result.stdout.trim()).toBe('Cleared 1 done todo(s).');
+
+    const list = runCli(['list'], TEST_HOME);
+    expect(list.stdout).toContain('Walk dog');
+    expect(list.stdout).not.toContain('Buy milk');
+  });
+
+  test('clear returns "No todos to clear." when nothing matches', () => {
+    const result = runCli(['clear', '--state', 'done'], TEST_HOME);
+    expect(result.status).toBe(0);
+    expect(result.stdout.trim()).toBe('No todos to clear.');
+  });
+
+  test('clear --state <invalid> errors', () => {
+    runCli(['add', 'Buy milk'], TEST_HOME);
+
+    const result = runCli(['clear', '--state', 'bogus'], TEST_HOME);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('Invalid state. Valid values: pending, done');
+  });
+
   describe('interactive mode', () => {
     function runInteractive(input: string, home: string) {
       return spawnSync('node', [CLI_PATH, 'interactive'], {
@@ -286,6 +327,7 @@ describe('CLI e2e', () => {
       expect(result.stdout).toContain('update');
       expect(result.stdout).toContain('delete');
       expect(result.stdout).toContain('filter');
+      expect(result.stdout).toContain('clear');
       expect(result.stdout).toContain('exit');
       expect(result.stdout).toContain('quit');
     });
@@ -368,6 +410,37 @@ describe('CLI e2e', () => {
       expect(result.status).toBe(0);
       expect(result.stdout).toContain(`Deleted todo ${id.substring(0, 8)}`);
       expect(result.stdout).toContain('No todos.');
+    });
+
+    test('clear with no flag deletes all todos', () => {
+      runCli(['add', 'Buy milk'], TEST_HOME);
+      runCli(['add', 'Walk dog'], TEST_HOME);
+
+      const result = runInteractive(
+        ['clear', 'list', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Cleared 2 todo(s).');
+      expect(result.stdout).toContain('No todos.');
+    });
+
+    test('clear --state done deletes only done todos', () => {
+      const add1 = runCli(['add', 'Buy milk'], TEST_HOME);
+      const id1 = add1.stdout.trim().split(' ')[1];
+      runCli(['add', 'Walk dog'], TEST_HOME);
+      runCli(['done', id1], TEST_HOME);
+
+      const result = runInteractive(
+        ['clear --state done', 'list', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Cleared 1 done todo(s).');
+      expect(result.stdout).toContain('Walk dog');
+      expect(result.stdout).not.toContain('Buy milk');
     });
   });
 });

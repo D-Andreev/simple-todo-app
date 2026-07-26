@@ -95,6 +95,14 @@ export function deleteTodo(idOrPrefix: string): void {
   saveTodos(todos);
 }
 
+export function clearTodos(state?: 'pending' | 'done'): number {
+  const todos = getTodos();
+  const remaining = state === undefined ? [] : todos.filter((todo) => todo.state !== state);
+  const clearedCount = todos.length - remaining.length;
+  saveTodos(remaining);
+  return clearedCount;
+}
+
 function findTodoByIdOrPrefix(todos: Todo[], idOrPrefix: string): Todo | undefined {
   const exact = todos.find((t) => t.id === idOrPrefix);
   if (exact) return exact;

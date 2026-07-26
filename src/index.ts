@@ -91,6 +91,20 @@ program
   });
 
 program
+  .command('clear')
+  .description('Clear todos, optionally by state')
+  .option('--state <state>', 'Only clear todos with this state (pending or done)')
+  .action((options: { state?: string }) => {
+    try {
+      const message = commands.handleClear(options.state);
+      console.log(message);
+    } catch (error) {
+      console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      process.exit(1);
+    }
+  });
+
+program
   .command('interactive')
   .description('Start interactive mode')
   .action(() => {
