@@ -42,3 +42,6 @@ _Avoid_: Search, query, grep
 
 **Interactive mode**: A REPL started via `todo interactive` that reads commands from stdin (one per line, no `todo` prefix, no quoting), dispatches them to the same handlers as the one-shot CLI, and loops until `exit`, `quit`, EOF (Ctrl+D), or SIGINT (Ctrl+C).
 _Avoid_: REPL mode, shell mode, TUI mode
+
+**JSON output**: A `--json` flag on `list` and `filter` that emits todos as a JSON array of raw internal `Todo` objects (`{ id, title, state, createdAt }`, full uuid, epoch-ms) instead of the human-readable formatted rows, for scripting (e.g. piping through `jq`).
+_Avoid_: `--format json`, `-j`, pretty-printed-only output
