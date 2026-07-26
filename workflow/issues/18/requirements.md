@@ -8,11 +8,13 @@ Add clear command. If no params passed delete all. If state passed (i.e.) done, 
 |---|----------|--------|-------------|
 | 1 | Should `clear` take state as a flag (`--state <state>`), matching `filter`, rather than a positional arg? | Yes — `--state done` clears done todos; no flag deletes everything else. | Yes |
 | 2 | Should `clear` (no flag, deletes everything) prompt for confirmation, or delete immediately like `delete` does today? | No confirmation. | No confirmation |
+| 3 | Success message format? | Use recommended format. | `Cleared N todo(s).` / `Cleared N done todo(s).`; `No todos to clear.` when count is zero |
 
 ## Acceptance criteria
 - [ ] `todo clear --state <state>` deletes only todos in that state (validated to `pending`/`done`, same as `filter`)
 - [ ] `todo clear` with no flag deletes all todos
 - [ ] No confirmation prompt — executes immediately
+- [ ] Output: `Cleared N todo(s).` (no state) / `Cleared N done todo(s).` (with `--state done`); `No todos to clear.` when nothing matched
 
 ## Approved by human
 - [ ] Pending — reply `approve requirements` when ready
