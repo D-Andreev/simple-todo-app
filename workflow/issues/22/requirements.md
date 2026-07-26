@@ -7,10 +7,12 @@ list always sorts by createdAt. Options like `--sort title` or `--sort state` wo
 | # | Question | Answer | Recommended |
 |---|----------|--------|-------------|
 | 1 | Should grouping (pending before done) be the new default for `todo list`, or an opt-in `--group` flag alongside `--sort title\|state\|createdAt`? | Group by state, then sort by title within each group. | Opt-in `--group` (declined — human wants this as the shape of the output) |
+| 2 | Should this be the unconditional new default (no flags, replaces createdAt order), or keep an escape hatch (`--sort createdAt` / `--no-group`) for the old flat order? | Unconditional default, no escape hatch. | Unconditional default, no escape hatch (agreed) |
 
 ## Acceptance criteria
 - [ ] `todo list` groups todos by state: `pending` group first, then `done` group
 - [ ] Within each state group, todos are sorted by `title`
+- [ ] No flag/escape hatch to restore the old flat `createdAt` order — this is the only supported order
 - [ ] ...
 
 ## Approved by human
