@@ -1,10 +1,10 @@
 ---
 name: workflow-init
 description: >-
-  Initialize the AI workflow for a project — scaffold .claude/workflows
-  directories, seed gotchas.md, generate PROJECT.md, and create GitHub workflow
-  labels. Use when setting up a new repo, when PROJECT.md is missing, or when
-  the user runs /workflow-init.
+  Initialize the AI workflow for a project — scaffold workflow/ directories,
+  seed gotchas.md, generate PROJECT.md, and create GitHub workflow labels. Use
+  when setting up a new repo, when PROJECT.md is missing, or when the user runs
+  /workflow-init.
 disable-model-invocation: true
 metadata:
   internal: true
@@ -18,9 +18,10 @@ One-time setup. Writes durable **project facts** to the repo. Clarify builds spe
 
 ## Process
 
-1. Scaffold `.claude/workflows/learnings/`
-2. Seed `gotchas.md` if missing
-3. Generate `PROJECT.md` — empty `## Language` (implement merges from handoff after clarify)
+1. Scaffold `workflow/learnings/`
+2. Seed `workflow/learnings/gotchas.md` if missing
+3. Generate `workflow/PROJECT.md` — empty `## Language` (implement merges from handoff after clarify)
+   - If legacy `.claude/workflows/PROJECT.md` exists, copy its contents to `workflow/PROJECT.md` (and gotchas) instead of regenerating; note the old path is deprecated.
 4. **Create GitHub labels** (requires `gh` authenticated for this repo). Idempotent — use `--force` so re-runs update description/color without error:
 
    ```bash
@@ -46,4 +47,6 @@ During clarify, terms live in session `language.md` → posted in handoff at app
 
 ## Writable files
 
-`.claude/workflows/learnings/gotchas.md`, `.claude/workflows/PROJECT.md`
+`workflow/learnings/gotchas.md`, `workflow/PROJECT.md`
+
+Workflow files live under **`workflow/`** (repo root), not `.claude/` — Claude Code treats `.claude/` as protected config and cloud routines cannot approve writes there.

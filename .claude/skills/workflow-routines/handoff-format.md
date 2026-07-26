@@ -65,7 +65,7 @@ Use **per-section fences only**.
 |---------|-------------------|-------|
 | `state.json` | yes | Final state at approve |
 | `task.md` | yes | |
-| `language.md` | yes | Implement merges into PROJECT.md |
+| `language.md` | yes | Implement merges into `workflow/PROJECT.md` |
 | `requirements.md` | yes | |
 | `adrs.md` | if any | |
 | `implement-handoff.md` | no | Implement PATCH at complete |
@@ -103,7 +103,7 @@ Claude Code session URL — posted when **clarify**, **implement**, or **review*
 
 | During clarify (session memory) | Posted at clarify end (issue) | Repo (implement writes) |
 |-------------------------------|-------------------------------|-------------------------|
-| `language.md` | handoff `language.md` | `PROJECT.md` `## Language` |
+| `language.md` | handoff `language.md` | `workflow/PROJECT.md` `## Language` |
 | `requirements.md` | handoff `requirements.md` | |
 | `adrs.md` | handoff `adrs.md` | `docs/adr/` |
 

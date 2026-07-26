@@ -31,7 +31,7 @@ If preconditions fail, post a short issue comment explaining what is missing. Do
 
 1. **Read the issue** — number, title, URL, labels (`gh issue view` or webhook).
 2. **Read handoff** — parse all sections per handoff-format Read protocol.
-3. **Verify init** — `.claude/workflows/PROJECT.md` must exist.
+3. **Verify init** — `workflow/PROJECT.md` must exist.
 4. **Record** `issue_number`, `handoff_comment_id`, `base_branch` and `mode` from handoff `state.json`.
 5. **Post session comment** — separate issue comment with a link to this Claude Code session URL and planned branch `workflow/issue-{n}`. Do not PATCH the handoff yet.
 6. **Prepare repo on work branch** (steps below).
@@ -49,7 +49,7 @@ If preconditions fail, post a short issue comment explaining what is missing. Do
 
    Example: `workflow/issue-42`. Do not commit to `main` directly.
 
-3. **Merge `language.md`** into `.claude/workflows/PROJECT.md`:
+3. **Merge `language.md`** into `workflow/PROJECT.md`:
    - Replace or update the `## Language` section with handoff `language.md` content.
    - Preserve all other PROJECT.md sections unless facts were wrong (only fix if requirements explicitly correct them).
 4. **Commit ADRs** from handoff `adrs.md` if present:
@@ -59,7 +59,7 @@ If preconditions fail, post a short issue comment explaining what is missing. Do
 
 ## Feature process (`mode: feature`)
 
-1. Read handoff `requirements.md`, `.claude/workflows/PROJECT.md`, skim `gotchas.md`.
+1. Read handoff `requirements.md`, `workflow/PROJECT.md`, skim `workflow/learnings/gotchas.md`.
 2. Plan — match existing patterns (PROJECT.md layout, nearby code). If no test infrastructure, skip TDD cycle; note in handoff.
 3. **TDD red-green** per acceptance criterion or behavior slice:
    - **Red** — failing test; confirm fail for the **right reason**.
@@ -71,7 +71,7 @@ If preconditions fail, post a short issue comment explaining what is missing. Do
 
 ## Bugfix process (`mode: bugfix`)
 
-1. Read handoff `requirements.md`, PROJECT.md, gotchas.md.
+1. Read handoff `requirements.md`, `workflow/PROJECT.md`, `workflow/learnings/gotchas.md`.
 2. **Reproduce** — failing test or clear repro. If not reproducible, stop and comment on issue.
 3. **Root cause** — fix cause, not symptom.
 4. **TDD red-green** for regression: red (proves bug) → green (minimal fix).
@@ -159,7 +159,7 @@ Use `git diff {base_branch}...HEAD` when filling Changes.
 
 | Location | Files |
 |----------|-------|
-| Repo (work branch) | application code, tests, `PROJECT.md`, `docs/adr/` |
+| Repo (work branch) | application code, tests, `workflow/PROJECT.md`, `docs/adr/` |
 | Issue handoff (PATCH) | updated `state.json`, `implement-handoff.md` |
 | GitHub | labels, session/complete comments, PR |
 

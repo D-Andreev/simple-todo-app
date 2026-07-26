@@ -22,8 +22,8 @@ See [handoff-format.md](../workflow-routines/handoff-format.md), [state-schema.m
 
 | File | Use |
 |------|-----|
-| `.claude/workflows/PROJECT.md` | Existing facts + `## Language` — read only |
-| `.claude/workflows/learnings/gotchas.md` | Skim |
+| `workflow/PROJECT.md` | Existing facts + `## Language` — read only |
+| `workflow/learnings/gotchas.md` | Skim |
 | Application code | Read-only |
 
 Do not edit or commit any repo file during clarify.
@@ -57,14 +57,14 @@ Same as A/B.
 ## Start sequence (mode A only)
 
 1. **Read the issue** — number, title, body, labels, URL.
-2. **Verify init** — if `.claude/workflows/PROJECT.md` is missing, stop; tell user to run `/workflow-init`.
+2. **Verify init** — if `workflow/PROJECT.md` is missing, stop; tell user to run `/workflow-init`.
 3. **Initialize in-session artifacts**:
    - `task.md` from issue title + body
    - `language.md` — copy existing `## Language` from `PROJECT.md` if any; else placeholder
    - `state.json` per [fixtures/state-example-clarify-start.json](../workflow-routines/fixtures/state-example-clarify-start.json)
 4. **Post session comment** (separate) — Claude Code session URL. Record `session_linked` in in-session state.
-5. Ask the **first** grilling question.
-6. **Swap labels last** — remove `workflow:start`, add `workflow:clarify`. **Nothing else on GitHub after this.**
+5. **Swap labels** — remove `workflow:start`, add `workflow:clarify` (before the first question so the `issues.labeled` webhook fires early, not after Q1).
+6. Ask the **first** grilling question. **Nothing else on GitHub after this.**
 
 **Do not post the handoff comment yet.**
 
@@ -170,7 +170,7 @@ Each turn after an answer:
 
 | When | Action |
 |------|--------|
-| Start | Session comment → first question → **label swap last** |
+| Start | Session comment → **label swap** → first question |
 | Each Q&A turn | **Nothing on GitHub** |
 | Approve | POST handoff → short approval comment → **label swap last** |
 
@@ -183,5 +183,5 @@ Each turn after an answer:
 - Never run tests, lint, migrations, or deploys.
 - Never create `CONTEXT.md`.
 - Never leave two `workflow:*` labels on an issue.
-- **Label swap is always last** when advancing phases — see label-rules.md.
+- **Label swap last** when advancing to the next phase (approve → implement). At **start**, swap to `workflow:clarify` before Q1 — see label-rules.md.
 - **Never start implement** — only set `workflow:implement` and stop.

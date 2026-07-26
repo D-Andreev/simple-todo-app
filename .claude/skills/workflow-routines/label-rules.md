@@ -4,7 +4,9 @@ Exactly **one** active workflow label per issue.
 
 ## Label swap order (race prevention)
 
-When a phase **advances** to the next phase, the **label swap is always the last GitHub action** — after handoff POST/PATCH, PR creation, and short issue comments. This prevents the next routine from firing before artifacts are ready.
+When a phase **advances** to the next phase, the **label swap is usually the last GitHub action** — after handoff POST/PATCH, PR creation, and short issue comments. This prevents the next routine from firing before artifacts are ready.
+
+**Exception — clarify start:** swap to `workflow:clarify` *before* the first question. That label triggers no routine; swapping early avoids a confusing `issues.labeled` webhook turn after Q1.
 
 ```bash
 # Example: implement complete — order matters
@@ -19,7 +21,7 @@ Record `labels_updated` in handoff `state.json` when PATCHing (intended next lab
 ## Label swap
 
 ```bash
-# Clarify start
+# Clarify start (before first question — workflow:clarify triggers no routine)
 gh issue edit 42 --remove-label "workflow:start" --add-label "workflow:clarify"
 
 # Clarify end

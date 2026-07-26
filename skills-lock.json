@@ -5,37 +5,37 @@
       "source": "D-Andreev/ai-workflow-routines",
       "sourceType": "github",
       "skillPath": "skills/workflow-clarify/SKILL.md",
-      "computedHash": "840e25fa59219de2f6ccb8e225edfab004d6fa97629a0f473b8bbab07b8e07f7"
+      "computedHash": "f790adcbc00af485625648464ca43e7f6f4583126f1a2bdceb029a01151163ae"
     },
     "workflow-comprehension": {
       "source": "D-Andreev/ai-workflow-routines",
       "sourceType": "github",
       "skillPath": "skills/workflow-comprehension/SKILL.md",
-      "computedHash": "ec39fe20dd34648aa553a855bbe2cb8f01c320b2fbbe5a9baaa83c60b1ce4507"
+      "computedHash": "3c5664220e60d1d368d7510d319c5f8b97aa57cdee28e73b54d61db64e77be51"
     },
     "workflow-implement": {
       "source": "D-Andreev/ai-workflow-routines",
       "sourceType": "github",
       "skillPath": "skills/workflow-implement/SKILL.md",
-      "computedHash": "e7032ed99b0a1b1048f6b6d24cc88bf2bc653ded10825df5db1835c4471bd9ba"
+      "computedHash": "3994585abfb1cd5188685e7fc8788929219da00437ac8cc5d64673facb600343"
     },
     "workflow-init": {
       "source": "D-Andreev/ai-workflow-routines",
       "sourceType": "github",
       "skillPath": "skills/workflow-init/SKILL.md",
-      "computedHash": "b9eb3e1ac4e542ab4fd5f56299f81eaaddc32d4ed5e8535aa1e9623a69a75f7b"
+      "computedHash": "292fec278b89124a264ec2a565f375f3359ebd0b3ffca188bf72f4d432a5c59c"
     },
     "workflow-review": {
       "source": "D-Andreev/ai-workflow-routines",
       "sourceType": "github",
       "skillPath": "skills/workflow-review/SKILL.md",
-      "computedHash": "16ec01f58bbad2c025fdc7ea7a583b64d488268315161094657b6f1d4361b3b3"
+      "computedHash": "00967c510144608c55043df3cdca7ac522055d5c5d88b2538a2dd807991038e1"
     },
     "workflow-routines": {
       "source": "D-Andreev/ai-workflow-routines",
       "sourceType": "github",
       "skillPath": "skills/workflow-routines/SKILL.md",
-      "computedHash": "5dc7bac166fcb4a437b8f82c564ecbfa87cccb6044e15a129824b691443ff467"
+      "computedHash": "b3d9a7e8d2432a5ce80aa82d0fa6b207cab54895112e07b1287677364f73070a"
     }
   }
 }

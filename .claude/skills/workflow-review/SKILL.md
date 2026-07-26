@@ -31,7 +31,7 @@ If preconditions fail, post a short issue comment and stop.
 **Ignore prior implementation chat** (if any leaked into context). Base judgments only on:
 
 - Handoff `requirements.md`, `implement-handoff.md`, `language.md`
-- `.claude/workflows/PROJECT.md`, `gotchas.md`
+- `workflow/PROJECT.md`, `workflow/learnings/gotchas.md`
 - `git diff {base_branch}...HEAD` on **`work_branch`**
 - Code and tests on that branch
 

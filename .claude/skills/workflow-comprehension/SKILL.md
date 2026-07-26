@@ -41,7 +41,7 @@ If preconditions fail, explain what's missing and stop. Do not change GitHub lab
 2. **Fetch handoff** — `gh issue view` + find comment with `<!-- ai-workflow:handoff v1 issue={n} -->`; parse sections per [handoff-format.md](../workflow-routines/handoff-format.md).
 3. **Confirm branch** — read `work_branch` and `base_branch` from handoff `state.json`. If not on `work_branch`, checkout and pull.
 4. **Local verification** — encourage dev to have already run PROJECT.md test commands and previewed the feature; offer to run tests now if not done.
-5. **Read context** — handoff artifacts, `.claude/workflows/PROJECT.md`, `gotchas.md`, `git diff {base_branch}...HEAD`, key changed files.
+5. **Read context** — handoff artifacts, `workflow/PROJECT.md`, `workflow/learnings/gotchas.md`, `git diff {base_branch}...HEAD`, key changed files.
 6. Enter **start** mode (interview below).
 
 **No GitHub writes** at start — no session comment, no label swap, no handoff PATCH.
