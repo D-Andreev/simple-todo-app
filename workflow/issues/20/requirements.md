@@ -22,4 +22,4 @@ add --json mode to output in json
 - [ ] JSON output is pretty-printed with 2-space indentation (`JSON.stringify(data, null, 2)`)
 
 ## Approved by human
-- [ ] Pending — reply `approve requirements` when ready
+- [x] Approved
