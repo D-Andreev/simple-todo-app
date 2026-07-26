@@ -43,9 +43,9 @@ npm start -- list
 ```
 Output:
 ```
-a1b2c3d4 pending Buy groceries
-b2c3d4e5 pending Walk the dog
-c3d4e5f6 done Clean the house
+a1b2c3d4 pending Buy groceries (created: 2026-07-26T10:34:28.000Z)
+b2c3d4e5 pending Walk the dog (created: 2026-07-26T10:35:15.000Z)
+c3d4e5f6 done Clean the house (created: 2026-07-26T10:36:00.000Z)
 ```
 
 #### Mark a todo as done

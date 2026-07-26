@@ -74,6 +74,15 @@ describe('Commands', () => {
       expect(message).toContain('done');
       expect(message).toContain('Test');
     });
+
+    test('includes createdAt as ISO 8601 UTC string in parentheses', () => {
+      storage.addTodo('Test', 'id-1');
+      const todo = storage.findTodoById('id-1');
+      const expectedIso = new Date(todo!.createdAt).toISOString();
+
+      const message = commands.handleList();
+      expect(message).toContain(`(created: ${expectedIso})`);
+    });
   });
 
   describe('handleDone', () => {
@@ -184,6 +193,16 @@ describe('Commands', () => {
       const message = commands.handleFilter('GROC');
       expect(message).toContain('Buy Groceries');
       expect(message).not.toContain('walk dog');
+    });
+
+    test('includes createdAt as ISO 8601 UTC string in parentheses', () => {
+      storage.addTodo('Apple', 'id-1');
+      storage.addTodo('Apricot', 'id-2');
+      const todo1 = storage.findTodoById('id-1');
+      const expectedIso1 = new Date(todo1!.createdAt).toISOString();
+
+      const message = commands.handleFilter('a');
+      expect(message).toContain(`(created: ${expectedIso1})`);
     });
   });
 });
