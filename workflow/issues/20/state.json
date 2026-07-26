@@ -5,16 +5,17 @@
   "mode": "feature",
   "task": "add --json mode to output in json",
   "phase": "implement",
-  "status": "ai_running",
-  "workflow_label": "workflow:implement",
+  "status": "done",
+  "workflow_label": "workflow:review",
   "base_branch": "main",
   "work_branch": "workflow/issue-20",
   "handoff_path": "workflow/issues/20",
   "requirements_approved": true,
   "clarify_rounds": 5,
   "created_at": "2026-07-26T19:00:00.000Z",
-  "updated_at": "2026-07-26T19:40:00.000Z",
+  "updated_at": "2026-07-26T19:55:00.000Z",
   "last_session_url": "https://claude.ai/code/session_01Vs9TQApSADUn95zgpkrJMS",
+  "pr_url": "https://github.com/D-Andreev/simple-todo-app/pull/21",
   "history": [
     {
       "phase": "clarify",
@@ -75,6 +76,18 @@
       "event": "started",
       "at": "2026-07-26T19:40:00.000Z",
       "note": "base_branch=main"
+    },
+    {
+      "phase": "implement",
+      "event": "phase_completed",
+      "at": "2026-07-26T19:55:00.000Z",
+      "note": "pr=https://github.com/D-Andreev/simple-todo-app/pull/21"
+    },
+    {
+      "phase": "implement",
+      "event": "labels_updated",
+      "at": "2026-07-26T19:55:00.000Z",
+      "note": "workflow:implement -> workflow:review"
     }
   ],
   "human_feedback": [],
