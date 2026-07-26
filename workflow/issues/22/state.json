@@ -5,15 +5,15 @@
   "mode": "feature",
   "task": "List sorting and grouping",
   "phase": "implement",
-  "status": "ai_running",
-  "workflow_label": "workflow:implement",
+  "status": "done",
+  "workflow_label": "workflow:review",
   "base_branch": "main",
   "work_branch": "workflow/issue-22",
   "handoff_path": "workflow/issues/22",
   "requirements_approved": true,
   "clarify_rounds": 4,
   "created_at": "2026-07-26T19:24:04.000Z",
-  "updated_at": "2026-07-26T19:36:20.000Z",
+  "updated_at": "2026-07-26T19:41:00.000Z",
   "last_session_url": "https://claude.ai/code/session_019spmKQKbmmxfwWYgG5Awmv",
   "history": [
     {
@@ -75,6 +75,18 @@
       "event": "started",
       "at": "2026-07-26T19:36:20.000Z",
       "note": "implement start — checked out workflow/issue-22"
+    },
+    {
+      "phase": "implement",
+      "event": "phase_completed",
+      "at": "2026-07-26T19:41:00.000Z",
+      "note": "TDD red-green, 62 unit + 41 e2e passing; draft PR opened"
+    },
+    {
+      "phase": "implement",
+      "event": "labels_updated",
+      "at": "2026-07-26T19:41:00.000Z",
+      "note": "workflow:implement -> workflow:review"
     }
   ],
   "human_feedback": [],
