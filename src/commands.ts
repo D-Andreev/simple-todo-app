@@ -12,15 +12,17 @@ export function handleAdd(title: string): string {
   return `Added: ${todo.id.substring(0, 8)} pending ${todo.title}`;
 }
 
-export function handleList(): string {
-  const todos = storage.getTodos();
+export function handleList(json?: boolean): string {
+  const todos = storage.getTodos().sort((a, b) => a.createdAt - b.createdAt);
+
+  if (json) {
+    return JSON.stringify(todos, null, 2);
+  }
+
   if (todos.length === 0) {
     return 'No todos.';
   }
-  return todos
-    .sort((a, b) => a.createdAt - b.createdAt)
-    .map(formatTodoRow)
-    .join('\n');
+  return todos.map(formatTodoRow).join('\n');
 }
 
 export function handleDone(id: string): string {
@@ -38,7 +40,7 @@ export function handleDelete(id: string): string {
   return `Deleted todo ${id.substring(0, 8)}`;
 }
 
-export function handleFilter(searchTerm?: string, state?: string): string {
+export function handleFilter(searchTerm?: string, state?: string, json?: boolean): string {
   if (state !== undefined && state !== 'pending' && state !== 'done') {
     throw new Error('Invalid state. Valid values: pending, done');
   }
@@ -53,11 +55,17 @@ export function handleFilter(searchTerm?: string, state?: string): string {
 
   const todos = storage.getTodos();
   const lowerSearch = trimmedTerm.toLowerCase();
-  const matches = todos.filter((todo) => {
-    const nameMatches = !nameFilterActive || todo.title.toLowerCase().includes(lowerSearch);
-    const stateMatches = state === undefined || todo.state === state;
-    return nameMatches && stateMatches;
-  });
+  const matches = todos
+    .filter((todo) => {
+      const nameMatches = !nameFilterActive || todo.title.toLowerCase().includes(lowerSearch);
+      const stateMatches = state === undefined || todo.state === state;
+      return nameMatches && stateMatches;
+    })
+    .sort((a, b) => a.createdAt - b.createdAt);
+
+  if (json) {
+    return JSON.stringify(matches, null, 2);
+  }
 
   if (matches.length === 0) {
     if (nameFilterActive && state) {
@@ -69,10 +77,7 @@ export function handleFilter(searchTerm?: string, state?: string): string {
     return `No todos with state "${state}".`;
   }
 
-  return matches
-    .sort((a, b) => a.createdAt - b.createdAt)
-    .map(formatTodoRow)
-    .join('\n');
+  return matches.map(formatTodoRow).join('\n');
 }
 
 export function handleClear(state?: string): string {

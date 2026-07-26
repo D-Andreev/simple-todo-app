@@ -27,9 +27,10 @@ program
 program
   .command('list')
   .description('List all todos')
-  .action(() => {
+  .option('--json', 'Output as JSON')
+  .action((options: { json?: boolean }) => {
     try {
-      const message = commands.handleList();
+      const message = commands.handleList(options.json);
       console.log(message);
     } catch (error) {
       console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -80,9 +81,10 @@ program
   .command('filter [name]')
   .description('Filter todos by name and/or state')
   .option('--state <state>', 'Filter by state (pending or done)')
-  .action((name: string | undefined, options: { state?: string }) => {
+  .option('--json', 'Output as JSON')
+  .action((name: string | undefined, options: { state?: string; json?: boolean }) => {
     try {
-      const message = commands.handleFilter(name, options.state);
+      const message = commands.handleFilter(name, options.state, options.json);
       console.log(message);
     } catch (error) {
       console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
