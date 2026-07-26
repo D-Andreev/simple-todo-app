@@ -15,15 +15,15 @@ function getStoragePaths() {
 }
 
 export function getTodos(): Todo[] {
+  const { storageFile } = getStoragePaths();
+  if (!fs.existsSync(storageFile)) {
+    return [];
+  }
   try {
-    const { storageFile } = getStoragePaths();
-    if (!fs.existsSync(storageFile)) {
-      return [];
-    }
     const data = fs.readFileSync(storageFile, 'utf-8');
     return JSON.parse(data);
   } catch (error) {
-    return [];
+    throw new Error(`Corrupted todo file at ${storageFile}: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -86,12 +86,11 @@ export function markTodoDone(idOrPrefix: string): Todo {
 
 export function deleteTodo(idOrPrefix: string): void {
   const todos = getTodos();
-  const index = todos.findIndex(
-    (t) => t.id === idOrPrefix || t.id.startsWith(idOrPrefix)
-  );
-  if (index === -1) {
+  const todo = findTodoByIdOrPrefix(todos, idOrPrefix);
+  if (!todo) {
     throw new Error(`Todo with id ${idOrPrefix} not found`);
   }
+  const index = todos.indexOf(todo);
   todos.splice(index, 1);
   saveTodos(todos);
 }
@@ -99,5 +98,9 @@ export function deleteTodo(idOrPrefix: string): void {
 function findTodoByIdOrPrefix(todos: Todo[], idOrPrefix: string): Todo | undefined {
   const exact = todos.find((t) => t.id === idOrPrefix);
   if (exact) return exact;
-  return todos.find((t) => t.id.startsWith(idOrPrefix));
+  const matches = todos.filter((t) => t.id.startsWith(idOrPrefix));
+  if (matches.length > 1) {
+    throw new Error(`Ambiguous todo id prefix "${idOrPrefix}" matches ${matches.length} todos`);
+  }
+  return matches[0];
 }
