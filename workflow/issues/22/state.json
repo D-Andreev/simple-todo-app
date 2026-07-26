@@ -11,9 +11,9 @@
   "work_branch": "workflow/issue-22",
   "handoff_path": "workflow/issues/22",
   "requirements_approved": false,
-  "clarify_rounds": 3,
+  "clarify_rounds": 4,
   "created_at": "2026-07-26T19:24:04.000Z",
-  "updated_at": "2026-07-26T19:34:19.000Z",
+  "updated_at": "2026-07-26T19:35:00.000Z",
   "last_session_url": "https://claude.ai/code/session_014tZ5k68q2iRHK49CWFvjQ7",
   "history": [
     {
@@ -45,6 +45,12 @@
       "event": "started",
       "at": "2026-07-26T19:34:19.000Z",
       "note": "Q3 answered — applies to filter, interactive, and --json too"
+    },
+    {
+      "phase": "clarify",
+      "event": "started",
+      "at": "2026-07-26T19:35:00.000Z",
+      "note": "Q4 answered — case-insensitive title sort, createdAt tiebreaker; requirements ready for approval"
     }
   ],
   "human_feedback": [],
