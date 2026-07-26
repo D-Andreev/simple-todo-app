@@ -4,8 +4,8 @@
   "issue_url": "https://github.com/D-Andreev/simple-todo-app/issues/18",
   "mode": "feature",
   "task": "Add clear command. If no params passed delete all. If state passed (i.e.) done, clears all done todos.",
-  "phase": "implement",
-  "status": "done",
+  "phase": "review",
+  "status": "ai_running",
   "workflow_label": "workflow:review",
   "base_branch": "main",
   "work_branch": "workflow/issue-18",
@@ -13,8 +13,8 @@
   "requirements_approved": true,
   "clarify_rounds": 4,
   "created_at": "2026-07-26T00:00:00.000Z",
-  "updated_at": "2026-07-26T19:30:00.000Z",
-  "last_session_url": "https://claude.ai/code/session_01B3DYWgMbwVBmYW6B1TdbdH",
+  "updated_at": "2026-07-26T19:35:00.000Z",
+  "last_session_url": "https://claude.ai/code/session_015wuYadE7H4uqWnfAVfULo7",
   "history": [
     {
       "phase": "clarify",
@@ -81,6 +81,12 @@
       "event": "labels_updated",
       "at": "2026-07-26T19:30:00.000Z",
       "note": "workflow:implement -> workflow:review"
+    },
+    {
+      "phase": "review",
+      "event": "started",
+      "at": "2026-07-26T19:35:00.000Z",
+      "note": "session=https://claude.ai/code/session_015wuYadE7H4uqWnfAVfULo7"
     }
   ],
   "human_feedback": [],
