@@ -10,6 +10,7 @@ const HELP_TEXT = [
   'update <id> <newTitle>   Update a todo\'s title',
   'delete <id>              Delete a todo',
   'filter [name] [--state <state>]  Filter todos by name and/or state',
+  'clear [--state <state>]  Clear todos, optionally by state',
   'exit                     Exit interactive mode',
   'quit                     Exit interactive mode',
 ].join('\n');
@@ -31,6 +32,10 @@ const handlers: Record<string, Handler> = {
     const { name, state } = parseFilterArgs(rest);
     return commands.handleFilter(name, state);
   },
+  clear: (rest) => {
+    const { state } = parseClearArgs(rest);
+    return commands.handleClear(state);
+  },
 };
 
 function parseFilterArgs(rest: string): { name?: string; state?: string } {
@@ -38,6 +43,11 @@ function parseFilterArgs(rest: string): { name?: string; state?: string } {
   const state = stateMatch ? stateMatch[1] : undefined;
   const nameOnly = (stateMatch ? rest.slice(0, stateMatch.index) : rest).trim();
   return { name: nameOnly === '' ? undefined : nameOnly, state };
+}
+
+function parseClearArgs(rest: string): { state?: string } {
+  const stateMatch = rest.match(/--state\s+(\S+)/);
+  return { state: stateMatch ? stateMatch[1] : undefined };
 }
 
 export function runInteractive(): void {

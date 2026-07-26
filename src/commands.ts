@@ -74,3 +74,17 @@ export function handleFilter(searchTerm?: string, state?: string): string {
     .map(formatTodoRow)
     .join('\n');
 }
+
+export function handleClear(state?: string): string {
+  if (state !== undefined && state !== 'pending' && state !== 'done') {
+    throw new Error('Invalid state. Valid values: pending, done');
+  }
+
+  const count = storage.clearTodos(state);
+
+  if (count === 0) {
+    return 'No todos to clear.';
+  }
+
+  return state === undefined ? `Cleared ${count} todo(s).` : `Cleared ${count} ${state} todo(s).`;
+}

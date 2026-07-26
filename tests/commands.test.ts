@@ -280,4 +280,65 @@ describe('Commands', () => {
       expect(lines[2]).toContain('Avocado');
     });
   });
+
+  describe('handleClear', () => {
+    test('throws on invalid state value', () => {
+      expect(() => commands.handleClear('bogus')).toThrow(
+        'Invalid state. Valid values: pending, done'
+      );
+    });
+
+    test('with no state deletes all todos and returns count message', () => {
+      storage.addTodo('Buy milk', 'id-1');
+      storage.addTodo('Walk dog', 'id-2');
+
+      const message = commands.handleClear();
+      expect(message).toBe('Cleared 2 todo(s).');
+      expect(storage.getTodos()).toHaveLength(0);
+    });
+
+    test('with --state done deletes only done todos and returns count message', () => {
+      storage.addTodo('Buy milk', 'id-1');
+      storage.addTodo('Walk dog', 'id-2');
+      storage.markTodoDone('id-1');
+
+      const message = commands.handleClear('done');
+      expect(message).toBe('Cleared 1 done todo(s).');
+      const remaining = storage.getTodos();
+      expect(remaining).toHaveLength(1);
+      expect(remaining[0].id).toBe('id-2');
+    });
+
+    test('with --state pending deletes only pending todos and returns count message', () => {
+      storage.addTodo('Buy milk', 'id-1');
+      storage.addTodo('Walk dog', 'id-2');
+      storage.markTodoDone('id-1');
+
+      const message = commands.handleClear('pending');
+      expect(message).toBe('Cleared 1 pending todo(s).');
+      const remaining = storage.getTodos();
+      expect(remaining).toHaveLength(1);
+      expect(remaining[0].id).toBe('id-1');
+    });
+
+    test('returns "No todos to clear." when nothing matches', () => {
+      storage.addTodo('Buy milk', 'id-1');
+
+      const message = commands.handleClear('done');
+      expect(message).toBe('No todos to clear.');
+      expect(storage.getTodos()).toHaveLength(1);
+    });
+
+    test('returns "No todos to clear." when there are no todos at all', () => {
+      const message = commands.handleClear();
+      expect(message).toBe('No todos to clear.');
+    });
+
+    test('does not prompt for confirmation, executes immediately', () => {
+      storage.addTodo('Buy milk', 'id-1');
+
+      const message = commands.handleClear();
+      expect(message).toBe('Cleared 1 todo(s).');
+    });
+  });
 });
