@@ -56,14 +56,14 @@ Same as A/B.
 
 ## Start sequence (mode A only)
 
-1. **Read the issue** — number, title, body, labels, URL.
-2. **Verify init** — if `workflow/PROJECT.md` is missing, stop; tell user to run `/workflow-init`.
-3. **Initialize in-session artifacts**:
+1. **Swap labels first** — from webhook / trigger context, remove `workflow:start`, add `workflow:clarify`. **Nothing else on GitHub before this.** (`workflow:clarify` triggers no routine; do this immediately so the `issues.labeled` webhook fires before the rest of start.)
+2. **Read the issue** — number, title, body, labels, URL.
+3. **Verify init** — if `workflow/PROJECT.md` is missing, stop; tell user to run `/workflow-init`.
+4. **Initialize in-session artifacts**:
    - `task.md` from issue title + body
    - `language.md` — copy existing `## Language` from `PROJECT.md` if any; else placeholder
    - `state.json` per [fixtures/state-example-clarify-start.json](../workflow-routines/fixtures/state-example-clarify-start.json)
-4. **Post session comment** (separate) — Claude Code session URL. Record `session_linked` in in-session state.
-5. **Swap labels** — remove `workflow:start`, add `workflow:clarify` (before the first question so the `issues.labeled` webhook fires early, not after Q1).
+5. **Post session comment** (separate) — Claude Code session URL. Record `session_linked` in in-session state.
 6. Ask the **first** grilling question. **Nothing else on GitHub after this.**
 
 **Do not post the handoff comment yet.**
@@ -170,7 +170,7 @@ Each turn after an answer:
 
 | When | Action |
 |------|--------|
-| Start | Session comment → **label swap** → first question |
+| Start | **Label swap first** → session comment → first question |
 | Each Q&A turn | **Nothing on GitHub** |
 | Approve | POST handoff → short approval comment → **label swap last** |
 
@@ -183,5 +183,5 @@ Each turn after an answer:
 - Never run tests, lint, migrations, or deploys.
 - Never create `CONTEXT.md`.
 - Never leave two `workflow:*` labels on an issue.
-- **Label swap last** when advancing to the next phase (approve → implement). At **start**, swap to `workflow:clarify` before Q1 — see label-rules.md.
+- **Label swap first** at start — `workflow:clarify` before any other GitHub write or Q1. **Label swap last** when advancing to implement — see label-rules.md.
 - **Never start implement** — only set `workflow:implement` and stop.
