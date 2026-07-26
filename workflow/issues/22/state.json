@@ -5,15 +5,16 @@
   "mode": "feature",
   "task": "List sorting and grouping",
   "phase": "review",
-  "status": "ai_running",
+  "status": "done",
   "workflow_label": "workflow:review",
   "base_branch": "main",
   "work_branch": "workflow/issue-22",
   "handoff_path": "workflow/issues/22",
   "requirements_approved": true,
+  "review_verdict": "APPROVE WITH NOTES",
   "clarify_rounds": 4,
   "created_at": "2026-07-26T19:24:04.000Z",
-  "updated_at": "2026-07-26T19:43:43.000Z",
+  "updated_at": "2026-07-26T19:46:06.000Z",
   "last_session_url": "https://claude.ai/code/session_019spmKQKbmmxfwWYgG5Awmv",
   "history": [
     {
@@ -93,6 +94,18 @@
       "event": "started",
       "at": "2026-07-26T19:43:43.000Z",
       "note": "review start — checked out workflow/issue-22, fresh-eyes review of PR #23"
+    },
+    {
+      "phase": "review",
+      "event": "pr_comment_posted",
+      "at": "2026-07-26T19:46:06.000Z",
+      "note": "verdict=APPROVE WITH NOTES — https://github.com/D-Andreev/simple-todo-app/pull/23#issuecomment-5085099898"
+    },
+    {
+      "phase": "review",
+      "event": "phase_completed",
+      "at": "2026-07-26T19:46:06.000Z",
+      "note": "review complete"
     }
   ],
   "human_feedback": [],
