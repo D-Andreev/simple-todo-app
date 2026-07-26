@@ -4,8 +4,8 @@
   "issue_url": "https://github.com/D-Andreev/simple-todo-app/issues/20",
   "mode": "feature",
   "task": "add --json mode to output in json",
-  "phase": "clarify",
-  "status": "done",
+  "phase": "implement",
+  "status": "ai_running",
   "workflow_label": "workflow:implement",
   "base_branch": "main",
   "work_branch": "workflow/issue-20",
@@ -13,8 +13,8 @@
   "requirements_approved": true,
   "clarify_rounds": 5,
   "created_at": "2026-07-26T19:00:00.000Z",
-  "updated_at": "2026-07-26T19:35:00.000Z",
-  "last_session_url": "https://claude.ai/code/session_01QjdSVhhimMGkaSfGu2UvFa",
+  "updated_at": "2026-07-26T19:40:00.000Z",
+  "last_session_url": "https://claude.ai/code/session_01Vs9TQApSADUn95zgpkrJMS",
   "history": [
     {
       "phase": "clarify",
@@ -69,6 +69,12 @@
       "event": "labels_updated",
       "at": "2026-07-26T19:35:00.000Z",
       "note": "workflow:clarify -> workflow:implement"
+    },
+    {
+      "phase": "implement",
+      "event": "started",
+      "at": "2026-07-26T19:40:00.000Z",
+      "note": "base_branch=main"
     }
   ],
   "human_feedback": [],
