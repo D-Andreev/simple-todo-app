@@ -92,6 +92,9 @@ Build in memory, then include in handoff PATCH at complete.
 ## Branch
 workflow/issue-{n}
 
+## PR
+Draft — remains draft until the author marks ready after local testing (see comprehension / human review).
+
 ## Changes
 | File | What changed |
 |------|--------------|
@@ -133,20 +136,22 @@ Use `git diff {base_branch}...HEAD` when filling Changes.
    - Append history: `phase_started` (if not recorded), `phase_completed`, `labels_updated`
    - Set `updated_at`
 3. **PATCH handoff comment** — full snapshot: all clarify sections plus `implement-handoff.md` and updated `state.json`.
-4. **Swap labels** — remove `workflow:implement`, add **`workflow:review`** (triggers review routine when it exists).
-5. **Open PR** (recommended):
+4. **Open draft PR** (recommended):
 
    ```bash
-   gh pr create --head workflow/issue-{n} --base {base_branch} \
+   gh pr create --draft --head workflow/issue-{n} --base {base_branch} \
      --title "{issue title}" --body "Closes #{n}
 
    ## Summary
    {from implement-handoff}
 
-   Handoff on issue comment."
+   **Draft** — author will mark ready after local testing. Handoff on issue comment."
    ```
 
-6. Post **short issue comment** — implement complete, PR link, `workflow:review` set. Do not duplicate full handoff.
+   PR stays **draft** so teammates are not notified to review until the author has tested locally and optionally run comprehension.
+
+5. Post **short issue comment** — implement complete, draft PR link. Do not duplicate full handoff.
+6. **Swap labels last** — remove `workflow:implement`, add **`workflow:review`** (triggers review routine). **Nothing else on GitHub after this.**
 7. **Stop** — do not run review in this session.
 
 ## Writable locations
@@ -167,4 +172,6 @@ Preserve existing handoff sections when PATCHing — include full snapshot every
 - Prefer focused diffs; no drive-by refactors.
 - Never skip handoff read or `requirements_approved` check.
 - Never leave two `workflow:*` labels on an issue.
+- **Label swap is always last** when advancing phases — see label-rules.md.
+- **Always create PR as draft** (`gh pr create --draft`).
 - **Never run review** — only set `workflow:review` and stop.

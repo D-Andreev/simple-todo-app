@@ -109,6 +109,8 @@ Human session URL — posted when clarify **starts**, not the handoff. See [labe
 
 Clarify: no branch, no repo writes, **no handoff comment until approve**.
 
-Implement: read handoff → branch `workflow/issue-{n}` → code on branch → PATCH handoff with `implement-handoff.md`.
+Implement: read handoff → branch `workflow/issue-{n}` → code on branch → **draft PR** → PATCH handoff with `implement-handoff.md` → label swap last.
 
-Review: checkout `work_branch` → AI review in session → optional fixes on branch → PATCH handoff with `review-report.md` at **`proceed to human review`**.
+Review: checkout `work_branch` → AI review in session → optional fixes on branch → PATCH handoff with `review-report.md` at **`proceed to human review`** → label swap last.
+
+**Label swap is always the last GitHub write** when advancing phases (see [label-rules.md](label-rules.md)).

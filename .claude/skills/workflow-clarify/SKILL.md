@@ -62,9 +62,9 @@ Same as A/B.
    - `task.md` from issue title + body
    - `language.md` — copy existing `## Language` from `PROJECT.md` if any; else placeholder
    - `state.json` per [fixtures/state-example-clarify-start.json](../workflow-routines/fixtures/state-example-clarify-start.json)
-4. **Swap labels** — remove `workflow:start`, add `workflow:clarify`.
-5. **Post session comment** (separate) — Claude Code session URL. Record `session_linked` in in-session state.
-6. Ask the **first** grilling question.
+4. **Post session comment** (separate) — Claude Code session URL. Record `session_linked` in in-session state.
+5. Ask the **first** grilling question.
+6. **Swap labels last** — remove `workflow:start`, add `workflow:clarify`. **Nothing else on GitHub after this.**
 
 **Do not post the handoff comment yet.**
 
@@ -123,11 +123,11 @@ Each turn after an answer:
    - `requirements_approved`: true
    - `workflow_label`: `workflow:implement`
    - `status`: `done` (clarify complete)
-   - Append `human_approved`
+   - Append `human_approved`, `labels_updated` (intended next label)
 3. Check approval box in `requirements.md`.
 4. **POST handoff comment** — single comment with marker `<!-- ai-workflow:handoff v1 issue={n} -->` and all sections: `state.json`, `task.md`, `language.md`, `requirements.md`, `adrs.md` if any. See handoff-format. Record `handoff_comment_id` in the posted `state.json` section.
-5. **Swap labels** — remove `workflow:clarify`, add **`workflow:implement`** (triggers implement routine).
-6. Post **short** approval comment (separate from handoff).
+5. Post **short** approval comment (separate from handoff).
+6. **Swap labels last** — remove `workflow:clarify`, add **`workflow:implement`** (triggers implement routine). **Nothing else on GitHub after this.**
 7. **Stop.**
 
 ## requirements.md template
@@ -170,9 +170,9 @@ Each turn after an answer:
 
 | When | Action |
 |------|--------|
-| Start | Session comment + label swap |
+| Start | Session comment → first question → **label swap last** |
 | Each Q&A turn | **Nothing on GitHub** |
-| Approve | **POST handoff comment** + label swap + short approval comment |
+| Approve | POST handoff → short approval comment → **label swap last** |
 
 ## Hard rules
 
@@ -183,4 +183,5 @@ Each turn after an answer:
 - Never run tests, lint, migrations, or deploys.
 - Never create `CONTEXT.md`.
 - Never leave two `workflow:*` labels on an issue.
+- **Label swap is always last** when advancing phases — see label-rules.md.
 - **Never start implement** — only set `workflow:implement` and stop.
