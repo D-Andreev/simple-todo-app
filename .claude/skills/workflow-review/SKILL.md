@@ -51,48 +51,25 @@ State in the review-report header: **"Fresh-eyes: artifacts and diff only."**
 
 ## Review pass
 
-### When to run tests or build
-
-**Only if the PR diff includes application code changes** — source files, tests, or build/config manifests (e.g. `package.json`, `go.mod`, `Makefile`, CI config).
-
-**Do not run** tests or build when the diff is limited to:
-
-- `workflow/issues/{n}/` handoff files
-- `workflow/PROJECT.md` / `docs/adr/` only (language merge, ADRs)
-- Markdown or workflow metadata with no executable impact
-
-Before running anything, inspect:
-
-```bash
-git diff {base_branch}...HEAD --stat
-git diff {base_branch}...HEAD -- ':!workflow/issues/'
-```
-
-If implement-handoff already records test results and **no code changed since implement**, cite those results in the report — do not re-run.
-
-If code **did** change (or this is the first review with code in the diff), run tests per PROJECT.md and build if the project normally builds in CI.
+**No tests or build in review.** Implement already ran tests and recorded results in `implement-handoff.md`. Review is **fresh-eyes only**: artifacts, diff, and code reading — never `npm test`, `npm run build`, or equivalent.
 
 ### 1. Scenario verification
 
-1. Read artifacts and diff — built vs required.
-2. Derive **scenario tests** from requirements and implement-handoff "Suggested review scenarios":
+1. Read artifacts, diff, and implement-handoff test results — built vs required.
+2. Derive **scenarios** from requirements and implement-handoff "Suggested review scenarios":
    - Happy path
    - Edge cases from requirements
    - Error / failure paths
    - Regression risks (PROJECT.md domain)
-3. **Execute** (only when code changed — see above):
-   - Unit tests (PROJECT.md commands)
-   - Targeted tests for changed areas
-   - Integration/e2e if contracts or cross-module flows touched
-   - Build/lint if PROJECT.md or CI expects it
-4. When **no code changes** — verify scenarios by **reading code and diff** (manual trace); note in report: `Tests/build skipped — no application code in diff.`
-5. Record results for the report.
+3. **Verify by reading** — trace through code and diff (manual/logical walkthrough). Do **not** execute tests or build.
+4. Cross-check implement-handoff test claims; note gaps if untested areas matter.
+5. Record results for the report (method: `manual` / `code trace`, not `test`).
 
 ### 2. Principles review (same pass)
 
 After scenarios, review:
 
-1. Open 🔴/🟡 from scenario testing (severity + fix approach)
+1. Open 🔴/🟡 from scenario analysis (severity + fix approach)
 2. Areas scenarios cannot judge (design, security boundaries, maintainability)
 3. Checklist: **Security**, **Design / maintainability**, **Conventions**
 
@@ -104,9 +81,9 @@ Apply stack-idiomatic practices from PROJECT.md and manifests.
 
 | Verdict | When |
 |---------|------|
-| **APPROVE** | Requirements met, no meaningful issues (tests pass if code changed and were run) |
+| **APPROVE** | Requirements met per diff/artifacts; implement-handoff test results accepted; no meaningful issues |
 | **APPROVE WITH NOTES** | Shippable; minor suggestions or non-blocking gaps |
-| **REQUEST CHANGES** | Must-fix bugs, failed tests (when run), missing AC, security/design blockers |
+| **REQUEST CHANGES** | Must-fix bugs, logic gaps, missing AC, security/design blockers visible in diff/code |
 
 ## PR comment (one comment only)
 
@@ -150,25 +127,27 @@ APPROVE | APPROVE WITH NOTES | REQUEST CHANGES
 
 ## Scenario verification
 
-### Scenarios tested
+### Scenarios verified
 
 | # | Scenario | Method | Result | Notes |
 |---|----------|--------|--------|-------|
-| 1 | ... | test/manual | pass/fail | ... |
+| 1 | ... | manual/code trace | pass/fail | ... |
 
 ### Requirements coverage
 - [ ] Each acceptance criterion verified or gap-noted
 
-### Issues found (from testing)
+### Issues found (from review)
 - 🔴 Critical: ...
 - 🟡 Minor: ...
+
+### Implement test results (cited, not re-run)
+- {from implement-handoff.md — e.g. unit/e2e counts, build status}
 
 ### Gaps in test coverage
 - ...
 
-### Test/build execution
-- **Run:** yes / no — {reason, e.g. no application code in diff | code changed per diff stat}
-- If skipped: relied on implement-handoff test results / manual trace only
+### Tests/build in review
+- **Not run** — review is diff + code reading only; implement phase owns execution.
 
 ## Principles review
 
@@ -217,4 +196,4 @@ APPROVE | APPROVE WITH NOTES | REQUEST CHANGES
 - If push fails, post short issue comment and **stop**; do not advance labels.
 - **Never put artifacts in issue comments.**
 - **Label swap is always last** — see label-rules.md.
-- **Do not run tests or build** unless the diff includes application code changes — see **When to run tests or build**.
+- **Never run tests or build** during review — cite implement-handoff results; verify by reading diff and code.

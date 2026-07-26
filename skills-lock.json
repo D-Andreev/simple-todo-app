@@ -29,13 +29,13 @@
       "source": "D-Andreev/ai-workflow-routines",
       "sourceType": "github",
       "skillPath": "skills/workflow-review/SKILL.md",
-      "computedHash": "bfd266bcbd7ca61b804c7bf037b85388a70981981341758e6f3eb2acfa149844"
+      "computedHash": "ea6ba1d0c4096bef5949d125b53a5baa14f4858ce346a0b033babb6b41089236"
     },
     "workflow-routines": {
       "source": "D-Andreev/ai-workflow-routines",
       "sourceType": "github",
       "skillPath": "skills/workflow-routines/SKILL.md",
-      "computedHash": "ce5913d082f77d675b0aaf2328219ea45ce8f81c58dd948dd11a7362e9b99116"
+      "computedHash": "81d047ac7bf6254297022fe0299786f8fcb0c7aeef4672ecd22f26b3b51af3c2"
     }
   }
 }

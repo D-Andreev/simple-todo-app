@@ -123,7 +123,7 @@ Then `---` and full requirements body. If over ~65k chars, post AC + clarificati
 ```markdown
 **Review: APPROVE WITH NOTES** — Shippable; one small nit in the [PR comment]({pr_comment_url}). Full autopsy on branch.
 
-**Review: APPROVE** — Matches the spec, tests/build checked out. [Summary on the PR]({pr_comment_url}).
+**Review: APPROVE** — Matches the spec; implement test results look good on paper. [Summary on the PR]({pr_comment_url}).
 
 **Review: REQUEST CHANGES** — Found blockers — details in the [PR comment]({pr_comment_url}). Happy to re-review after fixes.
 ```

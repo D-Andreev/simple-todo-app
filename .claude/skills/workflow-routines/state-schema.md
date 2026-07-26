@@ -72,7 +72,7 @@ Commit start → code on same branch → draft PR → commit complete → short 
 
 ## Review policy
 
-Commit start → review → **one** PR comment (`gh pr comment`, verdict in text) → commit complete → short issue comment → **`workflow:human-review` label last**.
+Commit start → review (diff + code reading only — **no tests/build**) → **one** PR comment (`gh pr comment`, verdict in text) → commit complete → short issue comment → **`workflow:human-review` label last**.
 
 ## Comprehension policy (optional, local)
 
