@@ -1,47 +1,33 @@
 ---
 name: workflow-routines
 description: >-
-  Shared rules for GitHub-issue workflow routines — handoff comment format,
-  state schema, label swaps. Use when configuring routines, reading issue
-  handoff, or debugging stuck labels.
+  Shared rules for GitHub-issue workflow routines — handoff format, state
+  schema, label triggers. Use when reading issue handoff or wiring routine
+  webhooks.
 disable-model-invocation: true
 ---
 
 # Workflow Routines (shared reference)
 
-Phase skills do the work; this skill holds **shared contracts**.
-
-## Where state lives
-
-| Location | What |
-|----------|------|
-| **Issue handoff comment** | `state.json`, `task.md`, `requirements.md`, later phase artifacts |
-| **Repo** | `PROJECT.md`, `gotchas.md`, `docs/adr/` |
-| **Issue labels** | Routing between routines |
-| **Session comment** | Human link to Claude Code session |
-
-Handoff format: [handoff-format.md](handoff-format.md)  
-State fields: [state-schema.md](state-schema.md)  
-Labels: [label-rules.md](label-rules.md)
-
-## Read handoff (implement and later phases)
-
-1. Open GitHub issue `{n}`
-2. Find comment with `<!-- ai-workflow:handoff v1 issue={n} -->`
-3. Parse fenced sections — see handoff-format **Read protocol**
-
 ## Label flow
 
 ```
-workflow:start → workflow:clarify → workflow:implement
+workflow:start → clarify → workflow:implement → implement → workflow:review
+  → AI review (session + fix loop) → workflow:human-review → human PR review
 ```
+
+Only `workflow:human-review` has no routine.
+
+Docs: [handoff-format.md](handoff-format.md) · [state-schema.md](state-schema.md) · [label-rules.md](label-rules.md)
 
 ## Phase skills
 
-| Phase | Skill |
-|-------|-------|
-| init | workflow-init |
-| clarify | workflow-clarify |
-| implement | (future) |
+| Phase | Skill | Routine |
+|-------|-------|---------|
+| init | workflow-init | — |
+| clarify | workflow-clarify | `workflow:start` |
+| implement | workflow-implement | `workflow:implement` |
+| AI review | workflow-review | `workflow:review` |
+| human review | — | — (GitHub PR) |
 
-Routine prompts: repo `routines/`.
+Prompts: repo `routines/`.

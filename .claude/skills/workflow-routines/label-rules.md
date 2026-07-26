@@ -1,46 +1,52 @@
 # GitHub Label Rules
 
-Workflow routing uses **exactly one** active workflow label per issue.
+Exactly **one** active workflow label per issue.
 
 ## Label swap
 
-When changing phase, always:
-
-1. Remove the previous workflow label (`workflow:start`, `workflow:clarify`, or `workflow:implement`).
-2. Add the new label.
-3. Append `labels_updated` to `state.history` (in the handoff comment).
-
 ```bash
+# Clarify start
 gh issue edit 42 --remove-label "workflow:start" --add-label "workflow:clarify"
+
+# Clarify end
 gh issue edit 42 --remove-label "workflow:clarify" --add-label "workflow:implement"
+
+# Implement end
+gh issue edit 42 --remove-label "workflow:implement" --add-label "workflow:review"
+
+# AI review end → human PR review
+gh issue edit 42 --remove-label "workflow:review" --add-label "workflow:human-review"
 ```
 
-## Triggers
+Record `labels_updated` in handoff `state.json` when PATCHing.
 
-| Label present | Routine |
-|---------------|---------|
-| `workflow:start` | Clarify routine |
-| `workflow:implement` | Implement routine (future) |
+## Triggers (routines)
 
-## Session comment (human-facing, separate from handoff)
+| Label added | Routine |
+|-------------|---------|
+| `workflow:start` | Clarify |
+| `workflow:implement` | Implement |
+| `workflow:review` | AI Review |
 
-Post when clarify starts — **not** the handoff comment:
+`workflow:human-review` has **no routine** — humans review the PR on GitHub (approve, request changes, merge).
 
-```markdown
-## Clarify session
+## Session comments
 
-Answer questions in the Claude Code session below. One question at a time.
+| Phase | Comment |
+|-------|---------|
+| Clarify start | Session URL; handoff posted only on approve |
+| Implement start | Optional session URL + work branch |
+| Implement complete | PR link; `workflow:review` set |
+| Review start | Session URL + branch/PR |
+| Review complete | Verdict one-liner; `workflow:human-review` set |
 
-**Session:** {session_url}
+## Advance commands (in Claude Code session)
 
-When requirements look complete, reply in the session with `approve requirements`.
-
----
-_Handoff artifacts are in the workflow handoff comment on this issue (marker `ai-workflow:handoff`)._
-```
-
-On `approve requirements`, post a short comment only — full spec stays in the handoff comment.
+| Phase | User says | Effect |
+|-------|-----------|--------|
+| Clarify | `approve requirements` | POST handoff; `workflow:implement` |
+| Review | `proceed to human review` / `approve review` | PATCH handoff; `workflow:human-review` |
 
 ## Bugfix mode
 
-Issue has label `bug` or body contains `mode: bugfix` → `state.mode` is `bugfix`. Default `feature`.
+Handoff `state.mode: bugfix` — same review process on `work_branch`.

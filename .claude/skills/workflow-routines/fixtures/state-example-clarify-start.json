@@ -28,7 +28,9 @@
   "comprehension_skipped": false,
   "artifacts": {
     "task": "task.md",
+    "language": "language.md",
     "requirements": "requirements.md",
+    "adrs": "adrs.md",
     "implement_handoff": "implement-handoff.md",
     "review_report": "review-report.md",
     "comprehension_test": "comprehension-test.md",

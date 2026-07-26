@@ -1,49 +1,45 @@
 # Issue Comment Handoff Format
 
-Per-issue pipeline state and artifacts live in **one GitHub issue comment** — not in the repo. Later routines (implement, etc.) load handoff by reading this comment.
+Per-issue pipeline artifacts are posted in **one GitHub issue comment** when **clarify completes** (`approve requirements`). Later routines read this comment. Nothing is posted during the clarify Q&A turns.
 
-Full schema for `state.json` contents: [state-schema.md](state-schema.md)
+Full schema for `state.json`: [state-schema.md](state-schema.md)
 
 ## Marker
-
-Every handoff comment **must** start with this HTML comment (issue number required):
 
 ```html
 <!-- ai-workflow:handoff v1 issue=42 -->
 ```
 
-- `v1` — format version; bump only if section layout changes
-- `issue={number}` — must match the GitHub issue
-
-Search issue comments for this exact marker to find the handoff comment.
+Clarify **POSTs once** at session end. Implement and later phases may **PATCH** the same comment to add sections.
 
 ## Comment body template
-
-Post on **create**; **edit in place** on every subsequent clarify turn (do not post a new handoff comment each turn).
 
 ```markdown
 <!-- ai-workflow:handoff v1 issue=42 -->
 
-_Workflow handoff — updated 2026-07-26T07:15:00Z. Agents: parse fenced sections below. Humans: use the session comment for Q&A._
+_Workflow handoff — clarify complete._
 
 ### state.json
 
 ```json
-{
-  "id": "issue-42",
-  "issue_number": 42,
-  ...
-}
+{ ... }
 ```
 
 ### task.md
 
 ```markdown
 # Task
+...
+```
 
-{issue title}
+### language.md
 
-{issue body}
+```markdown
+## Language
+
+**Term**:
+Definition.
+_Avoid_: alternatives
 ```
 
 ### requirements.md
@@ -52,58 +48,67 @@ _Workflow handoff — updated 2026-07-26T07:15:00Z. Agents: parse fenced section
 # Requirements: issue-42
 ...
 ```
+
+### adrs.md
+
+```markdown
+# ADR drafts
+...
 ```
+```
+
+Use **per-section fences only**.
 
 ### Section rules
 
-| Section | Required | Notes |
-|---------|----------|-------|
-| `state.json` | yes | Valid JSON; fence language tag `json` |
-| `task.md` | yes | Copied from issue title + body at start |
-| `requirements.md` | after first Q&A | Omit until first answer, or include stub |
+| Section | Posted by clarify | Notes |
+|---------|-------------------|-------|
+| `state.json` | yes | Final state at approve |
+| `task.md` | yes | |
+| `language.md` | yes | Implement merges into PROJECT.md |
+| `requirements.md` | yes | |
+| `adrs.md` | if any | |
+| `implement-handoff.md` | no | Implement PATCH at complete |
+| `review-report.md` | no | Review PATCH at `proceed to human review` |
 
-Later phases add sections the same way when defined (e.g. `implement-handoff.md`).
+## Write protocol
 
-**Fence nesting:** the outer comment uses ` ```markdown ` for the whole body. Inner artifact fences use **4-space indent** or alternate fence length (` ````markdown `) so GitHub renders correctly. Prefer **4-space indent** for inner ` ``` ` blocks inside the outer markdown fence when editing via API.
+### Clarify (once, on approve)
 
-Safer alternative — **no outer fence**; only per-section fences as shown in the template above (recommended).
+1. Build full snapshot from in-session artifacts
+2. **POST** new comment — `gh api POST repos/{owner}/{repo}/issues/{n}/comments`
+3. Do **not** POST or PATCH handoff during Q&A turns
 
-## Write protocol (clarify)
+### Later phases (implement, …)
 
-1. List comments: `gh api repos/{owner}/{repo}/issues/{n}/comments`
-2. Find comment whose body contains `<!-- ai-workflow:handoff v1 issue={n} -->`
-3. **If found** — PATCH that comment with updated full body (all sections, full snapshot each time)
-4. **If not found** — POST new comment with the template
-5. Record `handoff_updated` in `state.history` (inside the JSON you write)
+1. Find comment with marker
+2. **PATCH** to append/update sections
 
 ```bash
-# Edit existing (preferred)
-gh api --method PATCH repos/{owner}/{repo}/issues/comments/{comment_id} \
-  -f body='...'
-
-# Create first handoff
-gh api --method POST repos/{owner}/{repo}/issues/{n}/comments \
-  -f body='...'
+gh api --method POST repos/{owner}/{repo}/issues/{n}/comments -f body='...'
+gh api --method PATCH repos/{owner}/{repo}/issues/comments/{comment_id} -f body='...'
 ```
 
-## Read protocol (clarify resume, implement, …)
+## Read protocol
 
-1. Fetch issue comments (newest-first or oldest-first — marker is unique)
-2. Locate body containing `<!-- ai-workflow:handoff v1 issue={n} -->`
-3. Extract each `### {filename}` section — content is the fenced block immediately below the heading
-4. Parse `state.json` as JSON; treat other sections as raw markdown strings
-5. If no handoff comment exists and label is `workflow:clarify`, clarify may still be starting — run Start sequence
+1. Fetch issue comments; find `<!-- ai-workflow:handoff v1 issue={n} -->`
+2. If missing — clarify not finished yet; implement must not run
+3. Parse `### {filename}` sections → fenced blocks
 
-## Session comment (separate)
+## Session comment (separate, at clarify start)
 
-Human-facing link to the Claude Code session — **different comment**, not the handoff comment. See [label-rules.md](label-rules.md). Never embed the session URL inside the handoff comment (handoff is machine-readable and long-lived).
+Human session URL — posted when clarify **starts**, not the handoff. See [label-rules.md](label-rules.md).
 
-## What stays in the repo
+## Repo vs issue
 
-| Committed | Not committed |
-|-----------|---------------|
-| `.claude/workflows/PROJECT.md` (glossary updates from clarify) | `state.json`, `task.md`, `requirements.md` per issue |
-| `.claude/workflows/learnings/gotchas.md` | |
-| `docs/adr/*.md` | |
+| During clarify (session memory) | Posted at clarify end (issue) | Repo (implement writes) |
+|-------------------------------|-------------------------------|-------------------------|
+| `language.md` | handoff `language.md` | `PROJECT.md` `## Language` |
+| `requirements.md` | handoff `requirements.md` | |
+| `adrs.md` | handoff `adrs.md` | `docs/adr/` |
 
-PROJECT.md is shared team context. Per-issue specs stay on the issue.
+Clarify: no branch, no repo writes, **no handoff comment until approve**.
+
+Implement: read handoff → branch `workflow/issue-{n}` → code on branch → PATCH handoff with `implement-handoff.md`.
+
+Review: checkout `work_branch` → AI review in session → optional fixes on branch → PATCH handoff with `review-report.md` at **`proceed to human review`**.

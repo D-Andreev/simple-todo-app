@@ -11,72 +11,27 @@ metadata:
 
 # Workflow: Init
 
-One-time (or refresh) setup for a repo. Run via `/workflow-init` before using GitHub issue routines.
-
-Scaffolds workflow directories, seeds durable files, and writes `.claude/workflows/PROJECT.md`. Per-issue pipeline state lives on **GitHub issue comments** — not in the repo (see [handoff-format.md](../workflow-routines/handoff-format.md)).
+One-time setup. Writes durable **project facts** to the repo. Clarify builds specs in **session memory**, posts an **issue handoff comment once** on approve; implement merges `language.md` into `PROJECT.md`.
 
 **No application code changes.**
 
-## When to use
-
-| Situation | Action |
-|-----------|--------|
-| New repo, first-time setup | Full init: dirs + gotchas + PROJECT.md |
-| `init refresh` | Regenerate PROJECT.md only |
-| Plain `init` | Show setup; offer refresh if stack changed |
-
 ## Process
 
-### 1. Explore
+1. Scaffold `.claude/workflows/learnings/`
+2. Seed `gotchas.md` if missing
+3. Generate `PROJECT.md` — empty `## Language` (implement merges from handoff after clarify)
+4. Confirm: create labels `workflow:start`, `workflow:clarify`, `workflow:implement`, `workflow:review`, `workflow:human-review`; configure routines in `routines/`
 
-- `.claude/workflows/PROJECT.md`
-- `.claude/workflows/learnings/gotchas.md`
-
-If **`init refresh`**, skip to step 4.
-
-### 2. Scaffold (full init only)
-
-```
-.claude/workflows/learnings/
-```
-
-No `issues/` directory — handoff is on GitHub issues.
-
-### 3. Seed gotchas.md (full init only)
-
-If missing, write:
+## PROJECT.md `## Language`
 
 ```markdown
-# Gotchas & Learnings
+## Language
 
-Curated pitfalls from workflow runs. Consolidated after each pipeline — not a per-run log.
-
-No outstanding gotchas yet.
+_(Domain terms are added when implement merges clarify handoff.)_
 ```
 
-### 4. Generate PROJECT.md
-
-Gather facts from repo manifests, README, config, source layout. Write `.claude/workflows/PROJECT.md` (template below, ~50 lines max). Do not overwrite without refresh.
-
-### 5. Confirm
-
-1. What was created or refreshed
-2. Create labels: `workflow:start`, `workflow:clarify`, `workflow:implement`
-3. Configure clarify routine at claude.ai/code/routines
-4. Start: open issue + `workflow:start`
-
-## PROJECT.md template
-
-Same as ai-workflow — Overview, Main Features, Stack, Development, empty `## Language`.
+During clarify, terms live in session `language.md` → posted in handoff at approve.
 
 ## Writable files
 
-Full init: `.claude/workflows/learnings/gotchas.md`, `.claude/workflows/PROJECT.md`
-
-Init refresh: `.claude/workflows/PROJECT.md` only
-
-## Rules
-
-- **`## Language` starts empty**
-- Never invent features or commands
-- No application code changes
+`.claude/workflows/learnings/gotchas.md`, `.claude/workflows/PROJECT.md`
