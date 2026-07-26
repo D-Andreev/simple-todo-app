@@ -13,12 +13,15 @@ disable-model-invocation: true
 
 ```
 workflow:start → clarify → workflow:implement → implement → workflow:review
-  → AI review (session + fix loop) → workflow:human-review → human PR review
+  → AI review (session + fix loop) → workflow:human-review
+  → [optional local comprehension] → merge PR · close issue
 ```
 
-Only `workflow:human-review` has no routine.
+No routine for `workflow:human-review` or comprehension. Comprehension is an optional local skill — skip by merging and closing the issue.
 
 Docs: [handoff-format.md](handoff-format.md) · [state-schema.md](state-schema.md) · [label-rules.md](label-rules.md)
+
+**Label swap is always the last GitHub write** when a phase advances — prevents routines firing before handoff/PR are ready. Implement opens PRs as **draft**.
 
 ## Phase skills
 
@@ -29,5 +32,6 @@ Docs: [handoff-format.md](handoff-format.md) · [state-schema.md](state-schema.m
 | implement | workflow-implement | `workflow:implement` |
 | AI review | workflow-review | `workflow:review` |
 | human review | — | — (GitHub PR) |
+| comprehension | workflow-comprehension | — (local session, optional) |
 
 Prompts: repo `routines/`.

@@ -11,6 +11,7 @@ State and artifacts live in the **handoff issue comment**. See [handoff-format.m
 | `workflow:implement` | — | Implement routine |
 | `workflow:review` | — | AI Review routine |
 | `workflow:human-review` | human review | **none** — human reviews PR |
+| _(no label)_ | comprehension | **none** — optional local `/workflow-comprehension` |
 
 ## Handoff sections by writer
 
@@ -39,8 +40,12 @@ Review does **not** PATCH handoff during the fix loop — only when the user adv
 
 ## Implement policy
 
-Branch `workflow/issue-{n}` → code → PR → PATCH handoff → `workflow:review`.
+Branch `workflow/issue-{n}` → code → **draft PR** → PATCH handoff → short comment → **`workflow:review` label last**.
 
 ## Review policy
 
-Checkout `work_branch` → fresh-eyes pass → session findings → optional fixes → user **`proceed to human review`** → PATCH handoff → `workflow:human-review`.
+Checkout `work_branch` → fresh-eyes pass → session findings → optional fixes → user **`proceed to human review`** → PATCH handoff → short comment → **`workflow:human-review` label last**.
+
+## Comprehension policy (optional, local)
+
+No label, no routine, no handoff PATCH. Dev checks out `work_branch`, tests/preview locally, runs **`/workflow-comprehension`** in Claude Code. Pass, fail+retake, or `skip-comprehension` — then merge PR and close issue. Skipping comprehension entirely (merge + close) is valid.

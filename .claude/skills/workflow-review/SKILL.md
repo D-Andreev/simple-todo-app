@@ -111,9 +111,9 @@ Aliases: `approve review`, `human review` — treat as the same advance command.
    - Append history: `phase_completed`, `labels_updated`
    - Set `updated_at`
 3. **PATCH handoff comment** — full snapshot including `review-report.md` and updated `state.json`.
-4. **Swap labels** — remove `workflow:review`, add **`workflow:human-review`**.
-5. Post **short issue comment** — AI review complete; human should review PR; link to PR if known. Verdict one line.
-6. **Stop** — no further AI phases. Human reviews PR on GitHub.
+4. Post **short issue comment** — AI review complete; human should review PR when ready; link to draft PR if known. Verdict one line. Note PR is still draft until author marks ready.
+5. **Swap labels last** — remove `workflow:review`, add **`workflow:human-review`**. **Nothing else on GitHub after this.**
+6. **Stop** — no further AI phases. Human reviews PR on GitHub after author marks ready.
 
 ## review-report.md template
 
@@ -187,4 +187,5 @@ Human PR review — {one line: verdict and remaining risk}
 - Reference specific files and lines in findings.
 - **Never PATCH handoff before `proceed to human review`.**
 - **Never run human review for the user** — only set `workflow:human-review` and stop.
+- **Label swap is always last** when advancing phases — see label-rules.md.
 - Never leave two `workflow:*` labels on an issue.
