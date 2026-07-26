@@ -32,3 +32,21 @@ export function handleDelete(id: string): string {
   storage.deleteTodo(id);
   return `Deleted todo ${id.substring(0, 8)}`;
 }
+
+export function handleFilter(searchTerm: string): string {
+  if (!searchTerm.trim()) {
+    throw new Error('Filter term cannot be empty');
+  }
+  const todos = storage.getTodos();
+  const lowerSearch = searchTerm.toLowerCase();
+  const matches = todos.filter((todo) => todo.title.toLowerCase().includes(lowerSearch));
+
+  if (matches.length === 0) {
+    return `No todos match "${searchTerm}".`;
+  }
+
+  return matches
+    .sort((a, b) => a.createdAt - b.createdAt)
+    .map((todo) => `${todo.id.substring(0, 8)} ${todo.state} ${todo.title}`)
+    .join('\n');
+}

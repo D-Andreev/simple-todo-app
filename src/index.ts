@@ -75,4 +75,17 @@ program
     }
   });
 
+program
+  .command('filter <name>')
+  .description('Filter todos by name')
+  .action((name: string) => {
+    try {
+      const message = commands.handleFilter(name);
+      console.log(message);
+    } catch (error) {
+      console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      process.exit(1);
+    }
+  });
+
 program.parse();

@@ -134,4 +134,56 @@ describe('Commands', () => {
       );
     });
   });
+
+  describe('handleFilter', () => {
+    test('throws when search term is empty', () => {
+      expect(() => commands.handleFilter('')).toThrow('Filter term cannot be empty');
+    });
+
+    test('throws when search term is whitespace only', () => {
+      expect(() => commands.handleFilter('   ')).toThrow('Filter term cannot be empty');
+    });
+
+    test('returns matching todos case-insensitive substring', () => {
+      storage.addTodo('Buy groceries', 'id-1');
+      storage.addTodo('Walk dog', 'id-2');
+      storage.addTodo('Buy milk', 'id-3');
+
+      const message = commands.handleFilter('buy');
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(2);
+      expect(lines[0]).toContain('Buy groceries');
+      expect(lines[1]).toContain('Buy milk');
+    });
+
+    test('returns no matches message when nothing matches', () => {
+      storage.addTodo('Buy groceries', 'id-1');
+      storage.addTodo('Walk dog', 'id-2');
+
+      const message = commands.handleFilter('xyz');
+      expect(message).toBe('No todos match "xyz".');
+    });
+
+    test('preserves creation order in results', () => {
+      storage.addTodo('Apple', 'id-1');
+      storage.addTodo('Apricot', 'id-2');
+      storage.addTodo('Avocado', 'id-3');
+
+      const message = commands.handleFilter('a');
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(3);
+      expect(lines[0]).toContain('Apple');
+      expect(lines[1]).toContain('Apricot');
+      expect(lines[2]).toContain('Avocado');
+    });
+
+    test('matches case-insensitively', () => {
+      storage.addTodo('Buy Groceries', 'id-1');
+      storage.addTodo('walk dog', 'id-2');
+
+      const message = commands.handleFilter('GROC');
+      expect(message).toContain('Buy Groceries');
+      expect(message).not.toContain('walk dog');
+    });
+  });
 });

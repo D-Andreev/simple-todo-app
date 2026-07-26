@@ -36,3 +36,6 @@ _Avoid_: Status, condition, flag
 
 **Storage**: A JSON file at `~/.simple-todo/todos.json` on the user's machine, persisting todos between CLI invocations.
 _Avoid_: Database, cloud sync, multi-user storage
+
+**Filter**: A dedicated CLI command (`todo filter <name>`) that returns all todos whose title contains a name search term, case-insensitively.
+_Avoid_: Search, query, grep
