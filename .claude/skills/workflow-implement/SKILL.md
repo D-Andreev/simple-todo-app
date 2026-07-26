@@ -33,7 +33,7 @@ If preconditions fail, post a short issue comment explaining what is missing. Do
 2. **Read handoff** — parse all sections per handoff-format Read protocol.
 3. **Verify init** — `.claude/workflows/PROJECT.md` must exist.
 4. **Record** `issue_number`, `handoff_comment_id`, `base_branch` and `mode` from handoff `state.json`.
-5. **Post session comment** (optional but recommended) — link to this Claude Code session; note work branch name when created.
+5. **Post session comment** — separate issue comment with a link to this Claude Code session URL and planned branch `workflow/issue-{n}`. Do not PATCH the handoff yet.
 6. **Prepare repo on work branch** (steps below).
 7. Run **feature** or **bugfix** process.
 8. **Complete sequence** (end).
@@ -133,6 +133,7 @@ Use `git diff {base_branch}...HEAD` when filling Changes.
    - `status`: `awaiting_human`
    - `workflow_label`: `workflow:review`
    - `work_branch`: `workflow/issue-{n}`
+   - `last_session_url`: this session URL
    - Append history: `phase_started` (if not recorded), `phase_completed`, `labels_updated`
    - Set `updated_at`
 3. **PATCH handoff comment** — full snapshot: all clarify sections plus `implement-handoff.md` and updated `state.json`.
@@ -171,6 +172,7 @@ Preserve existing handoff sections when PATCHing — include full snapshot every
 - Follow PROJECT.md and existing code conventions.
 - Prefer focused diffs; no drive-by refactors.
 - Never skip handoff read or `requirements_approved` check.
+- **Post session comment at start** — link to this session before repo/branch work.
 - Never leave two `workflow:*` labels on an issue.
 - **Label swap is always last** when advancing phases — see label-rules.md.
 - **Always create PR as draft** (`gh pr create --draft`).

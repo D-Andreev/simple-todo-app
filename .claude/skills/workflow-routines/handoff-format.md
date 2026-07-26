@@ -95,9 +95,9 @@ gh api --method PATCH repos/{owner}/{repo}/issues/comments/{comment_id} -f body=
 2. If missing — clarify not finished yet; implement must not run
 3. Parse `### {filename}` sections → fenced blocks
 
-## Session comment (separate, at clarify start)
+## Session comment (separate, at phase start)
 
-Human session URL — posted when clarify **starts**, not the handoff. See [label-rules.md](label-rules.md).
+Claude Code session URL — posted when **clarify**, **implement**, or **review** starts; not the handoff. See [label-rules.md](label-rules.md).
 
 ## Repo vs issue
 

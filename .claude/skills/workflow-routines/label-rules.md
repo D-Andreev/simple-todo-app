@@ -51,7 +51,7 @@ Record `labels_updated` in handoff `state.json` when PATCHing.
 | Phase | Comment |
 |-------|---------|
 | Clarify start | Session URL; handoff posted only on approve |
-| Implement start | Optional session URL + work branch |
+| Implement start | Session URL + planned branch |
 | Implement complete | PR link; `workflow:review` set |
 | Review start | Session URL + branch/PR |
 | Review complete | Verdict one-liner; `workflow:human-review` set |
