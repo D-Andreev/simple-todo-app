@@ -22,4 +22,4 @@ list always sorts by createdAt. Options like `--sort title` or `--sort state` wo
 - [ ] No changes to the underlying `Todo` object shape (`id`, `title`, `state`, `createdAt`) — ordering only
 
 ## Approved by human
-- [ ] Pending — reply `approve requirements` when ready
+- [x] Approved

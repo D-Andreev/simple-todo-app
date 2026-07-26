@@ -5,15 +5,15 @@
   "mode": "feature",
   "task": "List sorting and grouping",
   "phase": "clarify",
-  "status": "ai_running",
-  "workflow_label": "workflow:clarify",
+  "status": "done",
+  "workflow_label": "workflow:implement",
   "base_branch": "main",
   "work_branch": "workflow/issue-22",
   "handoff_path": "workflow/issues/22",
-  "requirements_approved": false,
+  "requirements_approved": true,
   "clarify_rounds": 4,
   "created_at": "2026-07-26T19:24:04.000Z",
-  "updated_at": "2026-07-26T19:35:00.000Z",
+  "updated_at": "2026-07-26T19:35:51.000Z",
   "last_session_url": "https://claude.ai/code/session_014tZ5k68q2iRHK49CWFvjQ7",
   "history": [
     {
@@ -51,6 +51,24 @@
       "event": "started",
       "at": "2026-07-26T19:35:00.000Z",
       "note": "Q4 answered — case-insensitive title sort, createdAt tiebreaker; requirements ready for approval"
+    },
+    {
+      "phase": "clarify",
+      "event": "human_approved",
+      "at": "2026-07-26T19:35:51.000Z",
+      "note": "requirements.md approved by human"
+    },
+    {
+      "phase": "clarify",
+      "event": "phase_completed",
+      "at": "2026-07-26T19:35:51.000Z",
+      "note": "clarify complete"
+    },
+    {
+      "phase": "clarify",
+      "event": "labels_updated",
+      "at": "2026-07-26T19:35:51.000Z",
+      "note": "workflow:clarify -> workflow:implement"
     }
   ],
   "human_feedback": [],
