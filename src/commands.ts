@@ -38,16 +38,35 @@ export function handleDelete(id: string): string {
   return `Deleted todo ${id.substring(0, 8)}`;
 }
 
-export function handleFilter(searchTerm: string): string {
-  if (!searchTerm.trim()) {
-    throw new Error('Filter term cannot be empty');
+export function handleFilter(searchTerm?: string, state?: string): string {
+  if (state !== undefined && state !== 'pending' && state !== 'done') {
+    throw new Error('Invalid state. Valid values: pending, done');
   }
+
+  const hasName = searchTerm !== undefined;
+  const trimmedTerm = hasName ? searchTerm.trim() : '';
+  const nameFilterActive = trimmedTerm.length > 0;
+
+  if (!nameFilterActive && state === undefined) {
+    throw new Error(hasName ? 'Filter term cannot be empty' : 'Provide a name or --state to filter by');
+  }
+
   const todos = storage.getTodos();
-  const lowerSearch = searchTerm.toLowerCase();
-  const matches = todos.filter((todo) => todo.title.toLowerCase().includes(lowerSearch));
+  const lowerSearch = trimmedTerm.toLowerCase();
+  const matches = todos.filter((todo) => {
+    const nameMatches = !nameFilterActive || todo.title.toLowerCase().includes(lowerSearch);
+    const stateMatches = state === undefined || todo.state === state;
+    return nameMatches && stateMatches;
+  });
 
   if (matches.length === 0) {
-    return `No todos match "${searchTerm}".`;
+    if (nameFilterActive && state) {
+      return `No todos match "${searchTerm}" with state "${state}".`;
+    }
+    if (nameFilterActive) {
+      return `No todos match "${searchTerm}".`;
+    }
+    return `No todos with state "${state}".`;
   }
 
   return matches

@@ -204,5 +204,80 @@ describe('Commands', () => {
       const message = commands.handleFilter('a');
       expect(message).toContain(`(created: ${expectedIso1})`);
     });
+
+    test('throws when neither name nor state is provided', () => {
+      expect(() => commands.handleFilter(undefined)).toThrow(
+        'Provide a name or --state to filter by'
+      );
+    });
+
+    test('throws on invalid state value', () => {
+      expect(() => commands.handleFilter(undefined, 'bogus')).toThrow(
+        'Invalid state. Valid values: pending, done'
+      );
+      expect(() => commands.handleFilter('buy', 'bogus')).toThrow(
+        'Invalid state. Valid values: pending, done'
+      );
+    });
+
+    test('filters by name and state together', () => {
+      storage.addTodo('Buy milk', 'id-1');
+      storage.addTodo('Buy eggs', 'id-2');
+      storage.markTodoDone('id-1');
+
+      const message = commands.handleFilter('buy', 'done');
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toContain('Buy milk');
+    });
+
+    test('filters by state only when no name is provided', () => {
+      storage.addTodo('Buy milk', 'id-1');
+      storage.addTodo('Buy eggs', 'id-2');
+      storage.markTodoDone('id-1');
+
+      const message = commands.handleFilter(undefined, 'pending');
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toContain('Buy eggs');
+    });
+
+    test('filters by state only when name is an empty string', () => {
+      storage.addTodo('Buy milk', 'id-1');
+      storage.addTodo('Buy eggs', 'id-2');
+      storage.markTodoDone('id-1');
+
+      const message = commands.handleFilter('', 'done');
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toContain('Buy milk');
+    });
+
+    test('returns no-match message when state filter matches nothing', () => {
+      storage.addTodo('Buy milk', 'id-1');
+
+      const message = commands.handleFilter(undefined, 'done');
+      expect(message).toBe('No todos with state "done".');
+    });
+
+    test('returns no-match message when name and state combined match nothing', () => {
+      storage.addTodo('Buy milk', 'id-1');
+
+      const message = commands.handleFilter('buy', 'done');
+      expect(message).toBe('No todos match "buy" with state "done".');
+    });
+
+    test('preserves creation order when filtering by state', () => {
+      storage.addTodo('Apple', 'id-1');
+      storage.addTodo('Apricot', 'id-2');
+      storage.addTodo('Avocado', 'id-3');
+
+      const message = commands.handleFilter(undefined, 'pending');
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(3);
+      expect(lines[0]).toContain('Apple');
+      expect(lines[1]).toContain('Apricot');
+      expect(lines[2]).toContain('Avocado');
+    });
   });
 });

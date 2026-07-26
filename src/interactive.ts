@@ -9,7 +9,7 @@ const HELP_TEXT = [
   'done <id>                Mark a todo as done',
   'update <id> <newTitle>   Update a todo\'s title',
   'delete <id>              Delete a todo',
-  'filter <name>            Filter todos by name',
+  'filter [name] [--state <state>]  Filter todos by name and/or state',
   'exit                     Exit interactive mode',
   'quit                     Exit interactive mode',
 ].join('\n');
@@ -27,8 +27,18 @@ const handlers: Record<string, Handler> = {
     return commands.handleUpdate(id, newTitle);
   },
   delete: (rest) => commands.handleDelete(rest.trim()),
-  filter: (rest) => commands.handleFilter(rest),
+  filter: (rest) => {
+    const { name, state } = parseFilterArgs(rest);
+    return commands.handleFilter(name, state);
+  },
 };
+
+function parseFilterArgs(rest: string): { name?: string; state?: string } {
+  const stateMatch = rest.match(/--state\s+(\S+)/);
+  const state = stateMatch ? stateMatch[1] : undefined;
+  const nameOnly = (stateMatch ? rest.slice(0, stateMatch.index) : rest).trim();
+  return { name: nameOnly === '' ? undefined : nameOnly, state };
+}
 
 export function runInteractive(): void {
   const rl = readline.createInterface({
