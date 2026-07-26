@@ -39,7 +39,7 @@ State in the review-report header: **"Fresh-eyes: artifacts and diff only."**
 
 1. **Read issue**; checkout **`workflow/issue-{n}`**; pull latest.
 2. Read `workflow/issues/{n}/` handoff files.
-3. **Post session comment** (short) — e.g. `**Review** — [session]({url}) · PR #{pr}`.
+3. **Post session comment** — e.g. `**Review** — Fresh eyes on the diff. [Session]({session_url}) · [PR #{pr}]({pr_url})`
 4. **Commit handoff (start)** — update `state.json`: `phase: review`, `status: ai_running`, history `started`; push.
 5. **Find PR** — `gh pr list --head workflow/issue-{n} --json number,url`.
 6. **Review pass** — scenario verification + principles review (below).
@@ -47,7 +47,7 @@ State in the review-report header: **"Fresh-eyes: artifacts and diff only."**
 8. **Write `review-report.md`** to `workflow/issues/{n}/`. No code fixes during review.
 9. **Post short PR comment** and **submit PR review** (below).
 10. **Update `state.json`** — `review_verdict`, `status: done`, history; commit + push with `review-report.md`.
-11. Post **short issue comment** — verdict + PR review link.
+11. Post **short issue comment** — verdict in plain language + review link, e.g. `**Review: APPROVE WITH NOTES** — Shippable; see [review]({review_url}).`
 12. **Swap labels last** — **`workflow:human-review`**. **Stop.**
 
 ## Review pass

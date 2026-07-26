@@ -31,7 +31,7 @@ If preconditions fail, post short issue comment. **Do not create a new branch.**
 2. **Checkout `workflow/issue-{n}`**; pull latest.
 3. Read `workflow/issues/{n}/` per handoff-format.
 4. Verify `workflow/PROJECT.md` on branch.
-5. Post short session comment — `**Implement** — [session]({url})`.
+5. Post session comment (Claude Code voice) — e.g. `**Implement** — Building from the approved spec on [\`workflow/issue-{n}\`]({branch_url}). [Follow along]({session_url}).`
 6. **Commit handoff (start)** — update `state.json`: `phase: implement`, `status: ai_running`, history `started`; push.
 7. Merge language → PROJECT.md; commit ADRs if present.
 8. Feature or bugfix process.
@@ -59,7 +59,7 @@ Write to `workflow/issues/{n}/implement-handoff.md` at complete. (Use feature te
 2. Update `state.json` — `status: done`, `workflow_label: workflow:review`, history.
 3. Commit + push handoff files.
 4. `gh pr create --draft --head workflow/issue-{n} --base {base_branch} …`
-5. Short issue comment — `**Implement complete** — draft PR #{pr}`.
+5. Short issue comment — e.g. `**Draft PR ready** — [#{pr}]({pr_url}) is open; still draft until you've tested locally.`
 6. **Swap labels last** — `workflow:review`. **Stop.**
 
 ## Writable locations

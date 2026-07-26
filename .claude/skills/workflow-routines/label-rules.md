@@ -20,7 +20,7 @@ When a phase **advances**, **label swap is usually last** — after handoff comm
 
 Record `labels_updated` in `state.json` when committing; swap labels after all other writes.
 
-**Handoff:** branch `workflow/issue-{n}`, files under `workflow/issues/{n}/`. Clarify **creates branch first**; all phases commit handoff there. Issue comments human-only — [handoff-format.md](handoff-format.md).
+**Handoff:** branch `workflow/issue-{n}`, files under `workflow/issues/{n}/`. Issue comments: short, engaging, Claude Code voice — [handoff-format.md](handoff-format.md).
 
 ## Label swap
 
@@ -39,16 +39,18 @@ gh issue edit 42 --remove-label "workflow:review" --add-label "workflow:human-re
 | `workflow:implement` | Implement |
 | `workflow:review` | AI Review |
 
-## Session comments (human-only)
+## Session comments (human-only voice)
+
+Informative, short, engaging — Claude Code style (warm, direct, lightly playful, professional). See examples in [handoff-format.md](handoff-format.md#issue-comments-humans-only).
 
 | Phase | Example |
 |-------|---------|
-| Clarify start | `**Clarify** — [session](url) · branch workflow/issue-{n}` |
-| Clarify approve | `**Clarify complete** — requirements approved.` |
-| Implement start | `**Implement** — [session](url)` |
-| Implement complete | `**Implement complete** — draft PR #…` |
-| Review start | `**Review** — [session](url) · PR #…` |
-| Review complete | `**Review complete** — {VERDICT}` |
+| Clarify start | `**Clarify** — Let's sharpen the requirements. [Session](…) · specs on [\`workflow/issue-{n}\`](https://github.com/owner/repo/tree/…)` |
+| Clarify approve | `**Requirements approved** — Spec locked; implement is next.` |
+| Implement start | `**Implement** — Building on [\`workflow/issue-{n}\`](branch_url). [Session](session_url).` |
+| Implement complete | `**Draft PR ready** — [#17](pr_url); still draft until you've tested locally.` |
+| Review start | `**Review** — Fresh eyes on the diff. [Session](…) · [PR #17](…)` |
+| Review complete | `**Review: APPROVE** — [Details](review_url). Ready after your local pass.` |
 
 ## Advance commands
 

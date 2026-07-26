@@ -66,7 +66,11 @@ Same as A/B.
    - Write `state.json` per [fixture](../workflow-routines/fixtures/state-example-clarify-start.json)
    - Write initial `task.md`, `language.md`, `requirements.md`
    - Commit + push
-5. **Post session comment** — e.g. `**Clarify** — [session]({url}) · branch \`workflow/issue-{n}\``.
+5. **Post session comment** — Claude Code voice: warm, short, informative. **Must link** session + branch. See handoff-format examples.
+
+   ```markdown
+   **Clarify** — Let's sharpen the requirements together. [Open the session]({SESSION_URL}) — one question at a time. Specs live on [`workflow/issue-{n}`]({BRANCH_URL}).
+   ```
 6. Ask **first question**.
 
 ## Grilling loop
@@ -93,7 +97,7 @@ Checkout `workflow/issue-{n}`, read handoff files, or use session comment link.
 2. Finalize `state.json` — `requirements_approved: true`, `status: done`, history.
 3. Check approval in `requirements.md`.
 4. Commit + push.
-5. Post short comment — `**Clarify complete** — requirements approved.`
+5. Post short comment — e.g. `**Requirements approved** — Spec is locked; implement picks up next.`
 6. **Swap labels last** — `workflow:implement`. **Stop.**
 
 ## requirements.md template
@@ -119,7 +123,7 @@ Checkout `workflow/issue-{n}`, read handoff files, or use session comment link.
 
 | When | Git | Issue |
 |------|-----|-------|
-| Start | CREATE branch + init commit | Short session comment |
+| Start | CREATE branch + init commit | Session comment with **session + branch links** |
 | Q&A turn | COMMIT + push handoff | None |
 | Approve | COMMIT + push | Short line → label swap last |
 
@@ -128,6 +132,7 @@ Checkout `workflow/issue-{n}`, read handoff files, or use session comment link.
 - Never write application source code.
 - **Only write** `workflow/issues/{n}/` during clarify.
 - **Create branch at start** — before session comment and Q1.
+- **Issue comments:** short, engaging, Claude Code voice — see handoff-format. Clarify start must link session + branch.
 - **Commit handoff after every Q&A turn** and at approve.
 - **Never put JSON or artifacts in issue comments.**
 - If push fails, short issue comment and **stop**; do not swap to `workflow:implement`.

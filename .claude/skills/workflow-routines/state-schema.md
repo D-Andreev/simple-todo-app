@@ -64,7 +64,7 @@ All phases use the **same branch** clarify created. Implement and review **never
 
 ## Issue comments (not state)
 
-Short human lines only.
+Short, informative, engaging — Claude Code voice. See [handoff-format.md](handoff-format.md#issue-comments-humans-only).
 
 ## Implement policy
 

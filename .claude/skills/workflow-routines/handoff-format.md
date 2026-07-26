@@ -34,25 +34,40 @@ During clarify, **only write** under `workflow/issues/{n}/` — not application 
 
 ## Issue comments (humans only)
 
-One to three lines. No JSON, no artifact bodies.
+**Voice:** informative, short, engaging — Claude Code style: warm, direct, lightly playful, always professional. One to three lines. No JSON or artifact bodies. **Always use markdown links** where required.
+
+**Do:** tell humans what phase just started or finished, what to do next, link session/branch/PR.  
+**Don't:** dump specs, post walls of text, use more than one emoji per comment, or sound like a status bot.
+
+### Clarify start (required links)
+
+Post **after** branch push. Must include **both** links:
+
+1. **Session** — this Claude Code session URL (record in `state.json` → `last_session_url`).
+2. **Branch** — `https://github.com/{owner}/{repo}/tree/workflow/issue-{n}` (`gh repo view --json nameWithOwner -q .nameWithOwner`).
+
+**Example:**
+
+```markdown
+**Clarify** — Let's sharpen the requirements together. [Open the session](https://claude.ai/code/…) — one question at a time. Specs live on [`workflow/issue-42`](https://github.com/acme/app/tree/workflow/issue-42).
+```
+
+Optional anchor: `<!-- ai-workflow:handoff v4 issue=42 branch=workflow/issue-42 -->`
+
+### All phase comments
+
+Adapt tone; keep links. Examples:
 
 | When | Example |
 |------|---------|
-| Clarify start | `**Clarify** — [session]({url}) · branch \`workflow/issue-{n}\`` |
-| Clarify approve | `**Clarify complete** — requirements approved.` |
-| Implement start | `**Implement** — [session]({url})` |
-| Implement complete | `**Implement complete** — draft PR #{pr}` |
-| Review start | `**Review** — [session]({url}) · PR #{pr}` |
-| Review complete | `**Review complete** — {VERDICT} · [PR review]({url})` |
-| Handoff push failure | `**{Phase}** — handoff push failed: {one-line error}. Session: {url}` |
-
-PR comments stay short; full detail in `workflow/issues/{n}/review-report.md`.
-
-Optional invisible anchor in clarify-start comment:
-
-```html
-<!-- ai-workflow:handoff v4 issue=42 branch=workflow/issue-42 -->
-```
+| Clarify approve | `**Requirements approved** — Spec is locked; implement picks up next. Reply in the session if anything looks off.` |
+| Implement start | `**Implement** — Building from the approved spec on [\`workflow/issue-42\`]({branch_url}). [Follow along in session]({session_url}).` |
+| Implement complete | `**Draft PR ready** — [#17]({pr_url}) is open for you; still draft until you've tested locally. AI review runs next.` |
+| Review start | `**Review** — Fresh eyes on the diff. [Session]({session_url}) · [PR #17]({pr_url})` |
+| Review complete (approve) | `**Review: APPROVE** — Looks good to merge after your local pass. [PR review]({review_url})` |
+| Review complete (notes) | `**Review: APPROVE WITH NOTES** — Shippable; a few non-blocking nits in the [review]({review_url}).` |
+| Review complete (changes) | `**Review: REQUEST CHANGES** — Must-fix items in the [review]({review_url}); ping me in session after fixes.` |
+| Handoff push failure | `**{Phase}** — Handoff didn't push ({one-line error}). Nothing else ran — [session]({session_url}) to retry.` |
 
 ## Write protocol
 
@@ -90,7 +105,7 @@ git commit -m "workflow(issue-{n}): clarify — init handoff"
 git push -u origin workflow/issue-{n}
 ```
 
-3. Post short session comment (include branch name).
+3. Post short session comment with **both markdown links** (session + branch). See handoff-format **Clarify start comment**.
 4. Ask first question.
 
 ### Clarify Q&A (each human answer)
