@@ -125,10 +125,11 @@ Each turn after an answer:
    - `status`: `done` (clarify complete)
    - Append `human_approved`, `labels_updated` (intended next label)
 3. Check approval box in `requirements.md`.
-4. **POST handoff comment** — single comment with marker `<!-- ai-workflow:handoff v1 issue={n} -->` and all sections: `state.json`, `task.md`, `language.md`, `requirements.md`, `adrs.md` if any. See handoff-format. Record `handoff_comment_id` in the posted `state.json` section.
-5. Post **short** approval comment (separate from handoff).
-6. **Swap labels last** — remove `workflow:clarify`, add **`workflow:implement`** (triggers implement routine). **Nothing else on GitHub after this.**
-7. **Stop.**
+4. **POST handoff comment** — single comment with marker `<!-- ai-workflow:handoff v1 issue={n} -->` and all sections: `state.json`, `task.md`, `language.md`, `requirements.md`, `adrs.md` if any. See handoff-format.
+5. **PATCH same comment immediately** — read comment `id` from POST response; set `handoff_comment_id` in `state.json`, append history `handoff_created`. Re-send full snapshot.
+6. Post **short** approval comment (separate from handoff).
+7. **Swap labels last** — remove `workflow:clarify`, add **`workflow:implement`** (triggers implement routine). **Nothing else on GitHub after this.**
+8. **Stop.**
 
 ## requirements.md template
 
@@ -172,7 +173,7 @@ Each turn after an answer:
 |------|--------|
 | Start | **Label swap first** → session comment → first question |
 | Each Q&A turn | **Nothing on GitHub** |
-| Approve | POST handoff → short approval comment → **label swap last** |
+| Approve | POST handoff → PATCH `handoff_comment_id` → approval comment → **label swap last** |
 
 ## Hard rules
 
@@ -180,6 +181,7 @@ Each turn after an answer:
 - **Never write or commit any repo file.**
 - **Never create a branch.**
 - **Never post the handoff comment before `approve requirements`.**
+- **POST handoff at approve, then PATCH** same comment with `handoff_comment_id` from API response.
 - Never run tests, lint, migrations, or deploys.
 - Never create `CONTEXT.md`.
 - Never leave two `workflow:*` labels on an issue.

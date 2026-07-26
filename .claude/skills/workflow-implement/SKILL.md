@@ -32,11 +32,12 @@ If preconditions fail, post a short issue comment explaining what is missing. Do
 1. **Read the issue** — number, title, URL, labels (`gh issue view` or webhook).
 2. **Read handoff** — parse all sections per handoff-format Read protocol.
 3. **Verify init** — `workflow/PROJECT.md` must exist.
-4. **Record** `issue_number`, `handoff_comment_id`, `base_branch` and `mode` from handoff `state.json`.
-5. **Post session comment** — separate issue comment with a link to this Claude Code session URL and planned branch `workflow/issue-{n}`. Do not PATCH the handoff yet.
-6. **Prepare repo on work branch** (steps below).
-7. Run **feature** or **bugfix** process.
-8. **Complete sequence** (end).
+4. **Record** `issue_number`, `handoff_comment_id`, `base_branch` and `mode` from handoff `state.json` (or find comment by marker).
+5. **Post session comment** — separate issue comment with session URL and planned branch `workflow/issue-{n}`.
+6. **PATCH handoff (start)** — update `state.json`: `phase: implement`, `status: ai_running`, `last_session_url`, append history `started`. Full snapshot; preserve all clarify sections.
+7. **Prepare repo on work branch** (steps below).
+8. Run **feature** or **bugfix** process.
+9. **Complete sequence** (end).
 
 ## Prepare repo (before coding)
 
@@ -130,13 +131,13 @@ Use `git diff {base_branch}...HEAD` when filling Changes.
 1. Write `implement-handoff.md` (in memory).
 2. Update handoff `state.json`:
    - `phase`: `implement`
-   - `status`: `awaiting_human`
+   - `status`: `done`
    - `workflow_label`: `workflow:review`
    - `work_branch`: `workflow/issue-{n}`
    - `last_session_url`: this session URL
-   - Append history: `phase_started` (if not recorded), `phase_completed`, `labels_updated`
+   - Append history: `phase_completed`, `labels_updated` (intended `workflow:review`)
    - Set `updated_at`
-3. **PATCH handoff comment** — full snapshot: all clarify sections plus `implement-handoff.md` and updated `state.json`.
+3. **PATCH handoff comment** — **full snapshot**: all clarify sections + `implement-handoff.md` + updated `state.json`. Use `handoff_comment_id`; never POST a new handoff comment.
 4. **Open draft PR** (recommended):
 
    ```bash
@@ -160,7 +161,7 @@ Use `git diff {base_branch}...HEAD` when filling Changes.
 | Location | Files |
 |----------|-------|
 | Repo (work branch) | application code, tests, `workflow/PROJECT.md`, `docs/adr/` |
-| Issue handoff (PATCH) | updated `state.json`, `implement-handoff.md` |
+| Issue handoff (PATCH) | `state.json` at start + complete; `implement-handoff.md` at complete |
 | GitHub | labels, session/complete comments, PR |
 
 Preserve existing handoff sections when PATCHing — include full snapshot every time.
@@ -172,6 +173,7 @@ Preserve existing handoff sections when PATCHing — include full snapshot every
 - Follow PROJECT.md and existing code conventions.
 - Prefer focused diffs; no drive-by refactors.
 - Never skip handoff read or `requirements_approved` check.
+- **PATCH handoff at start and complete** — same comment; always update `state.json`. Never POST a new handoff comment.
 - **Post session comment at start** — link to this session before repo/branch work.
 - Never leave two `workflow:*` labels on an issue.
 - **Label swap is always last** when advancing phases — see label-rules.md.

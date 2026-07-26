@@ -18,6 +18,8 @@ When a phase **advances** to the next phase, the **label swap is usually the las
 
 Record `labels_updated` in handoff `state.json` when PATCHing (intended next label); perform the physical swap immediately after all other writes in the same turn.
 
+**Handoff:** one comment per issue. Clarify POSTs; implement and review **PATCH** it at phase **start** and **complete**, always updating `state.json`. See [handoff-format.md](handoff-format.md).
+
 ## Label swap
 
 ```bash
@@ -56,14 +58,13 @@ Record `labels_updated` in handoff `state.json` when PATCHing.
 | Implement start | Session URL + planned branch |
 | Implement complete | PR link; `workflow:review` set |
 | Review start | Session URL + branch/PR |
-| Review complete | Verdict one-liner; `workflow:human-review` set |
+| Review complete | Verdict one-liner on issue; full verdict on PR review |
 
 ## Advance commands (in Claude Code session)
 
 | Phase | User says | Effect |
 |-------|-----------|--------|
-| Clarify | `approve requirements` | POST handoff → approval comment → **`workflow:implement` last** |
-| Review | `proceed to human review` / `approve review` | PATCH handoff → complete comment → **`workflow:human-review` last** |
+| Clarify | `approve requirements` | POST handoff → PATCH `handoff_comment_id` → approval comment → **`workflow:implement` last** |
 
 ## Bugfix mode
 

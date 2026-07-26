@@ -2,9 +2,9 @@
 name: workflow-review
 description: >-
   AI review phase for GitHub-issue workflows. Fresh-eyes scenario verification
-  and principles review on the work branch diff; interactive fix loop in
-  session until the user proceeds to human review. Use when a routine fires on
-  workflow:review or for issue $0.
+  and principles review on the work branch; posts a short PR comment and submits
+  an approve, approve-with-notes, or request-changes review. Use when a routine
+  fires on workflow:review or for issue $0.
 disable-model-invocation: true
 metadata:
   internal: true
@@ -12,11 +12,9 @@ metadata:
 
 # Workflow: Review
 
-Independent **fresh-eyes** review of the PR branch, then an **interactive session** — present findings, apply fixes when the user asks, repeat until they **`proceed to human review`**.
+Independent **fresh-eyes** review of the PR branch. Run once, autonomously — **no interactive fix loop**, **no waiting for human approval** in the session.
 
 Triggered by label **`workflow:review`**. Reads the issue handoff comment. See [handoff-format.md](../workflow-routines/handoff-format.md), [state-schema.md](../workflow-routines/state-schema.md), [label-rules.md](../workflow-routines/label-rules.md).
-
-Adapted from ai-workflow **workflow-review** — same verification and principles pass; delivery is **session-first** with optional fix iterations on `work_branch`.
 
 ## Preconditions
 
@@ -37,20 +35,31 @@ If preconditions fail, post a short issue comment and stop.
 
 State in the review-report header: **"Fresh-eyes: artifacts and diff only."**
 
-## Start sequence
+## Sequence (autonomous — complete in one run)
 
 1. **Read issue** and **handoff** (all sections).
 2. **Checkout `work_branch`** from handoff state (`workflow/issue-{n}`). Pull latest if remote exists.
-3. **Post session comment** — link to this session; note branch and PR if known.
-4. Run **initial review pass** (below) — present findings **in this session** (summary + top issues; not the full report dump unless helpful).
-5. Tell the user they can:
-   - Ask you to **fix** specific items (or "fix all critical")
-   - Ask follow-up questions
-   - Reply **`proceed to human review`** when ready for human PR review (no more AI fixes this round)
+3. **Post session comment** on the issue — link to this session; note branch and PR number if known.
+4. **PATCH handoff (start)** — update `state.json`: `phase: review`, `status: ai_running`, `last_session_url`, append history `started`. Full snapshot; preserve all prior sections.
+5. **Find PR** — `gh pr list --head workflow/issue-{n} --json number,url` (or from implement-handoff / issue links).
+6. **Review pass** — scenario verification + principles review (below).
+7. **Verdict** — `APPROVE` | `APPROVE WITH NOTES` | `REQUEST CHANGES`.
+8. **Write `review-report.md`** (full detail — template below). No code fixes on branch during review.
+9. **Post short PR comment** and **submit PR review** (below).
+10. **Update handoff `state.json`**:
+   - `phase`: `review`
+   - `status`: `done`
+   - `workflow_label`: `workflow:human-review`
+   - `review_verdict`: `approve` | `approve_with_notes` | `request_changes`
+   - `last_session_url`: this session URL
+   - Append history: `phase_completed`, `labels_updated`, `pr_review_submitted`
+   - Set `updated_at`
+11. **PATCH handoff (complete)** — full snapshot including `review-report.md` and updated `state.json`. Use `handoff_comment_id`; never POST a new handoff comment.
+12. Post **short issue comment** — one line: verdict + link to PR review.
+13. **Swap labels last** — remove `workflow:review`, add **`workflow:human-review`**. **Nothing else on GitHub after this.**
+14. **Stop.**
 
-**Do not PATCH handoff or change labels until `proceed to human review`.**
-
-## Initial review pass
+## Review pass
 
 ### 1. Scenario verification
 
@@ -65,13 +74,13 @@ State in the review-report header: **"Fresh-eyes: artifacts and diff only."**
    - Targeted tests for changed areas
    - Integration/e2e if contracts or cross-module flows touched
    - Manual trace if tests insufficient
-4. Record results for the report (in session memory).
+4. Record results for the report.
 
 ### 2. Principles review (same pass)
 
 After scenarios, review:
 
-1. Open 🔴/🟡 from scenario testing (severity + fix approach — do not fix yet unless user asked)
+1. Open 🔴/🟡 from scenario testing (severity + fix approach)
 2. Areas scenarios cannot judge (design, security boundaries, maintainability)
 3. Checklist: **Security**, **Design / maintainability**, **Conventions**
 
@@ -79,41 +88,55 @@ Apply stack-idiomatic practices from PROJECT.md and manifests.
 
 **Do not** re-run passed scenarios. Reference them under "Scenario overlap avoided" in the report.
 
-### 3. Verdict (for session + report)
+### 3. Verdict
 
-`APPROVE` | `APPROVE WITH NOTES` | `REQUEST CHANGES`
+| Verdict | When |
+|---------|------|
+| **APPROVE** | Requirements met, tests pass, no meaningful issues |
+| **APPROVE WITH NOTES** | Shippable; minor suggestions or non-blocking gaps |
+| **REQUEST CHANGES** | Must-fix bugs, failed tests, missing AC, security/design blockers |
 
-Present verdict and counts in session. If REQUEST CHANGES, list must-fix items clearly.
+## PR comment and review (short)
 
-## Interactive fix loop
+Post **one** short comment on the PR, then submit the matching GitHub review. Keep the PR body **≤ 8 lines** — verdict, 1–2 sentence summary, top blockers or notes only. Full detail lives in handoff `review-report.md`.
 
-When the user asks to fix items (in this session):
+**Template (adapt, stay short):**
 
-1. Confirm scope — which findings or "all critical".
-2. Checkout `work_branch`; implement **minimal** fixes on branch only.
-3. Run relevant tests; fix failures.
-4. Commit and push; PR updates automatically.
-5. Re-read diff; briefly note what changed in session.
-6. **Do not** swap labels or PATCH handoff yet.
-7. Offer: more fixes, re-review, or **`proceed to human review`**.
+```markdown
+**AI review: {APPROVE | APPROVE WITH NOTES | REQUEST CHANGES}**
 
-Stay in the loop until the user sends **`proceed to human review`**.
+{One sentence: what was checked and overall outcome.}
 
-Aliases: `approve review`, `human review` — treat as the same advance command.
+{If REQUEST CHANGES: bullet list of must-fix items, max 3.}
+{If APPROVE WITH NOTES: bullet list of non-blocking notes, max 3.}
+{If APPROVE: optional single line of praise or risk note.}
 
-## On `proceed to human review`
+Full report: issue #{n} handoff comment.
+```
 
-1. Finalize in-session **`review-report.md`** (template below). Include any fixes applied during the session.
-2. Update in-session handoff `state.json`:
-   - `phase`: `review`
-   - `status`: `awaiting_human`
-   - `workflow_label`: `workflow:human-review`
-   - Append history: `phase_completed`, `labels_updated`
-   - Set `updated_at`
-3. **PATCH handoff comment** — full snapshot including `review-report.md` and updated `state.json`.
-4. Post **short issue comment** — AI review complete; human should review PR when ready; link to draft PR if known. Verdict one line. Note PR is still draft until author marks ready.
-5. **Swap labels last** — remove `workflow:review`, add **`workflow:human-review`**. **Nothing else on GitHub after this.**
-6. **Stop** — no further AI phases. Human reviews PR on GitHub after author marks ready.
+**Submit review:**
+
+```bash
+# APPROVE
+gh pr review {pr_number} --approve --body "$(cat <<'EOF'
+{short comment body}
+EOF
+)"
+
+# APPROVE WITH NOTES
+gh pr review {pr_number} --approve --body "$(cat <<'EOF'
+{short comment body}
+EOF
+)"
+
+# REQUEST CHANGES
+gh pr review {pr_number} --request-changes --body "$(cat <<'EOF'
+{short comment body}
+EOF
+)"
+```
+
+If PR is **draft** and `gh pr review` fails, post the short text with `gh pr comment {pr_number} --body "..."` and note in the issue comment that formal review was blocked (draft); still PATCH handoff with verdict.
 
 ## review-report.md template
 
@@ -149,7 +172,7 @@ APPROVE | APPROVE WITH NOTES | REQUEST CHANGES
 {2-3 sentences}
 
 ### Critical (must fix)
-- {file:line — or "fixed in session" if addressed}
+- {file:line}
 
 ### Suggestions (should consider)
 - ...
@@ -163,29 +186,28 @@ APPROVE | APPROVE WITH NOTES | REQUEST CHANGES
 ### Principles applied
 - ...
 
-## Fixes applied during AI review session
-- {commit or summary — or "none"}
-
 ## Recommendation
-Human PR review — {one line: verdict and remaining risk}
+{One line: merge readiness and remaining risk}
 ```
 
 ## Writable locations
 
 | Location | When |
 |----------|------|
-| `work_branch` | Fixes during interactive loop |
-| Issue handoff (PATCH) | Only on `proceed to human review` |
-| GitHub | Session comment at start; complete comment at end; labels |
+| Issue handoff (PATCH) | `state.json` at start + complete; `review-report.md` at complete |
+| GitHub PR | Short comment + `gh pr review` |
+| GitHub issue | Session comment at start; complete one-liner at end; labels |
+
+**Do not** commit fixes to `work_branch` during review — report only. Author addresses REQUEST CHANGES in a follow-up.
 
 ## Hard rules
 
-- Fresh-eyes only for the initial pass — do not cite implementation-chat reasoning in the report.
-- **Fixes only when the user asks** during the review session (not silently during initial pass).
+- Fresh-eyes only — do not cite implementation-chat reasoning in the report.
+- **Autonomous** — complete review, PR comment, and PR review submission in one run; no waiting for human input.
+- **Do not fix code** during review — verdict and findings only.
 - Do not expand scope beyond requirements + review findings.
-- Prefer focused fix diffs; no drive-by refactors.
 - Reference specific files and lines in findings.
-- **Never PATCH handoff before `proceed to human review`.**
-- **Never run human review for the user** — only set `workflow:human-review` and stop.
-- **Label swap is always last** when advancing phases — see label-rules.md.
+- **PR comment must be short** — details in handoff `review-report.md`.
+- **PATCH handoff at start and complete** — same comment; always update `state.json`. Never POST a new handoff comment.
+- **Label swap is always last** — see label-rules.md.
 - Never leave two `workflow:*` labels on an issue.

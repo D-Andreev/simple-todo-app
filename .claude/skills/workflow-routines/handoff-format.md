@@ -1,8 +1,8 @@
 # Issue Comment Handoff Format
 
-Per-issue pipeline artifacts are posted in **one GitHub issue comment** when **clarify completes** (`approve requirements`). Later routines read this comment. Nothing is posted during the clarify Q&A turns.
+Per-issue pipeline artifacts live in **one GitHub issue comment**. Clarify **POSTs** it; every later phase **PATCHes** the same comment and **updates `state.json`**.
 
-Full schema for `state.json`: [state-schema.md](state-schema.md)
+Full schema: [state-schema.md](state-schema.md)
 
 ## Marker
 
@@ -10,14 +10,12 @@ Full schema for `state.json`: [state-schema.md](state-schema.md)
 <!-- ai-workflow:handoff v1 issue=42 -->
 ```
 
-Clarify **POSTs once** at session end. Implement and later phases may **PATCH** the same comment to add sections.
-
 ## Comment body template
 
 ```markdown
 <!-- ai-workflow:handoff v1 issue=42 -->
 
-_Workflow handoff — clarify complete._
+_Workflow handoff — updated by each phase._
 
 ### state.json
 
@@ -26,91 +24,75 @@ _Workflow handoff — clarify complete._
 ```
 
 ### task.md
-
-```markdown
-# Task
 ...
-```
 
 ### language.md
-
-```markdown
-## Language
-
-**Term**:
-Definition.
-_Avoid_: alternatives
-```
+...
 
 ### requirements.md
-
-```markdown
-# Requirements: issue-42
 ...
-```
 
 ### adrs.md
+...
 
-```markdown
-# ADR drafts
+### implement-handoff.md
+...
+
+### review-report.md
 ...
 ```
-```
 
-Use **per-section fences only**.
+Use **per-section fences only**. Omit empty optional sections until that phase writes them.
 
 ### Section rules
 
-| Section | Posted by clarify | Notes |
-|---------|-------------------|-------|
-| `state.json` | yes | Final state at approve |
-| `task.md` | yes | |
-| `language.md` | yes | Implement merges into `workflow/PROJECT.md` |
-| `requirements.md` | yes | |
-| `adrs.md` | if any | |
-| `implement-handoff.md` | no | Implement PATCH at complete |
-| `review-report.md` | no | Review PATCH at `proceed to human review` |
+| Section | First writer | Updated by |
+|---------|--------------|------------|
+| `state.json` | clarify | **every phase** (POST + PATCH each start/complete) |
+| `task.md`, `language.md`, `requirements.md`, `adrs.md` | clarify | preserved in every PATCH |
+| `implement-handoff.md` | implement (complete) | preserved in review PATCH |
+| `review-report.md` | review (complete) | — |
 
 ## Write protocol
 
-### Clarify (once, on approve)
+### Clarify (POST once, then PATCH for comment id)
 
 1. Build full snapshot from in-session artifacts
 2. **POST** new comment — `gh api POST repos/{owner}/{repo}/issues/{n}/comments`
-3. Do **not** POST or PATCH handoff during Q&A turns
+3. Read `id` from response → **PATCH** same comment immediately — set `handoff_comment_id` in `state.json`, append history `handoff_created`
+4. Do **not** POST or PATCH handoff during Q&A turns
 
-### Later phases (implement, …)
+### Later phases (implement, review, …)
 
-1. Find comment with marker
-2. **PATCH** to append/update sections
+1. Read handoff — use `state.json` → `handoff_comment_id`, or find comment with marker
+2. **PATCH at phase start** — update `state.json` (`phase`, `status: ai_running`, `last_session_url`, history `started`)
+3. Do phase work
+4. **PATCH at phase complete** — update `state.json` (phase fields, history `phase_completed`, `labels_updated`), add phase sections (`implement-handoff.md`, `review-report.md`, …)
+5. **Full snapshot every PATCH** — include all existing sections, not just deltas
 
 ```bash
 gh api --method POST repos/{owner}/{repo}/issues/{n}/comments -f body='...'
 gh api --method PATCH repos/{owner}/{repo}/issues/comments/{comment_id} -f body='...'
 ```
 
+**Never POST a second handoff comment** for the same issue.
+
 ## Read protocol
 
-1. Fetch issue comments; find `<!-- ai-workflow:handoff v1 issue={n} -->`
-2. If missing — clarify not finished yet; implement must not run
+1. Fetch issue comments; find `<!-- ai-workflow:handoff v1 issue={n} -->` (prefer `handoff_comment_id` from last read)
+2. If missing — clarify not finished; implement must not run
 3. Parse `### {filename}` sections → fenced blocks
 
 ## Session comment (separate, at phase start)
 
-Claude Code session URL — posted when **clarify**, **implement**, or **review** starts; not the handoff. See [label-rules.md](label-rules.md).
+Claude Code session URL — posted on the issue when **clarify**, **implement**, or **review** starts; not the handoff. See [label-rules.md](label-rules.md).
 
 ## Repo vs issue
 
-| During clarify (session memory) | Posted at clarify end (issue) | Repo (implement writes) |
-|-------------------------------|-------------------------------|-------------------------|
+| During clarify (session memory) | Handoff comment (issue) | Repo (implement writes) |
+|-------------------------------|-------------------------|-------------------------|
 | `language.md` | handoff `language.md` | `workflow/PROJECT.md` `## Language` |
 | `requirements.md` | handoff `requirements.md` | |
 | `adrs.md` | handoff `adrs.md` | `docs/adr/` |
-
-Clarify: no branch, no repo writes, **no handoff comment until approve**.
-
-Implement: read handoff → branch `workflow/issue-{n}` → code on branch → **draft PR** → PATCH handoff with `implement-handoff.md` → label swap last.
-
-Review: checkout `work_branch` → AI review in session → optional fixes on branch → PATCH handoff with `review-report.md` at **`proceed to human review`** → label swap last.
 
 **Label swap is always the last GitHub write** when advancing phases (see [label-rules.md](label-rules.md)).

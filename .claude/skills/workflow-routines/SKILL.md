@@ -13,7 +13,7 @@ disable-model-invocation: true
 
 ```
 workflow:start → clarify → workflow:implement → implement → workflow:review
-  → AI review (session + fix loop) → workflow:human-review
+  → AI review (autonomous PR review) → workflow:human-review
   → [optional local comprehension] → merge PR · close issue
 ```
 
