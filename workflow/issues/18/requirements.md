@@ -19,4 +19,4 @@ Add clear command. If no params passed delete all. If state passed (i.e.) done, 
 - [ ] `clear` (with `--state` parsing) added to `interactive.ts` handlers and help text, mirroring `filter`
 
 ## Approved by human
-- [ ] Pending — reply `approve requirements` when ready
+- [x] Approved
