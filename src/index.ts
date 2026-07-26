@@ -2,6 +2,7 @@
 
 import { Command } from 'commander';
 import * as commands from './commands';
+import { runInteractive } from './interactive';
 
 const program = new Command();
 
@@ -86,6 +87,13 @@ program
       console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       process.exit(1);
     }
+  });
+
+program
+  .command('interactive')
+  .description('Start interactive mode')
+  .action(() => {
+    runInteractive();
   });
 
 program.parse();

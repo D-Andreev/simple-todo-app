@@ -171,4 +171,129 @@ describe('CLI e2e', () => {
     expect(result.status).toBe(1);
     expect(result.stderr).toContain('Filter term cannot be empty');
   });
+
+  describe('interactive mode', () => {
+    function runInteractive(input: string, home: string) {
+      return spawnSync('node', [CLI_PATH, 'interactive'], {
+        encoding: 'utf-8',
+        input,
+        env: { ...process.env, HOME: home },
+      });
+    }
+
+    test('happy path: add, list, done <id>, exit', () => {
+      const addResult = runCli(['add', 'Buy milk'], TEST_HOME);
+      const id = addResult.stdout.trim().split(' ')[1];
+
+      const result = runInteractive(
+        ['list', `done ${id}`, 'list', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('pending');
+      expect(result.stdout).toContain(`Done: ${id}`);
+      expect(result.stdout).toMatch(new RegExp(`${id} done`));
+    });
+
+    test('multi-word add and update without quotes', () => {
+      const result = runInteractive(
+        ['add Buy milk and eggs', 'list', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Buy milk and eggs');
+
+      const listAfter = runCli(['list'], TEST_HOME);
+      const id = listAfter.stdout.trim().split(' ')[0];
+
+      const updateResult = runInteractive(
+        [`update ${id} Buy milk eggs and bread`, 'list', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+      expect(updateResult.status).toBe(0);
+      expect(updateResult.stdout).toContain('Buy milk eggs and bread');
+    });
+
+    test('unknown command prints error and loop continues', () => {
+      const result = runInteractive(
+        ['bogus', 'list', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Error: Unknown command: bogus');
+      expect(result.stdout).toContain('No todos.');
+    });
+
+    test('handler error prints error and loop continues (no process exit)', () => {
+      const result = runInteractive(
+        ['done badid', 'list', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Error: Todo with id badid not found');
+      expect(result.stdout).toContain('No todos.');
+    });
+
+    test('help prints available commands', () => {
+      const result = runInteractive(['help', 'exit', ''].join('\n'), TEST_HOME);
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('add');
+      expect(result.stdout).toContain('list');
+      expect(result.stdout).toContain('done');
+      expect(result.stdout).toContain('update');
+      expect(result.stdout).toContain('delete');
+      expect(result.stdout).toContain('filter');
+      expect(result.stdout).toContain('exit');
+      expect(result.stdout).toContain('quit');
+    });
+
+    test('quit ends the REPL cleanly (exit code 0)', () => {
+      const result = runInteractive(['quit', ''].join('\n'), TEST_HOME);
+      expect(result.status).toBe(0);
+    });
+
+    test('EOF (stdin close) ends the REPL cleanly without a stack trace', () => {
+      const result = runInteractive('list\n', TEST_HOME);
+      expect(result.status).toBe(0);
+      expect(result.stderr).toBe('');
+    });
+
+    test('REPL state persists in the same storage file used by the one-shot CLI', () => {
+      const result = runInteractive(['add From REPL', 'exit', ''].join('\n'), TEST_HOME);
+      expect(result.status).toBe(0);
+
+      const list = runCli(['list'], TEST_HOME);
+      expect(list.stdout).toContain('From REPL');
+    });
+
+    test('filter <name> returns matching todos case-insensitively', () => {
+      runCli(['add', 'Buy milk'], TEST_HOME);
+      runCli(['add', 'Walk dog'], TEST_HOME);
+
+      const result = runInteractive(
+        ['filter MILK', 'filter nope', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Buy milk');
+      expect(result.stdout).not.toContain('Walk dog');
+      expect(result.stdout).toContain('No todos match "nope".');
+    });
+
+    test('delete <id> removes the todo from the shared storage file', () => {
+      const add = runCli(['add', 'Buy milk'], TEST_HOME);
+      const id = add.stdout.trim().split(' ')[1];
+
+      const result = runInteractive(
+        [`delete ${id}`, 'list', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain(`Deleted todo ${id.substring(0, 8)}`);
+      expect(result.stdout).toContain('No todos.');
+    });
+  });
 });
