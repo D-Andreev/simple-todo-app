@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "skills": {
+    "workflow-clarify": {
+      "source": "D-Andreev/ai-workflow-routines",
+      "sourceType": "github",
+      "skillPath": "skills/workflow-clarify/SKILL.md",
+      "computedHash": "b6be879cae27b8770f4d4c74ef584203790edef3d55eab09e1c7905f01ef83a3"
+    },
+    "workflow-init": {
+      "source": "D-Andreev/ai-workflow-routines",
+      "sourceType": "github",
+      "skillPath": "skills/workflow-init/SKILL.md",
+      "computedHash": "ad0158a8be2a852fae7928da3ad0cbcc175f2d2f57890832a717aefe07b0ab20"
+    },
+    "workflow-routines": {
+      "source": "D-Andreev/ai-workflow-routines",
+      "sourceType": "github",
+      "skillPath": "skills/workflow-routines/SKILL.md",
+      "computedHash": "f5a82bb10e8a16231a29bacbe9f7d0724ea354700b1a76ae7856c52cf4625843"
+    }
+  }
+}
