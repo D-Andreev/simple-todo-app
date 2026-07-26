@@ -39,3 +39,6 @@ _Avoid_: Database, cloud sync, multi-user storage
 
 **Filter**: A dedicated CLI command (`todo filter <name>`) that returns all todos whose title contains a name search term, case-insensitively.
 _Avoid_: Search, query, grep
+
+**Interactive mode**: A REPL started via `todo interactive` that reads commands from stdin (one per line, no `todo` prefix, no quoting), dispatches them to the same handlers as the one-shot CLI, and loops until `exit`, `quit`, EOF (Ctrl+D), or SIGINT (Ctrl+C).
+_Avoid_: REPL mode, shell mode, TUI mode
