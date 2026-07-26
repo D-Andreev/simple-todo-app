@@ -6,9 +6,11 @@ Add clear command. If no params passed delete all. If state passed (i.e.) done, 
 ## Clarifications
 | # | Question | Answer | Recommended |
 |---|----------|--------|-------------|
+| 1 | Should `clear` take state as a flag (`--state <state>`), matching `filter`, rather than a positional arg? | Yes — `--state done` clears done todos; no flag deletes everything else. | Yes |
 
 ## Acceptance criteria
-- [ ] ...
+- [ ] `todo clear --state <state>` deletes only todos in that state (validated to `pending`/`done`, same as `filter`)
+- [ ] `todo clear` with no flag deletes all todos
 
 ## Approved by human
 - [ ] Pending — reply `approve requirements` when ready
