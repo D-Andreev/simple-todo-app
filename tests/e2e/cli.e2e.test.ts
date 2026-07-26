@@ -247,6 +247,62 @@ describe('CLI e2e', () => {
     expect(result.stdout.trim()).toBe('No todos to clear.');
   });
 
+  test('list --json emits raw todo objects, pretty-printed', () => {
+    const add1 = runCli(['add', 'Buy milk'], TEST_HOME);
+    const idPrefix1 = add1.stdout.trim().split(' ')[1];
+    const add2 = runCli(['add', 'Walk dog'], TEST_HOME);
+    const idPrefix2 = add2.stdout.trim().split(' ')[1];
+
+    const result = runCli(['list', '--json'], TEST_HOME);
+    expect(result.status).toBe(0);
+    const parsed = JSON.parse(result.stdout);
+    expect(parsed).toHaveLength(2);
+    expect(parsed[0].id).toMatch(/^[0-9a-f-]{36}$/);
+    expect(parsed[0].id.startsWith(idPrefix1)).toBe(true);
+    expect(parsed[0]).toMatchObject({ title: 'Buy milk', state: 'pending', createdAt: expect.any(Number) });
+    expect(parsed[1].id.startsWith(idPrefix2)).toBe(true);
+    expect(parsed[1]).toMatchObject({ title: 'Walk dog', state: 'pending', createdAt: expect.any(Number) });
+    expect(result.stdout).toBe(JSON.stringify(parsed, null, 2) + '\n');
+  });
+
+  test('list --json emits "[]" when empty', () => {
+    const result = runCli(['list', '--json'], TEST_HOME);
+    expect(result.status).toBe(0);
+    expect(result.stdout.trim()).toBe('[]');
+  });
+
+  test('filter --json emits matching raw todo objects', () => {
+    const add1 = runCli(['add', 'Buy milk'], TEST_HOME);
+    const idPrefix1 = add1.stdout.trim().split(' ')[1];
+    runCli(['add', 'Walk dog'], TEST_HOME);
+
+    const result = runCli(['filter', 'buy', '--json'], TEST_HOME);
+    expect(result.status).toBe(0);
+    const parsed = JSON.parse(result.stdout);
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0].id.startsWith(idPrefix1)).toBe(true);
+    expect(parsed[0]).toMatchObject({ title: 'Buy milk', state: 'pending', createdAt: expect.any(Number) });
+  });
+
+  test('filter --json with no matches emits "[]"', () => {
+    runCli(['add', 'Buy milk'], TEST_HOME);
+
+    const result = runCli(['filter', 'xyz', '--json'], TEST_HOME);
+    expect(result.status).toBe(0);
+    expect(result.stdout.trim()).toBe('[]');
+  });
+
+  test('filter --json --state <invalid> still errors as plain text', () => {
+    const result = runCli(['filter', '--state', 'bogus', '--json'], TEST_HOME);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('Invalid state. Valid values: pending, done');
+  });
+
+  test('add, done, update, delete, clear remain human-readable without --json flag', () => {
+    const program = runCli(['add', '--help'], TEST_HOME);
+    expect(program.stdout).not.toContain('--json');
+  });
+
   test('clear --state <invalid> errors', () => {
     runCli(['add', 'Buy milk'], TEST_HOME);
 

@@ -83,6 +83,28 @@ describe('Commands', () => {
       const message = commands.handleList();
       expect(message).toContain(`(created: ${expectedIso})`);
     });
+
+    test('with json=true returns "[]" when empty', () => {
+      const message = commands.handleList(true);
+      expect(message).toBe('[]');
+    });
+
+    test('with json=true returns raw todo objects, pretty-printed', () => {
+      storage.addTodo('First', 'id-1');
+      storage.addTodo('Second', 'id-2');
+
+      const message = commands.handleList(true);
+      const parsed = JSON.parse(message);
+      expect(parsed).toHaveLength(2);
+      expect(parsed[0]).toEqual({
+        id: 'id-1',
+        title: 'First',
+        state: 'pending',
+        createdAt: expect.any(Number),
+      });
+      expect(parsed[1].id).toBe('id-2');
+      expect(message).toBe(JSON.stringify(parsed, null, 2));
+    });
   });
 
   describe('handleDone', () => {
@@ -278,6 +300,35 @@ describe('Commands', () => {
       expect(lines[0]).toContain('Apple');
       expect(lines[1]).toContain('Apricot');
       expect(lines[2]).toContain('Avocado');
+    });
+
+    test('with json=true and no matches returns "[]"', () => {
+      storage.addTodo('Buy milk', 'id-1');
+
+      const message = commands.handleFilter('xyz', undefined, true);
+      expect(message).toBe('[]');
+    });
+
+    test('with json=true returns raw matching todo objects, pretty-printed', () => {
+      storage.addTodo('Buy groceries', 'id-1');
+      storage.addTodo('Walk dog', 'id-2');
+
+      const message = commands.handleFilter('buy', undefined, true);
+      const parsed = JSON.parse(message);
+      expect(parsed).toHaveLength(1);
+      expect(parsed[0]).toEqual({
+        id: 'id-1',
+        title: 'Buy groceries',
+        state: 'pending',
+        createdAt: expect.any(Number),
+      });
+      expect(message).toBe(JSON.stringify(parsed, null, 2));
+    });
+
+    test('with json=true still validates state and throws on invalid value', () => {
+      expect(() => commands.handleFilter(undefined, 'bogus', true)).toThrow(
+        'Invalid state. Valid values: pending, done'
+      );
     });
   });
 
