@@ -124,4 +124,42 @@ describe('CLI e2e', () => {
     expect(result.status).toBe(1);
     expect(result.stderr).toContain('Ambiguous todo id prefix "aaaa" matches 2 todos');
   });
+
+  test('filter returns matching todos case-insensitive', () => {
+    runCli(['add', 'Buy milk'], TEST_HOME);
+    runCli(['add', 'Walk dog'], TEST_HOME);
+    runCli(['add', 'Buy groceries'], TEST_HOME);
+
+    const result = runCli(['filter', 'buy'], TEST_HOME);
+    expect(result.status).toBe(0);
+    const lines = result.stdout.trim().split('\n');
+    expect(lines).toHaveLength(2);
+    expect(lines[0]).toContain('Buy milk');
+    expect(lines[1]).toContain('Buy groceries');
+  });
+
+  test('filter shows "No todos match" message when nothing matches', () => {
+    runCli(['add', 'Buy milk'], TEST_HOME);
+    runCli(['add', 'Walk dog'], TEST_HOME);
+
+    const result = runCli(['filter', 'xyz'], TEST_HOME);
+    expect(result.status).toBe(0);
+    expect(result.stdout.trim()).toBe('No todos match "xyz".');
+  });
+
+  test('filter errors when search term is empty', () => {
+    runCli(['add', 'Buy milk'], TEST_HOME);
+
+    const result = runCli(['filter', ''], TEST_HOME);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('Filter term cannot be empty');
+  });
+
+  test('filter errors when search term is whitespace only', () => {
+    runCli(['add', 'Buy milk'], TEST_HOME);
+
+    const result = runCli(['filter', '   '], TEST_HOME);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('Filter term cannot be empty');
+  });
 });
