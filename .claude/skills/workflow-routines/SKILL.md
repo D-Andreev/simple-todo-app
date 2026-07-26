@@ -21,7 +21,7 @@ No routine for `workflow:human-review` or comprehension. Comprehension is an opt
 
 Docs: [handoff-format.md](handoff-format.md) · [state-schema.md](state-schema.md) · [label-rules.md](label-rules.md)
 
-**Label swap is always the last GitHub write** when a phase advances — prevents routines firing before handoff/PR are ready. Implement opens PRs as **draft**.
+**Label swap is always the last GitHub write** when a phase advances — prevents routines firing before gist/PR are ready. Implement opens PRs as **draft**.
 
 ## Phase skills
 

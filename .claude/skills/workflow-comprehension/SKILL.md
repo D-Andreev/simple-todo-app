@@ -24,27 +24,27 @@ Verify the **developer** understands what was built — behavior, code structure
 | **Comprehension** | Issue has `workflow:human-review` → checkout `work_branch` locally → test/preview → run **`/workflow-comprehension`** (optionally with issue number) |
 | **Skip** | Merge PR on GitHub → close issue → done |
 
-Adapted from ai-workflow **workflow-comprehension** — same interview style; delivery is **local session only** (no handoff PATCH, no labels).
+Adapted from ai-workflow **workflow-comprehension** — same interview style; delivery is **local session only** (no gist edits, no labels).
 
 ## Preconditions
 
 1. Issue has label **`workflow:human-review`** (AI review finished).
-2. Handoff comment exists with `requirements.md`, `implement-handoff.md`, `review-report.md`, and `work_branch` / `base_branch` in `state.json`.
+2. Handoff gist exists with `requirements.md`, `implement-handoff.md`, `review-report.md`, and `work_branch` / `base_branch` in `state.json`.
 3. Dev has **`work_branch` checked out locally** (or checks out as first step).
 4. Dev has run tests and previewed the change locally (recommended before starting).
 
-If preconditions fail, explain what's missing and stop. Do not change GitHub labels or the handoff comment.
+If preconditions fail, explain what's missing and stop. Do not change GitHub labels or the handoff gist.
 
 ## Start sequence
 
 1. **Resolve issue** — from user message (`issue #42`, URL) or ask.
-2. **Fetch handoff** — `gh issue view` + find comment with `<!-- ai-workflow:handoff v1 issue={n} -->`; parse sections per [handoff-format.md](../workflow-routines/handoff-format.md).
-3. **Confirm branch** — read `work_branch` and `base_branch` from handoff `state.json`. If not on `work_branch`, checkout and pull.
+2. **Fetch handoff gist** — find pointer `<!-- ai-workflow:handoff v3 issue={n} gist={id} -->` on issue or resolve gist id; `gh gist view {id} -f …` per [handoff-format.md](../workflow-routines/handoff-format.md).
+3. **Confirm branch** — read `work_branch` and `base_branch` from gist `state.json`. If not on `work_branch`, checkout and pull.
 4. **Local verification** — encourage dev to have already run PROJECT.md test commands and previewed the feature; offer to run tests now if not done.
-5. **Read context** — handoff artifacts, `workflow/PROJECT.md`, `workflow/learnings/gotchas.md`, `git diff {base_branch}...HEAD`, key changed files.
+5. **Read context** — gist artifacts, `workflow/PROJECT.md`, `workflow/learnings/gotchas.md`, `git diff {base_branch}...HEAD`, key changed files.
 6. Enter **start** mode (interview below).
 
-**No GitHub writes** at start — no session comment, no label swap, no handoff PATCH.
+**No GitHub writes** at start — no session comment, no label swap, no gist edits.
 
 ## Interview style
 
@@ -165,12 +165,12 @@ User sends **`done`**, **`merge`**, or confirms they are finished.
 |----------|------|
 | Session memory | Interview log, grades, pass/skip state |
 | `work_branch` | **Never** — comprehension does not change code |
-| GitHub (labels, handoff, comments) | **Never** |
+| GitHub (labels, gist, comments) | **Never** |
 
 ## Hard rules
 
 - **Never** modify application source code.
-- **Never** PATCH the handoff comment or change workflow labels.
+- **Never** edit the handoff gist or change workflow labels.
 - **Never** ask trivia (ports, line numbers, exact variable names).
 - **Never** dump all questions at once — **one question per turn**.
 - **Never** reuse the same questions across attempts.

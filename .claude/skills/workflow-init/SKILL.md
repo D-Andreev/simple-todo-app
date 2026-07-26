@@ -12,7 +12,7 @@ metadata:
 
 # Workflow: Init
 
-One-time setup. Writes durable **project facts** to the repo. Clarify builds specs in **session memory**, posts an **issue handoff comment once** on approve; implement merges `language.md` into `PROJECT.md`.
+One-time setup. Writes durable **project facts** to the repo. Clarify builds specs in **session memory**, uploads a **secret handoff gist** on approve; implement merges `language.md` into `PROJECT.md`.
 
 **No application code changes.**
 
@@ -43,7 +43,7 @@ One-time setup. Writes durable **project facts** to the repo. Clarify builds spe
 _(Domain terms are added when implement merges clarify handoff.)_
 ```
 
-During clarify, terms live in session `language.md` → posted in handoff at approve.
+During clarify, terms live in session `language.md` → uploaded to handoff gist at approve.
 
 ## Writable files
 

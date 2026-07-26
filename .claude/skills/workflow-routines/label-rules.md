@@ -4,39 +4,30 @@ Exactly **one** active workflow label per issue.
 
 ## Label swap order (race prevention)
 
-When a phase **advances** to the next phase, the **label swap is usually the last GitHub action** — after handoff POST/PATCH, PR creation, and short issue comments. This prevents the next routine from firing before artifacts are ready.
+When a phase **advances**, the **label swap is usually the last GitHub action** — after handoff gist EDIT, PR creation, and short issue comments.
 
-**Exception — clarify start:** swap to `workflow:clarify` as the **first** action — before session comment, issue read, or Q1. That label triggers no routine; swapping immediately clears `workflow:start` and absorbs the `issues.labeled` webhook early.
+**Exception — clarify start:** swap to `workflow:clarify` as the **first** action — before session comment, issue read, or Q1.
 
 ```bash
 # Example: implement complete — order matters
-# 1. PATCH handoff
+# 1. gh gist edit … (handoff state + artifacts)
 # 2. gh pr create --draft ...
 # 3. gh issue comment ... (short complete comment)
 # 4. gh issue edit ... --remove-label ... --add-label ...  ← LAST
 ```
 
-Record `labels_updated` in handoff `state.json` when PATCHing (intended next label); perform the physical swap immediately after all other writes in the same turn.
+Record `labels_updated` in gist `state.json` when editing; perform the physical swap after all other writes.
 
-**Handoff:** one comment per issue. Clarify POSTs; implement and review **PATCH** it at phase **start** and **complete**, always updating `state.json`. See [handoff-format.md](handoff-format.md).
+**Handoff:** one **secret gist** per issue. Clarify **creates** it at approve; implement and review **edit** it at phase start/complete. Issue comments are human-only — see [handoff-format.md](handoff-format.md).
 
 ## Label swap
 
 ```bash
-# Clarify start (first action — workflow:clarify triggers no routine)
 gh issue edit 42 --remove-label "workflow:start" --add-label "workflow:clarify"
-
-# Clarify end
 gh issue edit 42 --remove-label "workflow:clarify" --add-label "workflow:implement"
-
-# Implement end
 gh issue edit 42 --remove-label "workflow:implement" --add-label "workflow:review"
-
-# AI review end → human PR review
 gh issue edit 42 --remove-label "workflow:review" --add-label "workflow:human-review"
 ```
-
-Record `labels_updated` in handoff `state.json` when PATCHing.
 
 ## Triggers (routines)
 
@@ -46,26 +37,19 @@ Record `labels_updated` in handoff `state.json` when PATCHing.
 | `workflow:implement` | Implement |
 | `workflow:review` | AI Review |
 
-`workflow:human-review` has **no routine** — humans review the PR on GitHub (approve, request changes, merge).
-
-**Comprehension** has no label and no routine — optional local `/workflow-comprehension` after checkout and local testing; or skip by merging and closing the issue.
-
-## Session comments
+## Session comments (human-only)
 
 | Phase | Comment |
 |-------|---------|
-| Clarify start | Session URL; handoff posted only on approve |
-| Implement start | Session URL + planned branch |
-| Implement complete | PR link; `workflow:review` set |
-| Review start | Session URL + branch/PR |
-| Review complete | Verdict one-liner on issue; full verdict on PR review |
+| Clarify start | `**Clarify** — [session](url)` |
+| Clarify approve | `**Clarify complete** — requirements approved.` |
+| Implement start | `**Implement** — [session](url) · branch …` |
+| Implement complete | `**Implement complete** — draft PR #…` |
+| Review start | `**Review** — [session](url) · PR #…` |
+| Review complete | `**Review complete** — {VERDICT} · [PR review](url)` |
 
-## Advance commands (in Claude Code session)
+## Advance commands
 
 | Phase | User says | Effect |
 |-------|-----------|--------|
-| Clarify | `approve requirements` | POST handoff → PATCH `handoff_comment_id` → approval comment → **`workflow:implement` last** |
-
-## Bugfix mode
-
-Handoff `state.mode: bugfix` — same review process on `work_branch`.
+| Clarify | `approve requirements` | CREATE gist → EDIT ids → short comment → **`workflow:implement` last** |
