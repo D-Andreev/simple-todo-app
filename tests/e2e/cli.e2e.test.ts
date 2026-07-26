@@ -266,5 +266,34 @@ describe('CLI e2e', () => {
       const list = runCli(['list'], TEST_HOME);
       expect(list.stdout).toContain('From REPL');
     });
+
+    test('filter <name> returns matching todos case-insensitively', () => {
+      runCli(['add', 'Buy milk'], TEST_HOME);
+      runCli(['add', 'Walk dog'], TEST_HOME);
+
+      const result = runInteractive(
+        ['filter MILK', 'filter nope', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Buy milk');
+      expect(result.stdout).not.toContain('Walk dog');
+      expect(result.stdout).toContain('No todos match "nope".');
+    });
+
+    test('delete <id> removes the todo from the shared storage file', () => {
+      const add = runCli(['add', 'Buy milk'], TEST_HOME);
+      const id = add.stdout.trim().split(' ')[1];
+
+      const result = runInteractive(
+        [`delete ${id}`, 'list', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain(`Deleted todo ${id.substring(0, 8)}`);
+      expect(result.stdout).toContain('No todos.');
+    });
   });
 });
