@@ -99,7 +99,7 @@
       "phase": "review",
       "event": "pr_review_submitted",
       "at": "2026-07-26T19:45:00.000Z",
-      "note": "pr=19 event=APPROVE"
+      "note": "pr=19 event=COMMENT (verdict APPROVE WITH NOTES; GitHub blocked formal APPROVE — self-authored PR)"
     },
     {
       "phase": "review",
