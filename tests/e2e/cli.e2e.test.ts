@@ -44,15 +44,18 @@ describe('CLI e2e', () => {
     expect(list1Lines[0]).toContain(id1);
     expect(list1Lines[0]).toContain('pending');
     expect(list1Lines[0]).toContain('Buy milk');
+    expect(list1Lines[0]).toMatch(/\(created: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\)/);
     expect(list1Lines[1]).toContain(id2);
     expect(list1Lines[1]).toContain('pending');
     expect(list1Lines[1]).toContain('Walk dog');
+    expect(list1Lines[1]).toMatch(/\(created: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\)/);
 
     const done = runCli(['done', id1], TEST_HOME);
     expect(done.status).toBe(0);
     expect(done.stdout).toContain('Done:');
     expect(done.stdout).toContain(id1);
     expect(done.stdout).toContain('Buy milk');
+    expect(done.stdout).not.toMatch(/\(created:/);
 
     const list2 = runCli(['list'], TEST_HOME);
     const list2Lines = list2.stdout.trim().split('\n');
@@ -64,20 +67,24 @@ describe('CLI e2e', () => {
     expect(update.stdout).toContain('Updated:');
     expect(update.stdout).toContain(id2);
     expect(update.stdout).toContain('Walk the dog outside');
+    expect(update.stdout).not.toMatch(/\(created:/);
 
     const list3 = runCli(['list'], TEST_HOME);
     expect(list3.stdout).toContain('Walk the dog outside');
+    expect(list3.stdout).toMatch(/\(created: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\)/);
 
     const del = runCli(['delete', id1], TEST_HOME);
     expect(del.status).toBe(0);
     expect(del.stdout).toContain('Deleted');
     expect(del.stdout).toContain(id1);
+    expect(del.stdout).not.toMatch(/\(created:/);
 
     const list4 = runCli(['list'], TEST_HOME);
     const list4Lines = list4.stdout.trim().split('\n');
     expect(list4Lines).toHaveLength(1);
     expect(list4Lines[0]).toContain(id2);
     expect(list4Lines[0]).toContain('Walk the dog outside');
+    expect(list4Lines[0]).toMatch(/\(created: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\)/);
   });
 
   test('list shows "No todos." when empty', () => {
@@ -135,7 +142,9 @@ describe('CLI e2e', () => {
     const lines = result.stdout.trim().split('\n');
     expect(lines).toHaveLength(2);
     expect(lines[0]).toContain('Buy milk');
+    expect(lines[0]).toMatch(/\(created: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\)/);
     expect(lines[1]).toContain('Buy groceries');
+    expect(lines[1]).toMatch(/\(created: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\)/);
   });
 
   test('filter shows "No todos match" message when nothing matches', () => {

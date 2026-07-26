@@ -1,6 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
 import * as storage from './storage';
 
+function formatTodoRow(todo: storage.Todo): string {
+  const iso = new Date(todo.createdAt).toISOString();
+  return `${todo.id.substring(0, 8)} ${todo.state} ${todo.title} (created: ${iso})`;
+}
+
 export function handleAdd(title: string): string {
   const id = uuidv4();
   const todo = storage.addTodo(title, id);
@@ -14,7 +19,7 @@ export function handleList(): string {
   }
   return todos
     .sort((a, b) => a.createdAt - b.createdAt)
-    .map((todo) => `${todo.id.substring(0, 8)} ${todo.state} ${todo.title}`)
+    .map(formatTodoRow)
     .join('\n');
 }
 
@@ -47,6 +52,6 @@ export function handleFilter(searchTerm: string): string {
 
   return matches
     .sort((a, b) => a.createdAt - b.createdAt)
-    .map((todo) => `${todo.id.substring(0, 8)} ${todo.state} ${todo.title}`)
+    .map(formatTodoRow)
     .join('\n');
 }
