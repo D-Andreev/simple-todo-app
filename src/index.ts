@@ -77,11 +77,12 @@ program
   });
 
 program
-  .command('filter <name>')
-  .description('Filter todos by name')
-  .action((name: string) => {
+  .command('filter [name]')
+  .description('Filter todos by name and/or state')
+  .option('--state <state>', 'Filter by state (pending or done)')
+  .action((name: string | undefined, options: { state?: string }) => {
     try {
-      const message = commands.handleFilter(name);
+      const message = commands.handleFilter(name, options.state);
       console.log(message);
     } catch (error) {
       console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);

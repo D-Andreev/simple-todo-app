@@ -172,6 +172,48 @@ describe('CLI e2e', () => {
     expect(result.stderr).toContain('Filter term cannot be empty');
   });
 
+  test('filter --state <state> combined with name filters by both', () => {
+    const add1 = runCli(['add', 'Buy milk'], TEST_HOME);
+    const id1 = add1.stdout.trim().split(' ')[1];
+    runCli(['add', 'Buy eggs'], TEST_HOME);
+    runCli(['done', id1], TEST_HOME);
+
+    const result = runCli(['filter', 'buy', '--state', 'done'], TEST_HOME);
+    expect(result.status).toBe(0);
+    const lines = result.stdout.trim().split('\n');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('Buy milk');
+  });
+
+  test('filter --state <state> with no name returns all todos with that state', () => {
+    const add1 = runCli(['add', 'Buy milk'], TEST_HOME);
+    const id1 = add1.stdout.trim().split(' ')[1];
+    runCli(['add', 'Walk dog'], TEST_HOME);
+    runCli(['done', id1], TEST_HOME);
+
+    const result = runCli(['filter', '--state', 'pending'], TEST_HOME);
+    expect(result.status).toBe(0);
+    const lines = result.stdout.trim().split('\n');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('Walk dog');
+  });
+
+  test('filter with neither name nor --state errors', () => {
+    runCli(['add', 'Buy milk'], TEST_HOME);
+
+    const result = runCli(['filter'], TEST_HOME);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('Provide a name or --state to filter by');
+  });
+
+  test('filter --state <invalid> errors', () => {
+    runCli(['add', 'Buy milk'], TEST_HOME);
+
+    const result = runCli(['filter', '--state', 'bogus'], TEST_HOME);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('Invalid state. Valid values: pending, done');
+  });
+
   describe('interactive mode', () => {
     function runInteractive(input: string, home: string) {
       return spawnSync('node', [CLI_PATH, 'interactive'], {
@@ -280,6 +322,38 @@ describe('CLI e2e', () => {
       expect(result.stdout).toContain('Buy milk');
       expect(result.stdout).not.toContain('Walk dog');
       expect(result.stdout).toContain('No todos match "nope".');
+    });
+
+    test('filter <name> --state <state> parses correctly', () => {
+      const addResult = runCli(['add', 'Buy milk'], TEST_HOME);
+      const id = addResult.stdout.trim().split(' ')[1];
+      runCli(['add', 'Buy eggs'], TEST_HOME);
+      runCli(['done', id], TEST_HOME);
+
+      const result = runInteractive(
+        ['filter buy --state done', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Buy milk');
+      expect(result.stdout).not.toContain('Buy eggs');
+    });
+
+    test('filter --state <state> with no name returns all todos with that state', () => {
+      const addResult = runCli(['add', 'Buy milk'], TEST_HOME);
+      const id = addResult.stdout.trim().split(' ')[1];
+      runCli(['add', 'Walk dog'], TEST_HOME);
+      runCli(['done', id], TEST_HOME);
+
+      const result = runInteractive(
+        ['filter --state pending', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Walk dog');
+      expect(result.stdout).not.toContain('Buy milk');
     });
 
     test('delete <id> removes the todo from the shared storage file', () => {
