@@ -60,11 +60,11 @@ All phases use the **same branch** clarify created. Implement and review **never
 | `phase_completed` | Phase complete commit |
 | `labels_updated` | Intended next label |
 | `human_approved` | clarify approve |
-| `pr_review_submitted` | review complete |
+| `pr_comment_posted` | review complete — single PR comment with verdict |
 
 ## Issue comments (not state)
 
-Short, informative, engaging — Claude Code voice. See [handoff-format.md](handoff-format.md#issue-comments-humans-only).
+Short, **varied**, engaging issue comments (Claude Code voice) — see handoff-format example banks. Never repeat the same boilerplate.
 
 ## Implement policy
 
@@ -72,7 +72,7 @@ Commit start → code on same branch → draft PR → commit complete → short 
 
 ## Review policy
 
-Commit start → review → short PR comment + `gh pr review` → commit complete → short issue comment → **`workflow:human-review` label last**.
+Commit start → review → **one** PR comment (`gh pr comment`, verdict in text) → commit complete → short issue comment → **`workflow:human-review` label last**.
 
 ## Comprehension policy (optional, local)
 

@@ -16,7 +16,7 @@ Grill the plan before implementation. **No application code changes. No test run
 
 **First repo action after label swap:** create branch `workflow/issue-{n}` and init `workflow/issues/{n}/`. Commit handoff files on each Q&A turn. Issue comments are **short and human-only**.
 
-On **`approve requirements`**, final handoff commit, short approval comment, swap to `workflow:implement`, stop.
+On **`approve requirements`**, final handoff commit, post **approved requirements on the issue**, swap to `workflow:implement`, stop.
 
 See [handoff-format.md](../workflow-routines/handoff-format.md), [state-schema.md](../workflow-routines/state-schema.md), [label-rules.md](../workflow-routines/label-rules.md).
 
@@ -66,11 +66,9 @@ Same as A/B.
    - Write `state.json` per [fixture](../workflow-routines/fixtures/state-example-clarify-start.json)
    - Write initial `task.md`, `language.md`, `requirements.md`
    - Commit + push
-5. **Post session comment** — Claude Code voice: warm, short, informative. **Must link** session + branch. See handoff-format examples.
+5. **Post session comment** — pick a **fresh phrasing** from handoff-format example bank (or invent one). **Must link** session + branch. Reference the issue topic when natural.
 
-   ```markdown
-   **Clarify** — Let's sharpen the requirements together. [Open the session]({SESSION_URL}) — one question at a time. Specs live on [`workflow/issue-{n}`]({BRANCH_URL}).
-   ```
+   Do **not** reuse the same clarify-start comment across issues.
 6. Ask **first question**.
 
 ## Grilling loop
@@ -97,7 +95,13 @@ Checkout `workflow/issue-{n}`, read handoff files, or use session comment link.
 2. Finalize `state.json` — `requirements_approved: true`, `status: done`, history.
 3. Check approval in `requirements.md`.
 4. Commit + push.
-5. Post short comment — e.g. `**Requirements approved** — Spec is locked; implement picks up next.`
+5. **Post approval comment** on the issue:
+   - **Varied header** (see handoff-format approve example bank — not always "Requirements approved")
+   - `---`
+   - **Full approved `requirements.md`**
+   ```bash
+   gh issue comment {n} --body-file /tmp/requirements-comment.md
+   ```
 6. **Swap labels last** — `workflow:implement`. **Stop.**
 
 ## requirements.md template
@@ -125,15 +129,15 @@ Checkout `workflow/issue-{n}`, read handoff files, or use session comment link.
 |------|-----|-------|
 | Start | CREATE branch + init commit | Session comment with **session + branch links** |
 | Q&A turn | COMMIT + push handoff | None |
-| Approve | COMMIT + push | Short line → label swap last |
+| Approve | COMMIT + push | Header + **full requirements.md** → label swap last |
 
 ## Hard rules
 
 - Never write application source code.
 - **Only write** `workflow/issues/{n}/` during clarify.
 - **Create branch at start** — before session comment and Q1.
-- **Issue comments:** short, engaging, Claude Code voice — see handoff-format. Clarify start must link session + branch.
+- **Issue comments:** varied, engaging — see handoff-format example bank. Never repeat the same comment verbatim across issues.
 - **Commit handoff after every Q&A turn** and at approve.
-- **Never put JSON or artifacts in issue comments.**
+- **Never put `state.json` or other machine handoff in issue comments** — publish **approved `requirements.md` only** at clarify approve.
 - If push fails, short issue comment and **stop**; do not swap to `workflow:implement`.
 - **Label swap first** at start; **last** at approve.

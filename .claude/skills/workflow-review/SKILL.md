@@ -2,8 +2,7 @@
 name: workflow-review
 description: >-
   AI review phase for GitHub-issue workflows. Fresh-eyes scenario verification
-  and principles review on the work branch; posts a short PR comment and submits
-  an approve, approve-with-notes, or request-changes review. Use when a routine
+  and principles review on the work branch; posts one PR comment with verdict. Use when a routine
   fires on workflow:review or for issue $0.
 disable-model-invocation: true
 metadata:
@@ -39,18 +38,39 @@ State in the review-report header: **"Fresh-eyes: artifacts and diff only."**
 
 1. **Read issue**; checkout **`workflow/issue-{n}`**; pull latest.
 2. Read `workflow/issues/{n}/` handoff files.
-3. **Post session comment** — e.g. `**Review** — Fresh eyes on the diff. [Session]({session_url}) · [PR #{pr}]({pr_url})`
+3. **Post session comment** — vary phrasing (handoff-format review start bank). Link session + PR.
 4. **Commit handoff (start)** — update `state.json`: `phase: review`, `status: ai_running`, history `started`; push.
 5. **Find PR** — `gh pr list --head workflow/issue-{n} --json number,url`.
 6. **Review pass** — scenario verification + principles review (below).
 7. **Verdict** — `APPROVE` | `APPROVE WITH NOTES` | `REQUEST CHANGES`.
 8. **Write `review-report.md`** to `workflow/issues/{n}/`. No code fixes during review.
-9. **Post short PR comment** and **submit PR review** (below).
+9. **Post one PR comment** with verdict — `gh pr comment` only. See below. **Never** `gh pr review`.
 10. **Update `state.json`** — `review_verdict`, `status: done`, history; commit + push with `review-report.md`.
-11. Post **short issue comment** — verdict in plain language + review link, e.g. `**Review: APPROVE WITH NOTES** — Shippable; see [review]({review_url}).`
+11. Post **short issue comment** — varied verdict line + PR comment link (handoff-format review complete bank).
 12. **Swap labels last** — **`workflow:human-review`**. **Stop.**
 
 ## Review pass
+
+### When to run tests or build
+
+**Only if the PR diff includes application code changes** — source files, tests, or build/config manifests (e.g. `package.json`, `go.mod`, `Makefile`, CI config).
+
+**Do not run** tests or build when the diff is limited to:
+
+- `workflow/issues/{n}/` handoff files
+- `workflow/PROJECT.md` / `docs/adr/` only (language merge, ADRs)
+- Markdown or workflow metadata with no executable impact
+
+Before running anything, inspect:
+
+```bash
+git diff {base_branch}...HEAD --stat
+git diff {base_branch}...HEAD -- ':!workflow/issues/'
+```
+
+If implement-handoff already records test results and **no code changed since implement**, cite those results in the report — do not re-run.
+
+If code **did** change (or this is the first review with code in the diff), run tests per PROJECT.md and build if the project normally builds in CI.
 
 ### 1. Scenario verification
 
@@ -60,12 +80,13 @@ State in the review-report header: **"Fresh-eyes: artifacts and diff only."**
    - Edge cases from requirements
    - Error / failure paths
    - Regression risks (PROJECT.md domain)
-3. Execute:
+3. **Execute** (only when code changed — see above):
    - Unit tests (PROJECT.md commands)
    - Targeted tests for changed areas
    - Integration/e2e if contracts or cross-module flows touched
-   - Manual trace if tests insufficient
-4. Record results for the report.
+   - Build/lint if PROJECT.md or CI expects it
+4. When **no code changes** — verify scenarios by **reading code and diff** (manual trace); note in report: `Tests/build skipped — no application code in diff.`
+5. Record results for the report.
 
 ### 2. Principles review (same pass)
 
@@ -83,51 +104,39 @@ Apply stack-idiomatic practices from PROJECT.md and manifests.
 
 | Verdict | When |
 |---------|------|
-| **APPROVE** | Requirements met, tests pass, no meaningful issues |
+| **APPROVE** | Requirements met, no meaningful issues (tests pass if code changed and were run) |
 | **APPROVE WITH NOTES** | Shippable; minor suggestions or non-blocking gaps |
-| **REQUEST CHANGES** | Must-fix bugs, failed tests, missing AC, security/design blockers |
+| **REQUEST CHANGES** | Must-fix bugs, failed tests (when run), missing AC, security/design blockers |
 
-## PR comment and review (short)
+## PR comment (one comment only)
 
-Post **one** short comment on the PR, then submit matching GitHub review. Full detail in `workflow/issues/{n}/review-report.md`.
+Post **exactly one** comment on the PR. **Vary the wording** — use the review example bank or write fresh copy; include verdict in the opening line. **`gh pr comment` only.**
 
-**Template (adapt, stay short):**
+Full detail stays in `workflow/issues/{n}/review-report.md` on the branch.
+
+**Template (adapt, stay concise — one comment, no follow-ups):**
 
 ```markdown
 **AI review: {APPROVE | APPROVE WITH NOTES | REQUEST CHANGES}**
 
-{One sentence: what was checked and overall outcome.}
+{One short paragraph: what was checked and overall outcome.}
 
 {If REQUEST CHANGES: bullet list of must-fix items, max 3.}
 {If APPROVE WITH NOTES: bullet list of non-blocking notes, max 3.}
-{If APPROVE: optional single line of praise or risk note.}
 
 Full report: `workflow/issues/{n}/review-report.md` on branch.
 ```
 
-**Submit review:**
+**Post:**
 
 ```bash
-# APPROVE
-gh pr review {pr_number} --approve --body "$(cat <<'EOF'
-{short comment body}
-EOF
-)"
-
-# APPROVE WITH NOTES
-gh pr review {pr_number} --approve --body "$(cat <<'EOF'
-{short comment body}
-EOF
-)"
-
-# REQUEST CHANGES
-gh pr review {pr_number} --request-changes --body "$(cat <<'EOF'
-{short comment body}
+gh pr comment {pr_number} --body "$(cat <<'EOF'
+{comment body — include verdict in the opening line}
 EOF
 )"
 ```
 
-If PR is **draft** and `gh pr review` fails, use `gh pr comment` and note on issue; still commit review-report to branch.
+Record `pr_comment_posted` in handoff history. **Do not** post a second comment explaining review API failures.
 
 ## review-report.md template
 
@@ -156,6 +165,10 @@ APPROVE | APPROVE WITH NOTES | REQUEST CHANGES
 
 ### Gaps in test coverage
 - ...
+
+### Test/build execution
+- **Run:** yes / no — {reason, e.g. no application code in diff | code changed per diff stat}
+- If skipped: relied on implement-handoff test results / manual trace only
 
 ## Principles review
 
@@ -186,7 +199,7 @@ APPROVE | APPROVE WITH NOTES | REQUEST CHANGES
 | Location | When |
 |----------|------|
 | Branch `workflow/issues/{n}/` | `state.json` start + complete; `review-report.md` at complete |
-| GitHub PR | Short comment + `gh pr review` |
+| GitHub PR | **One** comment via `gh pr comment` — never `gh pr review` |
 | GitHub issue | Short session/complete comments only |
 
 **Do not** commit fixes to `work_branch` during review — report only. Author addresses REQUEST CHANGES in a follow-up.
@@ -194,7 +207,8 @@ APPROVE | APPROVE WITH NOTES | REQUEST CHANGES
 ## Hard rules
 
 - Fresh-eyes only — do not cite implementation-chat reasoning in the report.
-- **Autonomous** — complete review, PR comment, and PR review submission in one run; no waiting for human input.
+- **Autonomous** — complete review and **one** PR comment in a single run.
+- **One PR comment only** — `gh pr comment`. **Never** `gh pr review`. **Vary wording** — do not reuse the same review comment across PRs.
 - **Do not fix code** during review — verdict and findings only.
 - Do not expand scope beyond requirements + review findings.
 - Reference specific files and lines in findings.
@@ -203,4 +217,4 @@ APPROVE | APPROVE WITH NOTES | REQUEST CHANGES
 - If push fails, post short issue comment and **stop**; do not advance labels.
 - **Never put artifacts in issue comments.**
 - **Label swap is always last** — see label-rules.md.
-- Never leave two `workflow:*` labels on an issue.
+- **Do not run tests or build** unless the diff includes application code changes — see **When to run tests or build**.

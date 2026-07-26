@@ -4,7 +4,7 @@ Exactly **one** active workflow label per issue.
 
 ## Label swap order
 
-When a phase **advances**, **label swap is usually last** — after handoff commit/push on branch, PR creation, and short issue comments.
+When a phase **advances**, **label swap is usually last** — after handoff commit/push on branch, PR creation, and issue comments.
 
 **Exception — clarify start:** swap to `workflow:clarify` **first**.
 
@@ -14,13 +14,13 @@ When a phase **advances**, **label swap is usually last** — after handoff comm
 # implement complete
 # 1. git commit + push workflow/issues/{n}/ …
 # 2. gh pr create --draft …
-# 3. gh issue comment … (short)
+# 3. gh issue comment … (varied human comment)
 # 4. gh issue edit … ← LAST
 ```
 
 Record `labels_updated` in `state.json` when committing; swap labels after all other writes.
 
-**Handoff:** branch `workflow/issue-{n}`, files under `workflow/issues/{n}/`. Issue comments: short, engaging, Claude Code voice — [handoff-format.md](handoff-format.md).
+**Handoff:** branch `workflow/issue-{n}`, files under `workflow/issues/{n}/`. Issue comments: engaging, varied — [handoff-format.md](handoff-format.md#issue-comments-humans-only).
 
 ## Label swap
 
@@ -41,19 +41,19 @@ gh issue edit 42 --remove-label "workflow:review" --add-label "workflow:human-re
 
 ## Session comments (human-only voice)
 
-Informative, short, engaging — Claude Code style (warm, direct, lightly playful, professional). See examples in [handoff-format.md](handoff-format.md#issue-comments-humans-only).
+Warm, lightly playful, professional — **vary wording every time**; never copy the same template. Reference something specific from the issue when you can. Example bank: [handoff-format.md#issue-comments-humans-only](handoff-format.md#issue-comments-humans-only).
 
-| Phase | Example |
-|-------|---------|
-| Clarify start | `**Clarify** — Let's sharpen the requirements. [Session](…) · specs on [\`workflow/issue-{n}\`](https://github.com/owner/repo/tree/…)` |
-| Clarify approve | `**Requirements approved** — Spec locked; implement is next.` |
-| Implement start | `**Implement** — Building on [\`workflow/issue-{n}\`](branch_url). [Session](session_url).` |
-| Implement complete | `**Draft PR ready** — [#17](pr_url); still draft until you've tested locally.` |
-| Review start | `**Review** — Fresh eyes on the diff. [Session](…) · [PR #17](…)` |
-| Review complete | `**Review: APPROVE** — [Details](review_url). Ready after your local pass.` |
+| Phase | Must include |
+|-------|----------------|
+| Clarify start | Session link + branch link |
+| Clarify approve | Varied header + `---` + full `requirements.md` |
+| Implement start | Session link (+ branch if helpful) |
+| Implement complete | Draft PR link |
+| Review start | Session + PR links |
+| Review complete | Verdict + link to the **one** PR comment |
 
 ## Advance commands
 
 | Phase | User says | Effect |
 |-------|-----------|--------|
-| Clarify | `approve requirements` | Commit handoff → short comment → **`workflow:implement` last** |
+| Clarify | `approve requirements` | Commit handoff → post requirements on issue → **`workflow:implement` last** |

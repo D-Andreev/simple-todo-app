@@ -5,7 +5,7 @@
       "source": "D-Andreev/ai-workflow-routines",
       "sourceType": "github",
       "skillPath": "skills/workflow-clarify/SKILL.md",
-      "computedHash": "91096716ffb1da1706154fba75f97aef53964c2b186c0e288de4ef356283c8ff"
+      "computedHash": "1cd7b24c1c2608ba763165acbadcf9e34c2deb9df5b5dc3f0d3f45dc73dfd687"
     },
     "workflow-comprehension": {
       "source": "D-Andreev/ai-workflow-routines",
@@ -17,7 +17,7 @@
       "source": "D-Andreev/ai-workflow-routines",
       "sourceType": "github",
       "skillPath": "skills/workflow-implement/SKILL.md",
-      "computedHash": "4d60e14c2bf7b72fdbc2243dc135ed5dfb3f51c3d00bb0e1b7404012f042bf81"
+      "computedHash": "eb7a0670cc6e62b464df216088bdd2339e3e266aa6d60c844a747c1077957651"
     },
     "workflow-init": {
       "source": "D-Andreev/ai-workflow-routines",
@@ -29,13 +29,13 @@
       "source": "D-Andreev/ai-workflow-routines",
       "sourceType": "github",
       "skillPath": "skills/workflow-review/SKILL.md",
-      "computedHash": "4f5c3fe898e0b7c0d247144cc8765ebf33dfcc16d27b9d269aedbbb0c39cd8cc"
+      "computedHash": "bfd266bcbd7ca61b804c7bf037b85388a70981981341758e6f3eb2acfa149844"
     },
     "workflow-routines": {
       "source": "D-Andreev/ai-workflow-routines",
       "sourceType": "github",
       "skillPath": "skills/workflow-routines/SKILL.md",
-      "computedHash": "842a3bdcc98745fd32714743f7e062ea4b72a4fd060ed1a06d79a70bf02d87e5"
+      "computedHash": "ce5913d082f77d675b0aaf2328219ea45ce8f81c58dd948dd11a7362e9b99116"
     }
   }
 }

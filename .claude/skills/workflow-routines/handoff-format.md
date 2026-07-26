@@ -1,6 +1,6 @@
 # Branch Handoff Format (Ephemeral Files) + Human Issue Comments
 
-Ephemeral machine files live on the **work branch** under `workflow/issues/{n}/`. Issue comments are **human-only** — short session links and status one-liners. Never put JSON or artifact bodies in issue comments.
+Ephemeral machine files live on the **work branch** under `workflow/issues/{n}/`. Issue comments are **human-only** — engaging, short where possible. **Approved `requirements.md` is posted on the issue at clarify approve.** Never put `state.json` or other machine handoff in comments.
 
 Full schema: [state-schema.md](state-schema.md)
 
@@ -34,40 +34,107 @@ During clarify, **only write** under `workflow/issues/{n}/` — not application 
 
 ## Issue comments (humans only)
 
-**Voice:** informative, short, engaging — Claude Code style: warm, direct, lightly playful, always professional. One to three lines. No JSON or artifact bodies. **Always use markdown links** where required.
+### Voice
 
-**Do:** tell humans what phase just started or finished, what to do next, link session/branch/PR.  
-**Don't:** dump specs, post walls of text, use more than one emoji per comment, or sound like a status bot.
+Write like a sharp teammate in Claude Code — **warm, a little playful, never corny**. Professional always. Informative first: what happened, what you need from the human, links that work.
+
+**Vary your wording every time.** Do not reuse the same opener, emoji, or sentence shape across issues or phases. Pull a detail from the issue title, a clarification, or the diff so the comment feels written for *this* task.
+
+| Do | Don't |
+|----|--------|
+| Rotate phrasing — use the **example bank** below, mix lines, or invent fresh copy | Copy-paste the same template every run |
+| One light touch of personality (metaphor, gentle humor, specific praise) | Robotic status lines ("Phase complete.") |
+| Required markdown links (session, branch, PR) | Placeholder URLs or backticks without links |
+| 1–2 emojis **max**, and skip them sometimes | Emoji every comment or stacked emoji |
+| `state.json` / machine handoff on branch only | JSON or handoff dumps in comments |
+
+**Exception — clarify approve:** header (varied, engaging) + `---` + **full approved `requirements.md`**. See below.
 
 ### Clarify start (required links)
 
-Post **after** branch push. Must include **both** links:
+Post **after** branch push. **Both links required:** Claude Code session + GitHub branch tree URL (`gh repo view --json nameWithOwner -q .nameWithOwner`).
 
-1. **Session** — this Claude Code session URL (record in `state.json` → `last_session_url`).
-2. **Branch** — `https://github.com/{owner}/{repo}/tree/workflow/issue-{n}` (`gh repo view --json nameWithOwner -q .nameWithOwner`).
-
-**Example:**
+**Example bank — pick one style, adapt to the issue:**
 
 ```markdown
-**Clarify** — Let's sharpen the requirements together. [Open the session](https://claude.ai/code/…) — one question at a time. Specs live on [`workflow/issue-42`](https://github.com/acme/app/tree/workflow/issue-42).
+**Clarify** — Time to interrogate the spec (gently). [Hop into the session]({session_url}) — I'll ask one question at a time. Notes accumulating on [`workflow/issue-42`]({branch_url}).
+
+**Clarify** — Requirements workshop is open. [Your turn in the session]({session_url}); I'm keeping the living spec on [`workflow/issue-42`]({branch_url}).
+
+**Clarify** — Before we write code, let's agree on what "done" means. [Session here]({session_url}) · handoff files on [`workflow/issue-42`]({branch_url}).
 ```
 
-Optional anchor: `<!-- ai-workflow:handoff v4 issue=42 branch=workflow/issue-42 -->`
+Optional: `<!-- ai-workflow:handoff v4 issue=42 branch=workflow/issue-42 -->`
 
-### All phase comments
+### Clarify approve (post requirements)
 
-Adapt tone; keep links. Examples:
+1. **Header** — one line, varied (celebrate, confirm scope, nod to something specific from clarifications). Not always "Requirements approved".
+2. `---`
+3. **Full `requirements.md`** from branch (omit `## Approved by human` checkbox block).
 
-| When | Example |
-|------|---------|
-| Clarify approve | `**Requirements approved** — Spec is locked; implement picks up next. Reply in the session if anything looks off.` |
-| Implement start | `**Implement** — Building from the approved spec on [\`workflow/issue-42\`]({branch_url}). [Follow along in session]({session_url}).` |
-| Implement complete | `**Draft PR ready** — [#17]({pr_url}) is open for you; still draft until you've tested locally. AI review runs next.` |
-| Review start | `**Review** — Fresh eyes on the diff. [Session]({session_url}) · [PR #17]({pr_url})` |
-| Review complete (approve) | `**Review: APPROVE** — Looks good to merge after your local pass. [PR review]({review_url})` |
-| Review complete (notes) | `**Review: APPROVE WITH NOTES** — Shippable; a few non-blocking nits in the [review]({review_url}).` |
-| Review complete (changes) | `**Review: REQUEST CHANGES** — Must-fix items in the [review]({review_url}); ping me in session after fixes.` |
-| Handoff push failure | `**{Phase}** — Handoff didn't push ({one-line error}). Nothing else ran — [session]({session_url}) to retry.` |
+**Header example bank:**
+
+```markdown
+**Locked in** — We agreed on retry semantics, backoff, and test coverage. Implement is queued unless you spot a hole below.
+
+**Spec approved** — This is the contract for issue #42. Push back in the session if anything reads wrong.
+
+**Green light on requirements** — Nice clarifications on the edge cases. Next phase picks up from here.
+```
+
+Then `---` and full requirements body. If over ~65k chars, post AC + clarifications + branch link; say so in the header.
+
+### Implement
+
+**Start — example bank:**
+
+```markdown
+**Implement** — Spec's approved; time to make it real on [`workflow/issue-42`]({branch_url}). [Watch or steer in session]({session_url}).
+
+**Implement** — Rolling up sleeves on {short task reference from title}. Branch: [`workflow/issue-42`]({branch_url}) · [session]({session_url}).
+
+**Implement** — Building against the approved AC. I'll mirror existing patterns where I can. [`workflow/issue-42`]({branch_url}) · [session]({session_url}).
+```
+
+**Complete — example bank:**
+
+```markdown
+**Draft PR is up** — [#17]({pr_url}) has the changes; left as **draft** so you can kick the tires locally before review.
+
+**Ready for your eyes** — [#17]({pr_url}) is open (draft). Run it locally when you can; AI review follows.
+
+**Implement done** — Code + tests on [#17]({pr_url}). Draft on purpose — mark ready when you're happy.
+```
+
+### Review
+
+**Start — example bank:**
+
+```markdown
+**Review** — Fresh eyes, no implementation baggage. [Session]({session_url}) · diff in [#17]({pr_url}).
+
+**Review** — Reading this like I've never seen the repo. [#17]({pr_url}) · [join in]({session_url}) if curious.
+
+**Review** — Sanity-checking against the spec and the diff. [#17]({pr_url}) · [session]({session_url}).
+```
+
+**Complete — example bank** (link to **one** PR comment, not a formal review):
+
+```markdown
+**Review: APPROVE WITH NOTES** — Shippable; one small nit in the [PR comment]({pr_comment_url}). Full autopsy on branch.
+
+**Review: APPROVE** — Matches the spec, tests/build checked out. [Summary on the PR]({pr_comment_url}).
+
+**Review: REQUEST CHANGES** — Found blockers — details in the [PR comment]({pr_comment_url}). Happy to re-review after fixes.
+```
+
+### Failures
+
+```markdown
+**Clarify** — Handoff push failed ({error}). Nothing else ran — [session]({session_url}) when you're ready to retry.
+
+**Implement** — Couldn't push handoff ({error}). Branch may be stale; [session]({session_url}).
+```
 
 ## Write protocol
 
@@ -78,12 +145,12 @@ Handoff writes **must** use **git commit + push** on `workflow/issue-{n}` via gi
 **Do:**
 
 - Create branch at clarify start; commit handoff files on every clarify Q&A turn and at each phase start/complete
-- `gh issue comment` for short human comments only
+- `gh issue comment` for human comments (including **approved requirements** at clarify approve)
 - Push after each handoff commit
 
 **Do not:**
 
-- Store artifacts in issue comments
+- Store machine handoff in issue comments (`state.json`, raw handoff paths) — **except** publishing approved `requirements.md` at clarify approve
 - Use gists for handoff
 - Create a second branch for the same issue
 - Write application code during clarify
@@ -123,7 +190,7 @@ git push
 
 1. Finalize `state.json` (`requirements_approved: true`, `status: done`, history).
 2. Commit and push handoff files.
-3. Post short approval comment.
+3. Post approval comment — engaging header + `---` + **full approved `requirements.md`**. See **Clarify approve (post requirements)** above.
 4. **Swap labels last** — `workflow:implement`.
 
 ### Later phases (implement, review)
