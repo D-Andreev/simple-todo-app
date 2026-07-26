@@ -1,10 +1,10 @@
 ---
 name: workflow-clarify
 description: >-
-  Clarification phase for GitHub-issue workflows. Grills requirements one
-  question at a time, builds shared language in session memory, creates a secret
-  handoff gist on approve, posts short human comments on the issue, and sets
-  workflow:implement. Use when a routine fires on workflow:start or for issue $0.
+  Clarification phase for GitHub-issue workflows. Creates the work branch first,
+  persists ephemeral handoff files on branch, grills requirements one question at
+  a time, posts short human issue comments, and sets workflow:implement. Use when
+  a routine fires on workflow:start or for issue $0.
 disable-model-invocation: true
 metadata:
   internal: true
@@ -12,97 +12,89 @@ metadata:
 
 # Workflow: Clarify
 
-Grill the plan before implementation — like a relentless interview that also builds shared language. **No application code changes. No test runs. No repo writes. No branch creation. No handoff gist until clarify completes.**
+Grill the plan before implementation. **No application code changes. No test runs.**
 
-During the session, artifacts live **in this conversation only**. On **`approve requirements`**, create a **secret handoff gist**, post a **short comment** on the issue, swap to `workflow:implement`, stop. The implement routine reads the gist.
+**First repo action after label swap:** create branch `workflow/issue-{n}` and init `workflow/issues/{n}/`. Commit handoff files on each Q&A turn. Issue comments are **short and human-only**.
+
+On **`approve requirements`**, final handoff commit, short approval comment, swap to `workflow:implement`, stop.
 
 See [handoff-format.md](../workflow-routines/handoff-format.md), [state-schema.md](../workflow-routines/state-schema.md), [label-rules.md](../workflow-routines/label-rules.md).
 
-## Read-only repo inputs
+## Read-only before branch exists
 
 | File | Use |
 |------|-----|
-| `workflow/PROJECT.md` | Existing facts + `## Language` — read only |
+| `workflow/PROJECT.md` | Read from `base_branch` |
 | `workflow/learnings/gotchas.md` | Skim |
 | Application code | Read-only |
 
-Do not edit or commit any repo file during clarify.
+After branch exists, **only write** under `workflow/issues/{n}/` during clarify.
 
-## In-session artifacts (memory only until approve)
+## Handoff files (on branch)
 
-| Artifact | Purpose |
-|----------|---------|
-| `state.json` | Machine state |
-| `task.md` | From issue title + body |
-| `language.md` | Mutual understanding / glossary |
-| `requirements.md` | Living spec |
-| `adrs.md` | Optional ADR drafts |
+| File | Path |
+|------|------|
+| `state.json` | `workflow/issues/{n}/state.json` |
+| `task.md` | `workflow/issues/{n}/task.md` |
+| `language.md` | `workflow/issues/{n}/language.md` |
+| `requirements.md` | `workflow/issues/{n}/requirements.md` |
+| `adrs.md` | `workflow/issues/{n}/adrs.md` (optional) |
+
+Branch is **source of truth** — commit after every update.
 
 ## Trigger modes
 
-### A — Routine start (issue labeled `workflow:start`)
+### A — Routine start (`workflow:start`)
 
-Run **Start sequence**, then grilling loop.
+Start sequence → grilling loop.
 
-### B — Session continuation (`workflow:clarify` active, same session)
+### B — Session continuation (`workflow:clarify`, same session)
 
-Continue from in-session artifacts. **Do not** expect a handoff gist — it does not exist until approve.
+Checkout branch, read `workflow/issues/{n}/`, continue.
 
 ### C — Manual (`/workflow-clarify {issue_number}`)
 
 Same as A/B.
 
-## Start sequence (mode A only)
+## Start sequence (mode A)
 
-1. **Swap labels first** — remove `workflow:start`, add `workflow:clarify`. **Nothing else on GitHub before this.**
-2. **Read the issue** — number, title, body, labels, URL.
-3. **Verify init** — if `workflow/PROJECT.md` is missing, stop; tell user to run `/workflow-init`.
-4. **Initialize in-session artifacts**:
-   - `task.md` from issue title + body
-   - `language.md` — copy existing `## Language` from `PROJECT.md` if any; else placeholder
-   - `state.json` per [fixtures/state-example-clarify-start.json](../workflow-routines/fixtures/state-example-clarify-start.json)
-5. **Post session comment** (short) — e.g. `**Clarify** — [session]({url})`.
-6. Ask the **first** grilling question.
-
-**Do not create the handoff gist yet.**
+1. **Swap labels first** — `workflow:clarify`. Nothing else on GitHub before this.
+2. **Read issue** — number, title, body, labels, URL.
+3. **Verify init** — `workflow/PROJECT.md` on base branch; else stop → `/workflow-init`.
+4. **Create work branch + initial handoff commit** (see handoff-format):
+   - Branch `workflow/issue-{n}` from `base_branch` (default `main`)
+   - Write `state.json` per [fixture](../workflow-routines/fixtures/state-example-clarify-start.json)
+   - Write initial `task.md`, `language.md`, `requirements.md`
+   - Commit + push
+5. **Post session comment** — e.g. `**Clarify** — [session]({url}) · branch \`workflow/issue-{n}\``.
+6. Ask **first question**.
 
 ## Grilling loop
 
-**One question at a time**, with a **recommended answer**. Stop and wait after each question.
+One question at a time with recommended answer. Explore codebase before asking.
 
-Explore the codebase instead of asking when the answer is there.
+## Domain modeling (`language.md`)
 
-## Domain modeling (in-session `language.md`)
+Update on branch when terms resolve — same format as `PROJECT.md` `## Language`. Implement merges to PROJECT.md later.
 
-Update in-session **`language.md`** when terms resolve — same format as `PROJECT.md` `## Language`. Implement merges into PROJECT.md later.
+## Resume
 
-### ADR drafts (in-session only)
-
-Append to in-session **`adrs.md`** when warranted.
-
-## Resume / pass tracking
-
-- Summarize prior clarifications — do not re-ask answered questions.
-- **New session mid-clarify** (no gist yet): use the session comment link, or restart clarify.
+Checkout `workflow/issue-{n}`, read handoff files, or use session comment link.
 
 ## On human answers
 
-1. Merge into in-session `requirements.md`.
-2. Update in-session `language.md` if terms resolved.
-3. Update in-session `state.json`: `status` → `awaiting_human`, append history.
-4. Ask next question, **or** summary + ask for `approve requirements`.
+1. Update `requirements.md`, `language.md`, `state.json` on branch.
+2. Commit + push.
+3. Ask next question or ask for `approve requirements`.
 
-**Do not create or edit the handoff gist. Do not post artifacts to the issue.**
+## On `approve requirements`
 
-## On `approve requirements` (end of clarify)
-
-1. Verify in-session `requirements.md` is complete enough to implement.
-2. Finalize in-session `state.json` — `requirements_approved: true`, `status: done`, history.
-3. Check approval box in `requirements.md`.
-4. **CREATE secret handoff gist** — temp files → `gh gist create … --secret`. See handoff-format.
-5. **EDIT gist** — set `handoff_gist_id`, `handoff_gist_url`; append history `handoff_created`; re-upload `state.json`.
-6. Post **short** comment — e.g. `**Clarify complete** — requirements approved.` Optional pointer marker with gist id.
-7. **Swap labels last** — add **`workflow:implement`**. **Stop.**
+1. Verify `requirements.md` complete.
+2. Finalize `state.json` — `requirements_approved: true`, `status: done`, history.
+3. Check approval in `requirements.md`.
+4. Commit + push.
+5. Post short comment — `**Clarify complete** — requirements approved.`
+6. **Swap labels last** — `workflow:implement`. **Stop.**
 
 ## requirements.md template
 
@@ -113,28 +105,11 @@ Append to in-session **`adrs.md`** when warranted.
 {from task.md}
 
 ## Clarifications
-
 | # | Question | Answer | Recommended |
 |---|----------|--------|-------------|
-| 1 | ... | ... | ... |
 
 ## Acceptance criteria
 - [ ] ...
-
-## Out of scope
-- ...
-
-## Test expectations
-- ...
-
-## Implementation approach (high level)
-- ... (terms from language.md)
-
-## Files / areas likely involved
-- ...
-
-## Assumptions
-- ...
 
 ## Approved by human
 - [ ] Pending — reply `approve requirements` when ready
@@ -142,17 +117,18 @@ Append to in-session **`adrs.md`** when warranted.
 
 ## GitHub writes (clarify)
 
-| When | Gist | Issue comment |
-|------|------|---------------|
-| Start | — | Short session comment |
-| Each Q&A turn | — | **None** |
-| Approve | CREATE + EDIT | Short approval line → **label swap last** |
+| When | Git | Issue |
+|------|-----|-------|
+| Start | CREATE branch + init commit | Short session comment |
+| Q&A turn | COMMIT + push handoff | None |
+| Approve | COMMIT + push | Short line → label swap last |
 
 ## Hard rules
 
-- Never write application source code or commit repo files.
-- **Never create the handoff gist before `approve requirements`.**
+- Never write application source code.
+- **Only write** `workflow/issues/{n}/` during clarify.
+- **Create branch at start** — before session comment and Q1.
+- **Commit handoff after every Q&A turn** and at approve.
 - **Never put JSON or artifacts in issue comments.**
-- **Handoff via `gh gist` / `gh api` only** — if gist create/edit fails, post short issue comment and **stop**; do not swap to `workflow:implement`.
-- **Label swap first** at start; **label swap last** at approve — see label-rules.md.
-- **Never start implement** — only set `workflow:implement` and stop.
+- If push fails, short issue comment and **stop**; do not swap to `workflow:implement`.
+- **Label swap first** at start; **last** at approve.

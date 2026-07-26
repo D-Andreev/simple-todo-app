@@ -1,19 +1,20 @@
-# State Schema (Gist Handoff + Human Issue Comments)
+# State Schema (Branch Handoff + Human Issue Comments)
 
-State and artifacts live in a **secret handoff gist** per issue. Issue comments are human-only. See [handoff-format.md](handoff-format.md).
+Ephemeral state and artifacts live on **`workflow/issue-{n}`** under `workflow/issues/{n}/`. Issue comments are human-only. See [handoff-format.md](handoff-format.md).
 
-## One gist rule
+## One branch rule
 
-| Phase | Gist write | Updates `state.json` |
-|-------|------------|----------------------|
-| **Clarify** | **CREATE** at `approve requirements` | Yes — clarify complete |
-| **Clarify** | **EDIT** immediately after create | Yes — set `handoff_gist_id`, `handoff_gist_url` |
-| **Implement** | **EDIT** at phase start | Yes — `phase: implement`, `status: ai_running`, history |
-| **Implement** | **EDIT** at phase complete | Yes — `status: done`, `work_branch`, history |
-| **Review** | **EDIT** at phase start | Yes — `phase: review`, `status: ai_running`, history |
-| **Review** | **EDIT** at phase complete | Yes — `status: done`, `review_verdict`, history |
+| Phase | Branch write | Updates `state.json` |
+|-------|--------------|----------------------|
+| **Clarify start** | CREATE branch + initial commit | Yes — `work_branch`, `handoff_path`, history |
+| **Clarify Q&A** | COMMIT each answer | Yes — `status`, history as needed |
+| **Clarify approve** | COMMIT final handoff | Yes — `requirements_approved`, clarify complete |
+| **Implement** | COMMIT at phase start | Yes — `phase: implement`, `status: ai_running`, history |
+| **Implement** | COMMIT at phase complete | Yes — `status: done`, history |
+| **Review** | COMMIT at phase start | Yes — `phase: review`, `status: ai_running`, history |
+| **Review** | COMMIT at phase complete | Yes — `status: done`, `review_verdict`, history |
 
-Implement and review **never create a new gist** — always **EDIT** the gist clarify created.
+All phases use the **same branch** clarify created. Implement and review **never create a new branch**.
 
 ## Label routing
 
@@ -26,54 +27,53 @@ Implement and review **never create a new gist** — always **EDIT** the gist cl
 | `workflow:human-review` | human review | **none** |
 | _(no label)_ | comprehension | **none** — optional local `/workflow-comprehension` |
 
-## Gist files by writer
+## Handoff files by writer
 
 | File | clarify | implement | review |
 |------|---------|-----------|--------|
-| `state.json` | CREATE + EDIT (gist ids) | EDIT start + complete | EDIT start + complete |
-| `task.md`, `language.md`, `requirements.md`, `adrs.md` | CREATE at approve | preserve in EDIT | preserve in EDIT |
-| `implement-handoff.md` | — | EDIT at complete | preserve in EDIT |
-| `review-report.md` | — | — | EDIT at complete |
+| `state.json` | start + Q&A + approve | commit start + complete | commit start + complete |
+| `task.md`, `language.md`, `requirements.md`, `adrs.md` | start + Q&A + approve | read; merge language → PROJECT.md | read |
+| `implement-handoff.md` | — | commit at complete | read |
+| `review-report.md` | — | — | commit at complete |
 
 ## Key `state.json` fields
 
 | Field | Set by |
 |-------|--------|
-| `handoff_gist_id` | clarify (EDIT right after CREATE) |
-| `handoff_gist_url` | clarify |
-| `base_branch` | clarify |
-| `work_branch` | implement (complete) |
+| `work_branch` | clarify start — `workflow/issue-{n}` |
+| `handoff_path` | clarify start — `workflow/issues/{n}` |
+| `base_branch` | clarify start |
 | `workflow_label` | last phase to swap labels |
 | `phase` | current or last-completed phase |
 | `status` | `ai_running` / `awaiting_human` / `done` |
-| `requirements_approved` | clarify (true at approve) |
+| `requirements_approved` | clarify approve |
 | `review_verdict` | review complete |
-| `last_session_url` | each phase start EDIT |
+| `last_session_url` | each phase start commit |
 | `history[]` | append on start/complete/label swap |
 
 ### History events
 
 | `event` | When |
 |---------|------|
-| `started` | Phase start gist EDIT |
-| `phase_completed` | Phase complete gist EDIT |
+| `handoff_initialized` | Branch + first commit at clarify start |
+| `started` | Clarify start / phase start commit |
+| `phase_completed` | Phase complete commit |
 | `labels_updated` | Intended next label |
 | `human_approved` | clarify approve |
-| `handoff_created` | Gist created + ids recorded |
 | `pr_review_submitted` | review complete |
 
 ## Issue comments (not state)
 
-Short human lines only — never JSON or artifact bodies.
+Short human lines only.
 
 ## Implement policy
 
-Gist EDIT start → create branch → code → draft PR → gist EDIT complete → short comment → **`workflow:review` label last**.
+Commit start → code on same branch → draft PR → commit complete → short comment → **`workflow:review` label last**.
 
 ## Review policy
 
-Gist EDIT start → checkout → review → short PR comment + `gh pr review` → gist EDIT complete → short issue comment → **`workflow:human-review` label last**.
+Commit start → review → short PR comment + `gh pr review` → commit complete → short issue comment → **`workflow:human-review` label last**.
 
 ## Comprehension policy (optional, local)
 
-No gist EDIT. Dev checks out `work_branch`, reads gist for context, runs **`/workflow-comprehension`**.
+No handoff commits. Dev checks out `work_branch`, reads `workflow/issues/{n}/`, runs **`/workflow-comprehension`**.
