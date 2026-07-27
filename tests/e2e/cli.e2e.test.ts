@@ -348,6 +348,87 @@ describe('CLI e2e', () => {
     expect(result.stderr).toContain('Invalid state. Valid values: pending, done');
   });
 
+  test('add --due <date> sets a due date shown in list and --json', () => {
+    const add = runCli(['add', 'Buy milk', '--due', '2026-08-15'], TEST_HOME);
+    expect(add.status).toBe(0);
+
+    const list = runCli(['list'], TEST_HOME);
+    expect(list.stdout).toContain('due: 2026-08-15');
+
+    const listJson = runCli(['list', '--json'], TEST_HOME);
+    const parsed = JSON.parse(listJson.stdout);
+    expect(parsed[0].dueDate).toBe('2026-08-15');
+  });
+
+  test('add without --due creates a todo with no due date', () => {
+    runCli(['add', 'Buy milk'], TEST_HOME);
+
+    const list = runCli(['list'], TEST_HOME);
+    expect(list.stdout).not.toContain('due:');
+
+    const listJson = runCli(['list', '--json'], TEST_HOME);
+    const parsed = JSON.parse(listJson.stdout);
+    expect(parsed[0].dueDate).toBeNull();
+  });
+
+  test('add --due <invalid> errors and does not create the todo', () => {
+    const result = runCli(['add', 'Buy milk', '--due', 'not-a-date'], TEST_HOME);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('Invalid due date. Expected format: YYYY-MM-DD');
+
+    const list = runCli(['list'], TEST_HOME);
+    expect(list.stdout.trim()).toBe('No todos.');
+  });
+
+  test('add --due <past date> is allowed', () => {
+    const result = runCli(['add', 'Buy milk', '--due', '2000-01-01'], TEST_HOME);
+    expect(result.status).toBe(0);
+
+    const list = runCli(['list'], TEST_HOME);
+    expect(list.stdout).toContain('due: 2000-01-01');
+  });
+
+  test('filter --due <date> matches todos with that exact due date', () => {
+    runCli(['add', 'Buy milk', '--due', '2026-08-15'], TEST_HOME);
+    runCli(['add', 'Walk dog', '--due', '2026-08-16'], TEST_HOME);
+
+    const result = runCli(['filter', '--due', '2026-08-15'], TEST_HOME);
+    expect(result.status).toBe(0);
+    const lines = result.stdout.trim().split('\n');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('Buy milk');
+  });
+
+  test('filter --overdue matches only pending todos with a past due date', () => {
+    runCli(['add', 'Overdue pending', '--due', '2000-01-01'], TEST_HOME);
+    const add2 = runCli(['add', 'Overdue but done', '--due', '2000-01-01'], TEST_HOME);
+    const id2 = add2.stdout.trim().split(' ')[1];
+    runCli(['done', id2], TEST_HOME);
+    runCli(['add', 'Future pending', '--due', '2999-01-01'], TEST_HOME);
+    runCli(['add', 'No due date'], TEST_HOME);
+
+    const result = runCli(['filter', '--overdue'], TEST_HOME);
+    expect(result.status).toBe(0);
+    const lines = result.stdout.trim().split('\n');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('Overdue pending');
+  });
+
+  test('filter --due <invalid> errors', () => {
+    const result = runCli(['filter', '--due', 'nope'], TEST_HOME);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('Invalid due date. Expected format: YYYY-MM-DD');
+  });
+
+  test('filter --json includes dueDate field', () => {
+    runCli(['add', 'Buy milk', '--due', '2026-08-15'], TEST_HOME);
+
+    const result = runCli(['filter', '--due', '2026-08-15', '--json'], TEST_HOME);
+    expect(result.status).toBe(0);
+    const parsed = JSON.parse(result.stdout);
+    expect(parsed[0].dueDate).toBe('2026-08-15');
+  });
+
   describe('interactive mode', () => {
     function runInteractive(input: string, home: string) {
       return spawnSync('node', [CLI_PATH, 'interactive'], {
@@ -534,6 +615,56 @@ describe('CLI e2e', () => {
       expect(result.stdout).toContain('Cleared 1 done todo(s).');
       expect(result.stdout).toContain('Walk dog');
       expect(result.stdout).not.toContain('Buy milk');
+    });
+
+    test('add <title> --due <date> sets a due date', () => {
+      const result = runInteractive(
+        ['add Buy milk --due 2026-08-15', 'list', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Buy milk');
+      expect(result.stdout).toContain('due: 2026-08-15');
+    });
+
+    test('add <title> --due <invalid> prints error and does not create the todo', () => {
+      const result = runInteractive(
+        ['add Buy milk --due nope', 'list', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Error: Invalid due date. Expected format: YYYY-MM-DD');
+      expect(result.stdout).toContain('No todos.');
+    });
+
+    test('filter --due <date> matches todos with that exact due date', () => {
+      runCli(['add', 'Buy milk', '--due', '2026-08-15'], TEST_HOME);
+      runCli(['add', 'Walk dog', '--due', '2026-08-16'], TEST_HOME);
+
+      const result = runInteractive(
+        ['filter --due 2026-08-15', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Buy milk');
+      expect(result.stdout).not.toContain('Walk dog');
+    });
+
+    test('filter --overdue matches only pending todos with a past due date', () => {
+      runCli(['add', 'Overdue pending', '--due', '2000-01-01'], TEST_HOME);
+      runCli(['add', 'Future pending', '--due', '2999-01-01'], TEST_HOME);
+
+      const result = runInteractive(
+        ['filter --overdue', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Overdue pending');
+      expect(result.stdout).not.toContain('Future pending');
     });
   });
 });

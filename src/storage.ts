@@ -6,6 +6,7 @@ export interface Todo {
   title: string;
   state: 'pending' | 'done';
   createdAt: number;
+  dueDate: string | null;
 }
 
 function getStoragePaths() {
@@ -43,7 +44,7 @@ export function findTodoById(idOrPrefix: string): Todo | undefined {
   return prefix;
 }
 
-export function addTodo(title: string, id: string): Todo {
+export function addTodo(title: string, id: string, dueDate?: string | null): Todo {
   if (!title.trim()) {
     throw new Error('Todo title cannot be empty');
   }
@@ -53,6 +54,7 @@ export function addTodo(title: string, id: string): Todo {
     title: title.trim(),
     state: 'pending',
     createdAt: Date.now(),
+    dueDate: dueDate ?? null,
   };
   todos.push(newTodo);
   saveTodos(todos);

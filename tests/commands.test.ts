@@ -44,6 +44,38 @@ describe('Commands', () => {
       const id2 = msg2.split(' ')[1];
       expect(id1).not.toBe(id2);
     });
+
+    test('with no --due, creates a todo with no due date', () => {
+      commands.handleAdd('New Todo');
+      const todos = storage.getTodos();
+      expect(todos[0].dueDate).toBeNull();
+    });
+
+    test('with a valid --due, sets the due date', () => {
+      commands.handleAdd('New Todo', '2026-08-15');
+      const todos = storage.getTodos();
+      expect(todos[0].dueDate).toBe('2026-08-15');
+    });
+
+    test('with --due in the past, allows it', () => {
+      commands.handleAdd('New Todo', '2000-01-01');
+      const todos = storage.getTodos();
+      expect(todos[0].dueDate).toBe('2000-01-01');
+    });
+
+    test('with a malformed --due, throws and does not create the todo', () => {
+      expect(() => commands.handleAdd('New Todo', '15-08-2026')).toThrow(
+        'Invalid due date. Expected format: YYYY-MM-DD'
+      );
+      expect(storage.getTodos()).toHaveLength(0);
+    });
+
+    test('with an invalid calendar date, throws and does not create the todo', () => {
+      expect(() => commands.handleAdd('New Todo', '2026-13-40')).toThrow(
+        'Invalid due date. Expected format: YYYY-MM-DD'
+      );
+      expect(storage.getTodos()).toHaveLength(0);
+    });
   });
 
   describe('handleList', () => {
@@ -100,8 +132,8 @@ describe('Commands', () => {
 
     test('breaks ties between identical case-insensitive titles by createdAt ascending', () => {
       storage.saveTodos([
-        { id: 'id-1', title: 'Todo', state: 'pending', createdAt: 200 },
-        { id: 'id-2', title: 'todo', state: 'pending', createdAt: 100 },
+        { id: 'id-1', title: 'Todo', state: 'pending', createdAt: 200, dueDate: null },
+        { id: 'id-2', title: 'todo', state: 'pending', createdAt: 100, dueDate: null },
       ]);
 
       const message = commands.handleList();
@@ -144,6 +176,7 @@ describe('Commands', () => {
         title: 'First',
         state: 'pending',
         createdAt: expect.any(Number),
+        dueDate: null,
       });
       expect(parsed[1].id).toBe('id-2');
       expect(message).toBe(JSON.stringify(parsed, null, 2));
@@ -157,6 +190,46 @@ describe('Commands', () => {
       const message = commands.handleList(true);
       const parsed = JSON.parse(message);
       expect(parsed.map((t: storage.Todo) => t.id)).toEqual(['id-2', 'id-1']);
+    });
+
+    test('includes "due: YYYY-MM-DD" in the row when a due date is set', () => {
+      storage.addTodo('Test', 'id-1', '2026-08-15');
+
+      const message = commands.handleList();
+      expect(message).toContain('due: 2026-08-15');
+    });
+
+    test('omits "due:" from the row when no due date is set', () => {
+      storage.addTodo('Test', 'id-1');
+
+      const message = commands.handleList();
+      expect(message).not.toContain('due:');
+    });
+
+    test('due date does not change sort order', () => {
+      storage.addTodo('Banana', 'id-1', '2026-01-01');
+      storage.addTodo('Apple', 'id-2', '2030-01-01');
+
+      const message = commands.handleList();
+      const lines = message.split('\n');
+      expect(lines[0]).toContain('Apple');
+      expect(lines[1]).toContain('Banana');
+    });
+
+    test('with json=true, includes dueDate field (string when set)', () => {
+      storage.addTodo('Test', 'id-1', '2026-08-15');
+
+      const message = commands.handleList(true);
+      const parsed = JSON.parse(message);
+      expect(parsed[0].dueDate).toBe('2026-08-15');
+    });
+
+    test('with json=true, includes dueDate field (null when not set)', () => {
+      storage.addTodo('Test', 'id-1');
+
+      const message = commands.handleList(true);
+      const parsed = JSON.parse(message);
+      expect(parsed[0].dueDate).toBeNull();
     });
   });
 
@@ -388,6 +461,7 @@ describe('Commands', () => {
         title: 'Buy groceries',
         state: 'pending',
         createdAt: expect.any(Number),
+        dueDate: null,
       });
       expect(message).toBe(JSON.stringify(parsed, null, 2));
     });
@@ -406,6 +480,78 @@ describe('Commands', () => {
       const message = commands.handleFilter('a', undefined, true);
       const parsed = JSON.parse(message);
       expect(parsed.map((t: storage.Todo) => t.id)).toEqual(['id-2', 'id-1']);
+    });
+
+    test('--due matches todos with the exact due date', () => {
+      storage.addTodo('Buy milk', 'id-1', '2026-08-15');
+      storage.addTodo('Walk dog', 'id-2', '2026-08-16');
+      storage.addTodo('No due', 'id-3');
+
+      const message = commands.handleFilter(undefined, undefined, false, '2026-08-15');
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toContain('Buy milk');
+    });
+
+    test('--due is combinable with name and --state', () => {
+      storage.addTodo('Buy milk', 'id-1', '2026-08-15');
+      storage.addTodo('Buy eggs', 'id-2', '2026-08-15');
+      storage.markTodoDone('id-1');
+
+      const message = commands.handleFilter('buy', 'done', false, '2026-08-15');
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toContain('Buy milk');
+    });
+
+    test('--due with an invalid value throws', () => {
+      expect(() => commands.handleFilter(undefined, undefined, false, '2026-13-40')).toThrow(
+        'Invalid due date. Expected format: YYYY-MM-DD'
+      );
+    });
+
+    test('--due with no matches returns a due-date-specific message', () => {
+      storage.addTodo('Buy milk', 'id-1', '2026-08-15');
+
+      const message = commands.handleFilter(undefined, undefined, false, '2026-09-01');
+      expect(message).toBe('No todos match due date "2026-09-01".');
+    });
+
+    test('--overdue matches only pending todos with a due date before today', () => {
+      storage.addTodo('Overdue pending', 'id-1', '2000-01-01');
+      storage.addTodo('Overdue but done', 'id-2', '2000-01-01');
+      storage.markTodoDone('id-2');
+      storage.addTodo('Future pending', 'id-3', '2999-01-01');
+      storage.addTodo('No due date', 'id-4');
+
+      const message = commands.handleFilter(undefined, undefined, false, undefined, true);
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toContain('Overdue pending');
+    });
+
+    test('--overdue with no matches returns an overdue-specific message', () => {
+      storage.addTodo('Future pending', 'id-1', '2999-01-01');
+
+      const message = commands.handleFilter(undefined, undefined, false, undefined, true);
+      expect(message).toBe('No overdue todos.');
+    });
+
+    test('--overdue works standalone without name or --state', () => {
+      storage.addTodo('Overdue pending', 'id-1', '2000-01-01');
+
+      const message = commands.handleFilter(undefined, undefined, false, undefined, true);
+      expect(message).toContain('Overdue pending');
+    });
+
+    test('with json=true, --due filters and includes dueDate field', () => {
+      storage.addTodo('Buy milk', 'id-1', '2026-08-15');
+      storage.addTodo('Walk dog', 'id-2', '2026-08-16');
+
+      const message = commands.handleFilter(undefined, undefined, true, '2026-08-15');
+      const parsed = JSON.parse(message);
+      expect(parsed).toHaveLength(1);
+      expect(parsed[0].dueDate).toBe('2026-08-15');
     });
   });
 

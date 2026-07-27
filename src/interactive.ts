@@ -4,12 +4,12 @@ import * as commands from './commands';
 const PROMPT = 'todo> ';
 
 const HELP_TEXT = [
-  'add <title>              Add a new todo',
+  'add <title> [--due <date>]  Add a new todo',
   'list                     List all todos',
   'done <id>                Mark a todo as done',
   'update <id> <newTitle>   Update a todo\'s title',
   'delete <id>              Delete a todo',
-  'filter [name] [--state <state>]  Filter todos by name and/or state',
+  'filter [name] [--state <state>] [--due <date>] [--overdue]  Filter todos by name, state, and/or due date',
   'clear [--state <state>]  Clear todos, optionally by state',
   'exit                     Exit interactive mode',
   'quit                     Exit interactive mode',
@@ -18,7 +18,10 @@ const HELP_TEXT = [
 type Handler = (rest: string) => string;
 
 const handlers: Record<string, Handler> = {
-  add: (rest) => commands.handleAdd(rest),
+  add: (rest) => {
+    const { title, due } = parseAddArgs(rest);
+    return commands.handleAdd(title, due);
+  },
   list: () => commands.handleList(),
   done: (rest) => commands.handleDone(rest.trim()),
   update: (rest) => {
@@ -29,8 +32,8 @@ const handlers: Record<string, Handler> = {
   },
   delete: (rest) => commands.handleDelete(rest.trim()),
   filter: (rest) => {
-    const { name, state } = parseFilterArgs(rest);
-    return commands.handleFilter(name, state);
+    const { name, state, due, overdue } = parseFilterArgs(rest);
+    return commands.handleFilter(name, state, undefined, due, overdue);
   },
   clear: (rest) => {
     const { state } = parseClearArgs(rest);
@@ -38,11 +41,36 @@ const handlers: Record<string, Handler> = {
   },
 };
 
-function parseFilterArgs(rest: string): { name?: string; state?: string } {
-  const stateMatch = rest.match(/--state\s+(\S+)/);
+function parseAddArgs(rest: string): { title: string; due?: string } {
+  const dueMatch = rest.match(/--due\s+(\S+)/);
+  const due = dueMatch ? dueMatch[1] : undefined;
+  const title = (dueMatch ? rest.slice(0, dueMatch.index) : rest).trim();
+  return { title, due };
+}
+
+function parseFilterArgs(rest: string): { name?: string; state?: string; due?: string; overdue?: boolean } {
+  let remaining = rest;
+
+  const stateMatch = remaining.match(/--state\s+(\S+)/);
   const state = stateMatch ? stateMatch[1] : undefined;
-  const nameOnly = (stateMatch ? rest.slice(0, stateMatch.index) : rest).trim();
-  return { name: nameOnly === '' ? undefined : nameOnly, state };
+  if (stateMatch) {
+    remaining = remaining.slice(0, stateMatch.index) + remaining.slice(stateMatch.index! + stateMatch[0].length);
+  }
+
+  const dueMatch = remaining.match(/--due\s+(\S+)/);
+  const due = dueMatch ? dueMatch[1] : undefined;
+  if (dueMatch) {
+    remaining = remaining.slice(0, dueMatch.index) + remaining.slice(dueMatch.index! + dueMatch[0].length);
+  }
+
+  const overdueMatch = remaining.match(/--overdue\b/);
+  const overdue = overdueMatch ? true : undefined;
+  if (overdueMatch) {
+    remaining = remaining.slice(0, overdueMatch.index) + remaining.slice(overdueMatch.index! + overdueMatch[0].length);
+  }
+
+  const nameOnly = remaining.trim();
+  return { name: nameOnly === '' ? undefined : nameOnly, state, due, overdue };
 }
 
 function parseClearArgs(rest: string): { state?: string } {

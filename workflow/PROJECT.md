@@ -48,3 +48,9 @@ _Avoid_: `--format json`, `-j`, pretty-printed-only output
 
 **List ordering**: The unconditional display order applied to `todo list` and `todo filter` results (text and `--json`, one-shot and `interactive`): todos are grouped by `state` (`pending` group first, `done` group second), sorted by `title` case-insensitively ascending within each group, with `createdAt` ascending as the tiebreaker for identical case-insensitive titles. There is no flag to opt out or restore the old flat `createdAt` order.
 _Avoid_: `--sort`, `--group`, raw creation-time order
+
+**Due date**: An optional `YYYY-MM-DD` date-only value on a `Todo`, set via `--due` on `todo add`, shown in `list`/`filter` text rows and as `dueDate` in `--json` output. Does not affect the existing state → title → `createdAt` sort order.
+_Avoid_: Deadline, expiry, target date
+
+**Overdue**: A pending todo whose due date is earlier than today, matched via `todo filter --overdue`.
+_Avoid_: Late, expired
