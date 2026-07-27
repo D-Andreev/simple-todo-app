@@ -5,16 +5,17 @@
   "mode": "feature",
   "task": "Add due date for todo items",
   "phase": "review",
-  "status": "ai_running",
-  "workflow_label": "workflow:review",
+  "status": "done",
+  "workflow_label": "workflow:human-review",
   "base_branch": "main",
   "state_branch": "workflow/state",
   "work_branch": "workflow/issue-24",
   "handoff_path": "issues/24",
   "requirements_approved": true,
+  "review_verdict": "APPROVE WITH NOTES",
   "clarify_rounds": 5,
   "created_at": "2026-07-27T06:47:22.000Z",
-  "updated_at": "2026-07-27T07:30:00.000Z",
+  "updated_at": "2026-07-27T07:35:00.000Z",
   "last_session_url": "https://claude.ai/code/session_015k4QAhtYw33WkAvF6EUv6X",
   "history": [
     {
@@ -106,6 +107,24 @@
       "event": "started",
       "at": "2026-07-27T07:30:00.000Z",
       "note": "fresh-eyes review of workflow/issue-24 against main; PR #25"
+    },
+    {
+      "phase": "review",
+      "event": "pr_comment_posted",
+      "at": "2026-07-27T07:35:00.000Z",
+      "note": "APPROVE WITH NOTES — https://github.com/D-Andreev/simple-todo-app/pull/25#issuecomment-5088444923"
+    },
+    {
+      "phase": "review",
+      "event": "phase_completed",
+      "at": "2026-07-27T07:35:00.000Z",
+      "note": "review-report.md written; verdict=APPROVE WITH NOTES"
+    },
+    {
+      "phase": "review",
+      "event": "labels_updated",
+      "at": "2026-07-27T07:35:00.000Z",
+      "note": "workflow:review -> workflow:human-review (intended)"
     }
   ],
   "human_feedback": [
