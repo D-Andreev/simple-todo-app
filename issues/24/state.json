@@ -12,9 +12,9 @@
   "work_branch": null,
   "handoff_path": "issues/24",
   "requirements_approved": false,
-  "clarify_rounds": 2,
+  "clarify_rounds": 3,
   "created_at": "2026-07-27T06:47:22.000Z",
-  "updated_at": "2026-07-27T06:54:36.000Z",
+  "updated_at": "2026-07-27T07:01:05.000Z",
   "last_session_url": "https://claude.ai/code/session_015cxrmCJ5xCgkDZ29MJ5QtZ",
   "history": [
     {
@@ -40,6 +40,12 @@
       "event": "human_answered",
       "at": "2026-07-27T06:54:36.000Z",
       "note": "Q2: exact-match --due filter plus separate --overdue flag — confirmed"
+    },
+    {
+      "phase": "clarify",
+      "event": "human_answered",
+      "at": "2026-07-27T07:01:05.000Z",
+      "note": "Q3: show due date in list/filter output (text + JSON), no sort-order change — confirmed"
     }
   ],
   "human_feedback": [
@@ -52,6 +58,11 @@
       "at": "2026-07-27T06:54:36.000Z",
       "question": "Should todo filter --due match exact date only, or also have a dedicated --overdue flag?",
       "answer": "Yes, exact match plus a separate --overdue flag"
+    },
+    {
+      "at": "2026-07-27T07:01:05.000Z",
+      "question": "Should due date show in list/filter output (text + JSON), and should it change the existing sort order?",
+      "answer": "Yes, show it in both, don't change sort order"
     }
   ],
   "comprehension_attempt": 0,
