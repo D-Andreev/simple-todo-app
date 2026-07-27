@@ -4,8 +4,8 @@
   "issue_url": "https://github.com/D-Andreev/simple-todo-app/issues/26",
   "mode": "feature",
   "task": "Reopen / undo done",
-  "phase": "implement",
-  "status": "done",
+  "phase": "review",
+  "status": "ai_running",
   "workflow_label": "workflow:review",
   "base_branch": "main",
   "state_branch": "workflow/state",
@@ -14,7 +14,7 @@
   "requirements_approved": true,
   "clarify_rounds": 3,
   "created_at": "2026-07-27T08:32:34.000Z",
-  "updated_at": "2026-07-27T09:00:00.000Z",
+  "updated_at": "2026-07-27T09:30:00.000Z",
   "last_session_url": "https://claude.ai/code/session_01YR6s2nvEymS8Ngrq7rCR7L",
   "history": [
     {
@@ -88,6 +88,12 @@
       "event": "labels_updated",
       "at": "2026-07-27T09:20:00.000Z",
       "note": "workflow:implement -> workflow:review (intended)"
+    },
+    {
+      "phase": "review",
+      "event": "started",
+      "at": "2026-07-27T09:30:00.000Z",
+      "note": "work_branch=workflow/issue-26, PR #27, fresh-eyes review starting"
     }
   ],
   "human_feedback": [
