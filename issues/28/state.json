@@ -4,18 +4,18 @@
   "issue_url": "https://github.com/D-Andreev/simple-todo-app/issues/28",
   "mode": "feature",
   "task": "Export / import todos (todos.json, merge or replace)",
-  "phase": "clarify",
-  "status": "done",
+  "phase": "implement",
+  "status": "ai_running",
   "workflow_label": "workflow:implement",
   "base_branch": "main",
   "state_branch": "workflow/state",
-  "work_branch": null,
+  "work_branch": "workflow/issue-28",
   "handoff_path": "issues/28",
   "requirements_approved": true,
   "clarify_rounds": 5,
   "created_at": "2026-07-27T09:07:31.000Z",
-  "updated_at": "2026-07-27T09:19:33.000Z",
-  "last_session_url": "https://claude.ai/code/session_01QHL6NP6y1f7oMyQfo3Fvdr",
+  "updated_at": "2026-07-27T09:21:57.000Z",
+  "last_session_url": "https://claude.ai/code/session_01Uu1MATsgT1cWFNmBSU3Krc",
   "history": [
     {
       "phase": "clarify",
@@ -76,6 +76,12 @@
       "event": "labels_updated",
       "at": "2026-07-27T09:19:33.000Z",
       "note": "workflow:clarify -> workflow:implement"
+    },
+    {
+      "phase": "implement",
+      "event": "started",
+      "at": "2026-07-27T09:21:57.000Z",
+      "note": "base_branch=main"
     }
   ],
   "human_feedback": [
