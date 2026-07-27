@@ -14,9 +14,10 @@ program
 program
   .command('add <title>')
   .description('Add a new todo')
-  .action((title: string) => {
+  .option('--due <date>', 'Set a due date (YYYY-MM-DD)')
+  .action((title: string, options: { due?: string }) => {
     try {
-      const message = commands.handleAdd(title);
+      const message = commands.handleAdd(title, options.due);
       console.log(message);
     } catch (error) {
       console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -81,16 +82,23 @@ program
   .command('filter [name]')
   .description('Filter todos by name and/or state')
   .option('--state <state>', 'Filter by state (pending or done)')
+  .option('--due <date>', 'Filter by exact due date (YYYY-MM-DD)')
+  .option('--overdue', 'Show pending todos whose due date has passed')
   .option('--json', 'Output as JSON')
-  .action((name: string | undefined, options: { state?: string; json?: boolean }) => {
-    try {
-      const message = commands.handleFilter(name, options.state, options.json);
-      console.log(message);
-    } catch (error) {
-      console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      process.exit(1);
+  .action(
+    (
+      name: string | undefined,
+      options: { state?: string; json?: boolean; due?: string; overdue?: boolean }
+    ) => {
+      try {
+        const message = commands.handleFilter(name, options.state, options.json, options.due, options.overdue);
+        console.log(message);
+      } catch (error) {
+        console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        process.exit(1);
+      }
     }
-  });
+  );
 
 program
   .command('clear')

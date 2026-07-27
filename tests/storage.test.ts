@@ -36,7 +36,7 @@ describe('Storage', () => {
 
   test('saveTodos creates storage directory and file', () => {
     const todos = [
-      { id: 'test-1', title: 'Test', state: 'pending' as const, createdAt: Date.now() },
+      { id: 'test-1', title: 'Test', state: 'pending' as const, createdAt: Date.now(), dueDate: null },
     ];
     storage.saveTodos(todos);
     expect(fs.existsSync(TEST_STORAGE)).toBe(true);
@@ -59,6 +59,19 @@ describe('Storage', () => {
   test('addTodo throws when title is empty', () => {
     expect(() => storage.addTodo('', 'test-1')).toThrow('Todo title cannot be empty');
     expect(() => storage.addTodo('   ', 'test-1')).toThrow('Todo title cannot be empty');
+  });
+
+  test('addTodo defaults dueDate to null when not provided', () => {
+    const todo = storage.addTodo('Test Todo', 'test-1');
+    expect(todo.dueDate).toBeNull();
+  });
+
+  test('addTodo stores the given dueDate', () => {
+    const todo = storage.addTodo('Test Todo', 'test-1', '2026-08-15');
+    expect(todo.dueDate).toBe('2026-08-15');
+
+    const fetched = storage.findTodoById('test-1');
+    expect(fetched?.dueDate).toBe('2026-08-15');
   });
 
   test('findTodoById returns todo when found', () => {
