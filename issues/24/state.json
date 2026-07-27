@@ -5,16 +5,16 @@
   "mode": "feature",
   "task": "Add due date for todo items",
   "phase": "clarify",
-  "status": "ai_running",
-  "workflow_label": "workflow:clarify",
+  "status": "done",
+  "workflow_label": "workflow:implement",
   "base_branch": "main",
   "state_branch": "workflow/state",
   "work_branch": null,
   "handoff_path": "issues/24",
-  "requirements_approved": false,
+  "requirements_approved": true,
   "clarify_rounds": 5,
   "created_at": "2026-07-27T06:47:22.000Z",
-  "updated_at": "2026-07-27T07:05:11.000Z",
+  "updated_at": "2026-07-27T07:07:02.000Z",
   "last_session_url": "https://claude.ai/code/session_015cxrmCJ5xCgkDZ29MJ5QtZ",
   "history": [
     {
@@ -58,6 +58,24 @@
       "event": "human_answered",
       "at": "2026-07-27T07:05:11.000Z",
       "note": "Q5: reject invalid --due values with an error; allow past dates — confirmed"
+    },
+    {
+      "phase": "clarify",
+      "event": "human_approved",
+      "at": "2026-07-27T07:07:02.000Z",
+      "note": "requirements.md approved — 5 clarification rounds"
+    },
+    {
+      "phase": "clarify",
+      "event": "phase_completed",
+      "at": "2026-07-27T07:07:02.000Z",
+      "note": "clarify complete, requirements_approved=true"
+    },
+    {
+      "phase": "clarify",
+      "event": "labels_updated",
+      "at": "2026-07-27T07:07:02.000Z",
+      "note": "workflow:clarify -> workflow:implement (intended)"
     }
   ],
   "human_feedback": [
@@ -85,6 +103,11 @@
       "at": "2026-07-27T07:05:11.000Z",
       "question": "What should happen on a malformed/invalid --due value, and should past dates be allowed?",
       "answer": "Yes, reject invalid dates and allow past dates"
+    },
+    {
+      "at": "2026-07-27T07:07:02.000Z",
+      "question": "approve requirements",
+      "answer": "approve requirements"
     }
   ],
   "comprehension_attempt": 0,

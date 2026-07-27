@@ -26,4 +26,4 @@ We can set a due date when creating actions and filter by due date.
 - Changing or clearing a due date via `todo update` (may be a follow-up issue)
 
 ## Approved by human
-- [ ] Pending — reply `approve requirements` when ready
+- [x] Approved 2026-07-27
