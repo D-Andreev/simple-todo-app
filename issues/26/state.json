@@ -5,8 +5,8 @@
   "mode": "feature",
   "task": "Reopen / undo done",
   "phase": "implement",
-  "status": "ai_running",
-  "workflow_label": "workflow:implement",
+  "status": "done",
+  "workflow_label": "workflow:review",
   "base_branch": "main",
   "state_branch": "workflow/state",
   "work_branch": "workflow/issue-26",
@@ -70,6 +70,24 @@
       "event": "started",
       "at": "2026-07-27T09:00:00.000Z",
       "note": "work_branch=workflow/issue-26 base_branch=main"
+    },
+    {
+      "phase": "implement",
+      "event": "work_branch_created",
+      "at": "2026-07-27T09:01:00.000Z",
+      "note": "workflow/issue-26 created from main, pushed"
+    },
+    {
+      "phase": "implement",
+      "event": "phase_completed",
+      "at": "2026-07-27T09:20:00.000Z",
+      "note": "reopenTodo/handleReopen + CLI/interactive wiring; draft PR #27 opened"
+    },
+    {
+      "phase": "implement",
+      "event": "labels_updated",
+      "at": "2026-07-27T09:20:00.000Z",
+      "note": "workflow:implement -> workflow:review (intended)"
     }
   ],
   "human_feedback": [
