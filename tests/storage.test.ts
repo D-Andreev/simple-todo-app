@@ -184,4 +184,20 @@ describe('Storage', () => {
     expect(count).toBe(0);
     expect(storage.getTodos()).toHaveLength(1);
   });
+
+  test('writeTodosToFile writes JSON to an arbitrary path', () => {
+    const todos = [{ id: 'x', title: 'T', state: 'pending' as const, createdAt: 1, dueDate: null }];
+    const filePath = path.join(TEST_DIR, 'export.json');
+
+    storage.writeTodosToFile(filePath, todos);
+
+    expect(JSON.parse(fs.readFileSync(filePath, 'utf-8'))).toEqual(todos);
+  });
+
+  test('readTextFile reads file contents as a utf-8 string', () => {
+    const filePath = path.join(TEST_DIR, 'in.json');
+    fs.writeFileSync(filePath, 'hello', 'utf-8');
+
+    expect(storage.readTextFile(filePath)).toBe('hello');
+  });
 });

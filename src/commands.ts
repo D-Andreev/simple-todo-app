@@ -168,3 +168,83 @@ export function handleClear(state?: string): string {
 
   return state === undefined ? `Cleared ${count} todo(s).` : `Cleared ${count} ${state} todo(s).`;
 }
+
+export function handleExport(filePath?: string): string {
+  const todos = storage.getTodos();
+
+  if (filePath) {
+    storage.writeTodosToFile(filePath, todos);
+    return `Exported ${todos.length} todo(s) to ${filePath}`;
+  }
+
+  return JSON.stringify(todos, null, 2);
+}
+
+function isValidImportEntry(entry: unknown): entry is storage.Todo {
+  if (typeof entry !== 'object' || entry === null) {
+    return false;
+  }
+  const candidate = entry as Record<string, unknown>;
+  if (typeof candidate.id !== 'string' || candidate.id.trim() === '') {
+    return false;
+  }
+  if (typeof candidate.title !== 'string' || candidate.title.trim() === '') {
+    return false;
+  }
+  if (candidate.state !== 'pending' && candidate.state !== 'done') {
+    return false;
+  }
+  if (typeof candidate.createdAt !== 'number' || !Number.isFinite(candidate.createdAt)) {
+    return false;
+  }
+  if (candidate.dueDate !== null && (typeof candidate.dueDate !== 'string' || !isValidDueDate(candidate.dueDate))) {
+    return false;
+  }
+  return true;
+}
+
+export function handleImport(filePath?: string, replace?: boolean): string {
+  const raw = filePath ? storage.readTextFile(filePath) : storage.readStdinText();
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new Error('Invalid import data: not valid JSON');
+  }
+  if (!Array.isArray(parsed)) {
+    throw new Error('Invalid import data: expected a JSON array');
+  }
+
+  const valid: storage.Todo[] = [];
+  let skippedInvalid = 0;
+  for (const entry of parsed) {
+    if (isValidImportEntry(entry)) {
+      valid.push(entry);
+    } else {
+      skippedInvalid++;
+    }
+  }
+
+  if (replace) {
+    storage.saveTodos(valid);
+    return `Imported ${valid.length} todo(s), skipped 0 (id collision), skipped ${skippedInvalid} invalid.`;
+  }
+
+  const todos = storage.getTodos();
+  const existingIds = new Set(todos.map((todo) => todo.id));
+  let imported = 0;
+  let skippedCollision = 0;
+  for (const todo of valid) {
+    if (existingIds.has(todo.id)) {
+      skippedCollision++;
+    } else {
+      todos.push(todo);
+      existingIds.add(todo.id);
+      imported++;
+    }
+  }
+  storage.saveTodos(todos);
+
+  return `Imported ${imported} todo(s), skipped ${skippedCollision} (id collision), skipped ${skippedInvalid} invalid.`;
+}

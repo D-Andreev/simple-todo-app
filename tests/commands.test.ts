@@ -643,4 +643,119 @@ describe('Commands', () => {
       expect(message).toBe('Cleared 1 todo(s).');
     });
   });
+
+  describe('handleExport', () => {
+    test('with no file, returns the todos array as JSON', () => {
+      const todo = storage.addTodo('Buy milk', 'id-1');
+      const result = commands.handleExport();
+      expect(JSON.parse(result)).toEqual([todo]);
+    });
+
+    test('with no todos, returns "[]"', () => {
+      const result = commands.handleExport();
+      expect(JSON.parse(result)).toEqual([]);
+    });
+
+    test('with --file, writes JSON to the path and returns a confirmation message', () => {
+      storage.addTodo('Buy milk', 'id-1');
+      const exportPath = path.join(TEST_DIR, 'export.json');
+
+      const message = commands.handleExport(exportPath);
+
+      expect(message).toContain('Exported 1 todo(s)');
+      expect(message).toContain(exportPath);
+      const written = JSON.parse(fs.readFileSync(exportPath, 'utf-8'));
+      expect(written).toHaveLength(1);
+      expect(written[0].title).toBe('Buy milk');
+    });
+  });
+
+  describe('handleImport', () => {
+    function importFile(data: unknown): string {
+      const filePath = path.join(TEST_DIR, `import-${Math.random()}.json`);
+      fs.writeFileSync(filePath, JSON.stringify(data), 'utf-8');
+      return filePath;
+    }
+
+    test('merges valid todos, skips id collisions, and reports counts', () => {
+      storage.addTodo('Existing', 'dup-id');
+      const payload = [
+        { id: 'dup-id', title: 'Existing (imported copy)', state: 'pending', createdAt: 1, dueDate: null },
+        { id: 'new-id', title: 'New todo', state: 'done', createdAt: 2, dueDate: null },
+      ];
+
+      const message = commands.handleImport(importFile(payload));
+
+      expect(message).toContain('Imported 1');
+      expect(message).toContain('skipped 1 (id collision)');
+      const todos = storage.getTodos();
+      expect(todos).toHaveLength(2);
+      expect(todos.find((t) => t.id === 'dup-id')?.title).toBe('Existing');
+    });
+
+    test('--replace wholesale replaces the existing todos', () => {
+      storage.addTodo('Old', 'old-id');
+      const payload = [{ id: 'new-id', title: 'New', state: 'pending', createdAt: 1, dueDate: null }];
+
+      commands.handleImport(importFile(payload), true);
+
+      const todos = storage.getTodos();
+      expect(todos).toHaveLength(1);
+      expect(todos[0].id).toBe('new-id');
+    });
+
+    test('skips invalid entries, counted separately from id collisions', () => {
+      const payload = [
+        { id: 'ok-id', title: 'Valid', state: 'pending', createdAt: 1, dueDate: null },
+        { id: 'bad-state', title: 'Bad state', state: 'nope', createdAt: 1, dueDate: null },
+        { title: 'Missing id', state: 'pending', createdAt: 1, dueDate: null },
+        { id: 'bad-due', title: 'Bad due', state: 'pending', createdAt: 1, dueDate: 'not-a-date' },
+        { id: 123, title: 'Non-string id', state: 'pending', createdAt: 1, dueDate: null },
+      ];
+
+      const message = commands.handleImport(importFile(payload));
+
+      expect(message).toContain('Imported 1');
+      expect(message).toContain('skipped 4 invalid');
+      expect(storage.getTodos()).toHaveLength(1);
+    });
+
+    test('never auto-generates a missing id — it always counts as invalid', () => {
+      const payload = [{ title: 'No id', state: 'pending', createdAt: 1, dueDate: null }];
+
+      const message = commands.handleImport(importFile(payload));
+
+      expect(message).toContain('Imported 0');
+      expect(message).toContain('skipped 1 invalid');
+      expect(storage.getTodos()).toHaveLength(0);
+    });
+
+    test('aborts entirely when the top-level payload is not a JSON array', () => {
+      expect(() => commands.handleImport(importFile({ id: 'not-an-array' }))).toThrow(
+        'Invalid import data: expected a JSON array'
+      );
+      expect(storage.getTodos()).toHaveLength(0);
+    });
+
+    test('aborts entirely on malformed JSON', () => {
+      const filePath = path.join(TEST_DIR, 'bad.json');
+      fs.writeFileSync(filePath, '{not valid json', 'utf-8');
+
+      expect(() => commands.handleImport(filePath)).toThrow('Invalid import data: not valid JSON');
+      expect(storage.getTodos()).toHaveLength(0);
+    });
+
+    test('accepts a valid dueDate and rejects a malformed one', () => {
+      const payload = [
+        { id: 'due-ok', title: 'Has due', state: 'pending', createdAt: 1, dueDate: '2026-08-15' },
+        { id: 'due-bad', title: 'Bad calendar date', state: 'pending', createdAt: 1, dueDate: '2026-13-40' },
+      ];
+
+      const message = commands.handleImport(importFile(payload));
+
+      expect(message).toContain('Imported 1');
+      expect(message).toContain('skipped 1 invalid');
+      expect(storage.getTodos()[0].dueDate).toBe('2026-08-15');
+    });
+  });
 });
