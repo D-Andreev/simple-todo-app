@@ -86,6 +86,17 @@ export function markTodoDone(idOrPrefix: string): Todo {
   return todo;
 }
 
+export function reopenTodo(idOrPrefix: string): Todo {
+  const todos = getTodos();
+  const todo = findTodoByIdOrPrefix(todos, idOrPrefix);
+  if (!todo) {
+    throw new Error(`Todo with id ${idOrPrefix} not found`);
+  }
+  todo.state = 'pending';
+  saveTodos(todos);
+  return todo;
+}
+
 export function deleteTodo(idOrPrefix: string): void {
   const todos = getTodos();
   const todo = findTodoByIdOrPrefix(todos, idOrPrefix);

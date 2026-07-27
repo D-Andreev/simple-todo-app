@@ -54,3 +54,6 @@ _Avoid_: Deadline, expiry, target date
 
 **Overdue**: A pending todo whose due date is earlier than today, matched via `todo filter --overdue`.
 _Avoid_: Late, expired
+
+**Reopen**: The action of moving a `done` todo back to `pending`, invoked via `todo reopen <id>`.
+_Avoid_: `pending` (as a command name — reserved for the existing `--state pending` filter value), undo, restore

@@ -53,6 +53,19 @@ program
   });
 
 program
+  .command('reopen <id>')
+  .description('Move a done todo back to pending')
+  .action((id: string) => {
+    try {
+      const message = commands.handleReopen(id);
+      console.log(message);
+    } catch (error) {
+      console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      process.exit(1);
+    }
+  });
+
+program
   .command('update <id> <newTitle>')
   .description('Update a todo\'s title')
   .action((id: string, newTitle: string) => {

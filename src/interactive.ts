@@ -7,6 +7,7 @@ const HELP_TEXT = [
   'add <title> [--due <date>]  Add a new todo',
   'list                     List all todos',
   'done <id>                Mark a todo as done',
+  'reopen <id>              Move a done todo back to pending',
   'update <id> <newTitle>   Update a todo\'s title',
   'delete <id>              Delete a todo',
   'filter [name] [--state <state>] [--due <date>] [--overdue]  Filter todos by name, state, and/or due date',
@@ -24,6 +25,7 @@ const handlers: Record<string, Handler> = {
   },
   list: () => commands.handleList(),
   done: (rest) => commands.handleDone(rest.trim()),
+  reopen: (rest) => commands.handleReopen(rest.trim()),
   update: (rest) => {
     const spaceIdx = rest.indexOf(' ');
     const id = spaceIdx === -1 ? rest : rest.slice(0, spaceIdx);
