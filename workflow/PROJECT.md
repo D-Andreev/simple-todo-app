@@ -45,3 +45,6 @@ _Avoid_: REPL mode, shell mode, TUI mode
 
 **JSON output**: A `--json` flag on `list` and `filter` that emits todos as a JSON array of raw internal `Todo` objects (`{ id, title, state, createdAt }`, full uuid, epoch-ms) instead of the human-readable formatted rows, for scripting (e.g. piping through `jq`).
 _Avoid_: `--format json`, `-j`, pretty-printed-only output
+
+**List ordering**: The unconditional display order applied to `todo list` and `todo filter` results (text and `--json`, one-shot and `interactive`): todos are grouped by `state` (`pending` group first, `done` group second), sorted by `title` case-insensitively ascending within each group, with `createdAt` ascending as the tiebreaker for identical case-insensitive titles. There is no flag to opt out or restore the old flat `createdAt` order.
+_Avoid_: `--sort`, `--group`, raw creation-time order

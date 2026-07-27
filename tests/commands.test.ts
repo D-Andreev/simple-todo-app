@@ -52,19 +52,62 @@ describe('Commands', () => {
       expect(message).toBe('No todos.');
     });
 
-    test('lists all todos sorted by creation time', () => {
+    test('sorts todos by title, case-insensitively, ascending', () => {
       const id1 = 'id-1';
       const id2 = 'id-2';
-      const todo1 = storage.addTodo('First', id1);
-      const todo2 = storage.addTodo('Second', id2);
+      storage.addTodo('Second', id1);
+      storage.addTodo('First', id2);
 
       const message = commands.handleList();
       const lines = message.split('\n');
       expect(lines).toHaveLength(2);
-      expect(lines[0]).toContain(id1.substring(0, 8));
+      expect(lines[0]).toContain(id2.substring(0, 8));
       expect(lines[0]).toContain('First');
-      expect(lines[1]).toContain(id2.substring(0, 8));
+      expect(lines[1]).toContain(id1.substring(0, 8));
       expect(lines[1]).toContain('Second');
+    });
+
+    test('groups pending todos before done todos, regardless of creation order', () => {
+      storage.addTodo('Zebra', 'id-1');
+      storage.markTodoDone('id-1');
+      storage.addTodo('Apple', 'id-2');
+
+      const message = commands.handleList();
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(2);
+      expect(lines[0]).toContain('id-2'.substring(0, 8));
+      expect(lines[0]).toContain('pending');
+      expect(lines[1]).toContain('id-1'.substring(0, 8));
+      expect(lines[1]).toContain('done');
+    });
+
+    test('sorts by title within a state group before sorting the other group', () => {
+      storage.addTodo('Banana', 'id-1');
+      storage.markTodoDone('id-1');
+      storage.addTodo('Cherry', 'id-2');
+      storage.markTodoDone('id-2');
+      storage.addTodo('Date', 'id-3');
+      storage.addTodo('Apple', 'id-4');
+
+      const message = commands.handleList();
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(4);
+      expect(lines[0]).toContain('Apple');
+      expect(lines[1]).toContain('Date');
+      expect(lines[2]).toContain('Banana');
+      expect(lines[3]).toContain('Cherry');
+    });
+
+    test('breaks ties between identical case-insensitive titles by createdAt ascending', () => {
+      storage.saveTodos([
+        { id: 'id-1', title: 'Todo', state: 'pending', createdAt: 200 },
+        { id: 'id-2', title: 'todo', state: 'pending', createdAt: 100 },
+      ]);
+
+      const message = commands.handleList();
+      const lines = message.split('\n');
+      expect(lines[0]).toContain('id-2'.substring(0, 8));
+      expect(lines[1]).toContain('id-1'.substring(0, 8));
     });
 
     test('shows todo state in list', () => {
@@ -104,6 +147,16 @@ describe('Commands', () => {
       });
       expect(parsed[1].id).toBe('id-2');
       expect(message).toBe(JSON.stringify(parsed, null, 2));
+    });
+
+    test('with json=true, todos are grouped and sorted the same as the text output', () => {
+      storage.addTodo('Zebra', 'id-1');
+      storage.markTodoDone('id-1');
+      storage.addTodo('Apple', 'id-2');
+
+      const message = commands.handleList(true);
+      const parsed = JSON.parse(message);
+      expect(parsed.map((t: storage.Todo) => t.id)).toEqual(['id-2', 'id-1']);
     });
   });
 
@@ -195,10 +248,10 @@ describe('Commands', () => {
       expect(message).toBe('No todos match "xyz".');
     });
 
-    test('preserves creation order in results', () => {
-      storage.addTodo('Apple', 'id-1');
-      storage.addTodo('Apricot', 'id-2');
-      storage.addTodo('Avocado', 'id-3');
+    test('sorts matches by title, case-insensitively, ascending', () => {
+      storage.addTodo('Avocado', 'id-1');
+      storage.addTodo('Apple', 'id-2');
+      storage.addTodo('Apricot', 'id-3');
 
       const message = commands.handleFilter('a');
       const lines = message.split('\n');
@@ -206,6 +259,20 @@ describe('Commands', () => {
       expect(lines[0]).toContain('Apple');
       expect(lines[1]).toContain('Apricot');
       expect(lines[2]).toContain('Avocado');
+    });
+
+    test('groups pending matches before done matches', () => {
+      storage.addTodo('Apple', 'id-1');
+      storage.markTodoDone('id-1');
+      storage.addTodo('Avocado', 'id-2');
+
+      const message = commands.handleFilter('a');
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(2);
+      expect(lines[0]).toContain('Avocado');
+      expect(lines[0]).toContain('pending');
+      expect(lines[1]).toContain('Apple');
+      expect(lines[1]).toContain('done');
     });
 
     test('matches case-insensitively', () => {
@@ -289,10 +356,10 @@ describe('Commands', () => {
       expect(message).toBe('No todos match "buy" with state "done".');
     });
 
-    test('preserves creation order when filtering by state', () => {
-      storage.addTodo('Apple', 'id-1');
-      storage.addTodo('Apricot', 'id-2');
-      storage.addTodo('Avocado', 'id-3');
+    test('sorts by title when filtering by state', () => {
+      storage.addTodo('Avocado', 'id-1');
+      storage.addTodo('Apple', 'id-2');
+      storage.addTodo('Apricot', 'id-3');
 
       const message = commands.handleFilter(undefined, 'pending');
       const lines = message.split('\n');
@@ -329,6 +396,16 @@ describe('Commands', () => {
       expect(() => commands.handleFilter(undefined, 'bogus', true)).toThrow(
         'Invalid state. Valid values: pending, done'
       );
+    });
+
+    test('with json=true, matches are grouped and sorted the same as the text output', () => {
+      storage.addTodo('Apple', 'id-1');
+      storage.markTodoDone('id-1');
+      storage.addTodo('Avocado', 'id-2');
+
+      const message = commands.handleFilter('a', undefined, true);
+      const parsed = JSON.parse(message);
+      expect(parsed.map((t: storage.Todo) => t.id)).toEqual(['id-2', 'id-1']);
     });
   });
 

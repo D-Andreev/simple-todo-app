@@ -6,6 +6,20 @@ function formatTodoRow(todo: storage.Todo): string {
   return `${todo.id.substring(0, 8)} ${todo.state} ${todo.title} (created: ${iso})`;
 }
 
+function compareTodos(a: storage.Todo, b: storage.Todo): number {
+  if (a.state !== b.state) {
+    return a.state === 'pending' ? -1 : 1;
+  }
+
+  const aTitle = a.title.toLowerCase();
+  const bTitle = b.title.toLowerCase();
+  if (aTitle !== bTitle) {
+    return aTitle < bTitle ? -1 : 1;
+  }
+
+  return a.createdAt - b.createdAt;
+}
+
 export function handleAdd(title: string): string {
   const id = uuidv4();
   const todo = storage.addTodo(title, id);
@@ -13,7 +27,7 @@ export function handleAdd(title: string): string {
 }
 
 export function handleList(json?: boolean): string {
-  const todos = storage.getTodos().sort((a, b) => a.createdAt - b.createdAt);
+  const todos = storage.getTodos().sort(compareTodos);
 
   if (json) {
     return JSON.stringify(todos, null, 2);
@@ -61,7 +75,7 @@ export function handleFilter(searchTerm?: string, state?: string, json?: boolean
       const stateMatches = state === undefined || todo.state === state;
       return nameMatches && stateMatches;
     })
-    .sort((a, b) => a.createdAt - b.createdAt);
+    .sort(compareTodos);
 
   if (json) {
     return JSON.stringify(matches, null, 2);

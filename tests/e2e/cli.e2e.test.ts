@@ -59,8 +59,10 @@ describe('CLI e2e', () => {
 
     const list2 = runCli(['list'], TEST_HOME);
     const list2Lines = list2.stdout.trim().split('\n');
-    expect(list2Lines[0]).toContain('done');
-    expect(list2Lines[1]).toContain('pending');
+    expect(list2Lines[0]).toContain('pending');
+    expect(list2Lines[0]).toContain('Walk dog');
+    expect(list2Lines[1]).toContain('done');
+    expect(list2Lines[1]).toContain('Buy milk');
 
     const update = runCli(['update', id2, 'Walk the dog outside'], TEST_HOME);
     expect(update.status).toBe(0);
@@ -85,6 +87,25 @@ describe('CLI e2e', () => {
     expect(list4Lines[0]).toContain(id2);
     expect(list4Lines[0]).toContain('Walk the dog outside');
     expect(list4Lines[0]).toMatch(/\(created: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\)/);
+  });
+
+  test('list groups pending before done and sorts by title within each group', () => {
+    const add1 = runCli(['add', 'Zebra task'], TEST_HOME);
+    const id1 = add1.stdout.trim().split(' ')[1];
+    runCli(['done', id1], TEST_HOME);
+    runCli(['add', 'Cherry task'], TEST_HOME);
+    runCli(['add', 'Apple task'], TEST_HOME);
+
+    const result = runCli(['list'], TEST_HOME);
+    expect(result.status).toBe(0);
+    const lines = result.stdout.trim().split('\n');
+    expect(lines).toHaveLength(3);
+    expect(lines[0]).toContain('pending');
+    expect(lines[0]).toContain('Apple task');
+    expect(lines[1]).toContain('pending');
+    expect(lines[1]).toContain('Cherry task');
+    expect(lines[2]).toContain('done');
+    expect(lines[2]).toContain('Zebra task');
   });
 
   test('list shows "No todos." when empty', () => {
@@ -141,10 +162,26 @@ describe('CLI e2e', () => {
     expect(result.status).toBe(0);
     const lines = result.stdout.trim().split('\n');
     expect(lines).toHaveLength(2);
-    expect(lines[0]).toContain('Buy milk');
+    expect(lines[0]).toContain('Buy groceries');
     expect(lines[0]).toMatch(/\(created: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\)/);
-    expect(lines[1]).toContain('Buy groceries');
+    expect(lines[1]).toContain('Buy milk');
     expect(lines[1]).toMatch(/\(created: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\)/);
+  });
+
+  test('filter groups pending before done and sorts by title within each group', () => {
+    const add1 = runCli(['add', 'Zebra task'], TEST_HOME);
+    const id1 = add1.stdout.trim().split(' ')[1];
+    runCli(['done', id1], TEST_HOME);
+    runCli(['add', 'Zephyr task'], TEST_HOME);
+
+    const result = runCli(['filter', 'z'], TEST_HOME);
+    expect(result.status).toBe(0);
+    const lines = result.stdout.trim().split('\n');
+    expect(lines).toHaveLength(2);
+    expect(lines[0]).toContain('pending');
+    expect(lines[0]).toContain('Zephyr task');
+    expect(lines[1]).toContain('done');
+    expect(lines[1]).toContain('Zebra task');
   });
 
   test('filter shows "No todos match" message when nothing matches', () => {
