@@ -19,4 +19,4 @@ done is one-way today. A pending (or reopen) command would round out the state m
 - [ ] No new `Todo.state` values; `dueDate`, `title`, `createdAt`, and existing sort order are unaffected by reopening
 
 ## Approved by human
-- [ ] Pending — reply `approve requirements` when ready
+- [x] Approved
