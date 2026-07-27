@@ -5,16 +5,16 @@
   "mode": "feature",
   "task": "Export / import todos (todos.json, merge or replace)",
   "phase": "clarify",
-  "status": "ai_running",
-  "workflow_label": "workflow:clarify",
+  "status": "done",
+  "workflow_label": "workflow:implement",
   "base_branch": "main",
   "state_branch": "workflow/state",
   "work_branch": null,
   "handoff_path": "issues/28",
-  "requirements_approved": false,
+  "requirements_approved": true,
   "clarify_rounds": 5,
   "created_at": "2026-07-27T09:07:31.000Z",
-  "updated_at": "2026-07-27T09:18:42.000Z",
+  "updated_at": "2026-07-27T09:19:33.000Z",
   "last_session_url": "https://claude.ai/code/session_01QHL6NP6y1f7oMyQfo3Fvdr",
   "history": [
     {
@@ -58,6 +58,24 @@
       "event": "human_answered",
       "at": "2026-07-27T09:18:42.000Z",
       "note": "Q5 missing/malformed id -> skip and count as invalid"
+    },
+    {
+      "phase": "clarify",
+      "event": "human_approved",
+      "at": "2026-07-27T09:19:33.000Z",
+      "note": "requirements approved in session"
+    },
+    {
+      "phase": "clarify",
+      "event": "phase_completed",
+      "at": "2026-07-27T09:19:33.000Z",
+      "note": "clarify complete, requirements_approved=true"
+    },
+    {
+      "phase": "clarify",
+      "event": "labels_updated",
+      "at": "2026-07-27T09:19:33.000Z",
+      "note": "workflow:clarify -> workflow:implement"
     }
   ],
   "human_feedback": [

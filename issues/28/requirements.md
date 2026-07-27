@@ -30,4 +30,4 @@ Since storage is already JSON, this is a natural fit:
 - [ ] Import reports counts: imported, skipped (id collision), skipped (invalid)
 
 ## Approved by human
-- [ ] Pending — say `approve requirements` in the session when ready
+- [x] Approved in session on 2026-07-27
