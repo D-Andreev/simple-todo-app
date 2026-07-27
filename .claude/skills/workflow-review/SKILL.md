@@ -2,8 +2,9 @@
 name: workflow-review
 description: >-
   AI review phase for GitHub-issue workflows. Fresh-eyes scenario verification
-  and principles review on the work branch; posts one PR comment with verdict. Use when a routine
-  fires on workflow:review or for issue $0.
+  and principles review on the work branch; handoff on workflow/state; posts
+  one PR comment with verdict. Use when a routine fires on workflow:review or
+  for issue $0.
 disable-model-invocation: true
 metadata:
   internal: true
@@ -13,12 +14,12 @@ metadata:
 
 Independent **fresh-eyes** review of the PR branch. Run once, autonomously — **no interactive fix loop**, **no waiting for human approval** in the session.
 
-Triggered by label **`workflow:review`**. Reads handoff from **`workflow/issue-{n}`** / `workflow/issues/{n}/`. See [handoff-format.md](../workflow-routines/handoff-format.md), [state-schema.md](../workflow-routines/state-schema.md), [label-rules.md](../workflow-routines/label-rules.md).
+Triggered by label **`workflow:review`**. Reads handoff from **`workflow/state`** / `issues/{n}/`; reviews code on **`work_branch`**. See [handoff-format.md](../workflow-routines/handoff-format.md), [state-schema.md](../workflow-routines/state-schema.md), [label-rules.md](../workflow-routines/label-rules.md).
 
 ## Preconditions
 
 1. Issue has label **`workflow:review`**.
-2. Branch exists with `requirements_approved: true`, `implement-handoff.md`, and `work_branch` in `state.json`.
+2. `workflow/state` has `issues/{n}/` with `requirements_approved: true`, `implement-handoff.md`, and `work_branch` in `state.json`.
 3. If `review-report.md` exists and `workflow_label` is `workflow:human-review` — stop; human review phase.
 
 If preconditions fail, post a short issue comment and stop.
@@ -27,7 +28,7 @@ If preconditions fail, post a short issue comment and stop.
 
 **Ignore prior implementation chat** (if any leaked into context). Base judgments only on:
 
-- `workflow/issues/{n}/requirements.md`, `implement-handoff.md`, `language.md`
+- `issues/{n}/requirements.md`, `implement-handoff.md`, `language.md` on **`workflow/state`**
 - `workflow/PROJECT.md`, `workflow/learnings/gotchas.md`
 - `git diff {base_branch}...HEAD` on **`work_branch`**
 - Code and tests on that branch
@@ -36,16 +37,16 @@ State in the review-report header: **"Fresh-eyes: artifacts and diff only."**
 
 ## Sequence (autonomous — complete in one run)
 
-1. **Read issue**; checkout **`workflow/issue-{n}`**; pull latest.
-2. Read `workflow/issues/{n}/` handoff files.
+1. **Read issue**; checkout **`workflow/state`**; pull latest; read `issues/{n}/` handoff files.
+2. Checkout **`work_branch`** (`workflow/issue-{n}`); pull latest for diff/code.
 3. **Post session comment** — vary phrasing (handoff-format review start bank). Link session + PR.
-4. **Commit handoff (start)** — update `state.json`: `phase: review`, `status: ai_running`, history `started`; push.
+4. **Commit handoff (start)** on `workflow/state` — update `state.json`: `phase: review`, `status: ai_running`, history `started`; push.
 5. **Find PR** — `gh pr list --head workflow/issue-{n} --json number,url`.
-6. **Review pass** — scenario verification + principles review (below).
+6. **Review pass** — scenario verification + principles review (below) against work-branch diff.
 7. **Verdict** — `APPROVE` | `APPROVE WITH NOTES` | `REQUEST CHANGES`.
-8. **Write `review-report.md`** to `workflow/issues/{n}/`. No code fixes during review.
+8. **Write `review-report.md`** to `issues/{n}/` on **`workflow/state`**. No code fixes during review.
 9. **Post one PR comment** with verdict — `gh pr comment` only. See below. **Never** `gh pr review`.
-10. **Update `state.json`** — `review_verdict`, `status: done`, history; commit + push with `review-report.md`.
+10. **Update `state.json`** — `review_verdict`, `status: done`, history; commit + push with `review-report.md` on `workflow/state`.
 11. Post **short issue comment** — varied verdict line + PR comment link (handoff-format review complete bank).
 12. **Swap labels last** — **`workflow:human-review`**. **Stop.**
 
@@ -89,7 +90,7 @@ Apply stack-idiomatic practices from PROJECT.md and manifests.
 
 Post **exactly one** comment on the PR. **Vary the wording** — use the review example bank or write fresh copy; include verdict in the opening line. **`gh pr comment` only.**
 
-Full detail stays in `workflow/issues/{n}/review-report.md` on the branch.
+Full detail stays in `issues/{n}/review-report.md` on **`workflow/state`**.
 
 **Template (adapt, stay concise — one comment, no follow-ups):**
 
@@ -101,7 +102,7 @@ Full detail stays in `workflow/issues/{n}/review-report.md` on the branch.
 {If REQUEST CHANGES: bullet list of must-fix items, max 3.}
 {If APPROVE WITH NOTES: bullet list of non-blocking notes, max 3.}
 
-Full report: `workflow/issues/{n}/review-report.md` on branch.
+Full report: `issues/{n}/review-report.md` on `workflow/state`.
 ```
 
 **Post:**
@@ -177,7 +178,7 @@ APPROVE | APPROVE WITH NOTES | REQUEST CHANGES
 
 | Location | When |
 |----------|------|
-| Branch `workflow/issues/{n}/` | `state.json` start + complete; `review-report.md` at complete |
+| `workflow/state` → `issues/{n}/` | `state.json` start + complete; `review-report.md` at complete |
 | GitHub PR | **One** comment via `gh pr comment` — never `gh pr review` |
 | GitHub issue | Short session/complete comments only |
 
@@ -191,8 +192,8 @@ APPROVE | APPROVE WITH NOTES | REQUEST CHANGES
 - **Do not fix code** during review — verdict and findings only.
 - Do not expand scope beyond requirements + review findings.
 - Reference specific files and lines in findings.
-- **PR comment must be short** — details on branch in `review-report.md`.
-- **Commit handoff at start and complete** on branch.
+- **PR comment must be short** — details on `workflow/state` in `review-report.md`.
+- **Commit handoff at start and complete** on `workflow/state`.
 - If push fails, post short issue comment and **stop**; do not advance labels.
 - **Never put artifacts in issue comments.**
 - **Label swap is always last** — see label-rules.md.

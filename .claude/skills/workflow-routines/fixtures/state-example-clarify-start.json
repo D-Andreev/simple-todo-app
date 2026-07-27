@@ -8,8 +8,9 @@
   "status": "ai_running",
   "workflow_label": "workflow:clarify",
   "base_branch": "main",
-  "work_branch": "workflow/issue-42",
-  "handoff_path": "workflow/issues/42",
+  "state_branch": "workflow/state",
+  "work_branch": null,
+  "handoff_path": "issues/42",
   "requirements_approved": false,
   "clarify_rounds": 0,
   "created_at": "2026-07-26T07:00:00.000Z",
@@ -20,7 +21,7 @@
       "phase": "clarify",
       "event": "handoff_initialized",
       "at": "2026-07-26T07:00:00.000Z",
-      "note": "branch=workflow/issue-42"
+      "note": "state_branch=workflow/state path=issues/42"
     },
     {
       "phase": "clarify",

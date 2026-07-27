@@ -2,9 +2,9 @@
 name: workflow-init
 description: >-
   Initialize the AI workflow for a project — scaffold workflow/ directories,
-  seed gotchas.md, generate PROJECT.md, and create GitHub workflow labels. Use
-  when setting up a new repo, when PROJECT.md is missing, or when the user runs
-  /workflow-init.
+  seed gotchas.md, generate PROJECT.md, create GitHub workflow labels, and
+  create the long-lived workflow/state branch. Use when setting up a new
+  repo, when PROJECT.md is missing, or when the user runs /workflow-init.
 disable-model-invocation: true
 metadata:
   internal: true
@@ -12,7 +12,7 @@ metadata:
 
 # Workflow: Init
 
-One-time setup. Clarify **creates `workflow/issue-{n}` first** and saves ephemeral handoff files under `workflow/issues/{n}/`; implement merges `language.md` into `PROJECT.md`.
+One-time setup. Creates long-lived **`workflow/state`** for all issue handoffs (`issues/{n}/`). Clarify writes only there; implement creates `workflow/issue-{n}` for code and merges `language.md` into `PROJECT.md`.
 
 **No application code changes.**
 
@@ -33,7 +33,25 @@ One-time setup. Clarify **creates `workflow/issue-{n}` first** and saves ephemer
    ```
 
    If `gh` is unavailable or not authenticated, list the five labels and ask the user to create them in GitHub (Settings → Labels) or run the commands above.
-5. Remind the user to configure routines — paste prompts from `routines/` at [claude.ai/code/routines](https://claude.ai/code/routines) with matching label triggers.
+5. **Create long-lived `workflow/state` branch** (orphan; never merge to main). Idempotent — skip if `origin/workflow/state` already exists:
+
+   ```bash
+   git fetch origin
+   if ! git rev-parse --verify origin/workflow/state >/dev/null 2>&1; then
+     current=$(git branch --show-current)
+     git checkout --orphan workflow/state
+     git rm -rf . 2>/dev/null || true
+     mkdir -p issues
+     printf '%s\n' '# Workflow state' '' 'Long-lived handoff and audit branch for all issues under `issues/{n}/`. Do not merge into main.' > README.md
+     git add README.md
+     git commit -m "workflow: init state branch"
+     git push -u origin workflow/state
+     git checkout "$current"
+   fi
+   ```
+
+   If push fails (no remote auth), tell the user to create/push `workflow/state` once; clarify will also ensure-or-create it at start.
+6. Remind the user to configure routines — paste prompts from `routines/` at [claude.ai/code/routines](https://claude.ai/code/routines) with matching label triggers.
 
 ## PROJECT.md `## Language`
 
@@ -43,10 +61,10 @@ One-time setup. Clarify **creates `workflow/issue-{n}` first** and saves ephemer
 _(Domain terms are added when implement merges clarify handoff.)_
 ```
 
-During clarify, terms live in `workflow/issues/{n}/language.md` on the work branch; implement merges into `PROJECT.md`.
+During clarify, terms live in `issues/{n}/language.md` on **`workflow/state`**; implement merges into `PROJECT.md` on the work branch.
 
 ## Writable files
 
-`workflow/learnings/gotchas.md`, `workflow/PROJECT.md`
+`workflow/learnings/gotchas.md`, `workflow/PROJECT.md`, and (once) the orphan **`workflow/state`** branch with its README.
 
 Workflow files live under **`workflow/`** (repo root), not `.claude/` — Claude Code treats `.claude/` as protected config and cloud routines cannot approve writes there.

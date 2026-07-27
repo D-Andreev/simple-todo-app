@@ -1,10 +1,11 @@
 ---
 name: workflow-clarify
 description: >-
-  Clarification phase for GitHub-issue workflows. Creates the work branch first,
-  persists ephemeral handoff files on branch, grills requirements one question at
-  a time, posts short human issue comments, and sets workflow:implement. Use when
-  a routine fires on workflow:start or for issue $0.
+  Clarification phase for GitHub-issue workflows. Writes ephemeral handoff
+  files on the long-lived workflow/state branch, grills requirements one
+  question at a time, posts short human issue comments, and sets
+  workflow:implement. Use when a routine fires on workflow:start or for
+  issue $0.
 disable-model-invocation: true
 metadata:
   internal: true
@@ -12,15 +13,15 @@ metadata:
 
 # Workflow: Clarify
 
-Grill the plan before implementation. **No application code changes. No test runs.**
+Grill the plan before implementation. **No application code changes. No test runs. No work branch.**
 
-**First repo action after label swap:** create branch `workflow/issue-{n}` and init `workflow/issues/{n}/`. Commit handoff files on each Q&A turn. Issue comments are **short and human-only**.
+**First repo action after label swap:** ensure `workflow/state` and init `issues/{n}/`. Commit handoff files on each Q&A turn. Issue comments are **short and human-only**.
 
-On **`approve requirements`**, final handoff commit, post **approved requirements on the issue**, swap to `workflow:implement`, stop.
+On **`approve requirements`**, final handoff commit on `workflow/state`, post **approved requirements on the issue**, swap to `workflow:implement`, stop.
 
 See [handoff-format.md](../workflow-routines/handoff-format.md), [state-schema.md](../workflow-routines/state-schema.md), [label-rules.md](../workflow-routines/label-rules.md).
 
-## Read-only before branch exists
+## Read-only before handoff exists
 
 | File | Use |
 |------|-----|
@@ -28,19 +29,19 @@ See [handoff-format.md](../workflow-routines/handoff-format.md), [state-schema.m
 | `workflow/learnings/gotchas.md` | Skim |
 | Application code | Read-only |
 
-After branch exists, **only write** under `workflow/issues/{n}/` during clarify.
+After handoff exists, **only write** under `issues/{n}/` on **`workflow/state`** during clarify.
 
-## Handoff files (on branch)
+## Handoff files (on `workflow/state`)
 
 | File | Path |
 |------|------|
-| `state.json` | `workflow/issues/{n}/state.json` |
-| `task.md` | `workflow/issues/{n}/task.md` |
-| `language.md` | `workflow/issues/{n}/language.md` |
-| `requirements.md` | `workflow/issues/{n}/requirements.md` |
-| `adrs.md` | `workflow/issues/{n}/adrs.md` (optional) |
+| `state.json` | `issues/{n}/state.json` |
+| `task.md` | `issues/{n}/task.md` |
+| `language.md` | `issues/{n}/language.md` |
+| `requirements.md` | `issues/{n}/requirements.md` |
+| `adrs.md` | `issues/{n}/adrs.md` (optional) |
 
-Branch is **source of truth** — commit after every update.
+`workflow/state` is **source of truth** for machine handoff — commit after every update. Do **not** create `workflow/issue-{n}` during clarify.
 
 ## Trigger modes
 
@@ -50,7 +51,7 @@ Start sequence → grilling loop.
 
 ### B — Session continuation (`workflow:clarify`, same session)
 
-Checkout branch, read `workflow/issues/{n}/`, continue.
+Checkout `workflow/state`, read `issues/{n}/`, continue.
 
 ### C — Manual (`/workflow-clarify {issue_number}`)
 
@@ -61,12 +62,12 @@ Same as A/B.
 1. **Swap labels first** — `workflow:clarify`. Nothing else on GitHub before this.
 2. **Read issue** — number, title, body, labels, URL.
 3. **Verify init** — `workflow/PROJECT.md` on base branch; else stop → `/workflow-init`.
-4. **Create work branch + initial handoff commit** (see handoff-format):
-   - Branch `workflow/issue-{n}` from `base_branch` (default `main`)
+4. **Ensure `workflow/state` + initial handoff commit** (see handoff-format):
+   - Ensure-or-create long-lived `workflow/state`
    - Write `state.json` per [fixture](../workflow-routines/fixtures/state-example-clarify-start.json)
-   - Write initial `task.md`, `language.md`, `requirements.md`
-   - Commit + push
-5. **Post session comment** — pick a **fresh phrasing** from handoff-format example bank (or invent one). **Must link** session + branch. Reference the issue topic when natural.
+   - Write initial `task.md`, `language.md`, `requirements.md` under `issues/{n}/`
+   - Commit + push `workflow/state`
+5. **Post session comment** — pick a **fresh phrasing** from handoff-format example bank (or invent one). **Must link** session + **state tree** (`…/tree/workflow/state/issues/{n}`). Reference the issue topic when natural.
 
    Do **not** reuse the same clarify-start comment across issues.
 6. Ask **first question**.
@@ -77,16 +78,16 @@ One question at a time with recommended answer. Explore codebase before asking.
 
 ## Domain modeling (`language.md`)
 
-Update on branch when terms resolve — same format as `PROJECT.md` `## Language`. Implement merges to PROJECT.md later.
+Update on `workflow/state` when terms resolve — same format as `PROJECT.md` `## Language`. Implement merges to PROJECT.md later.
 
 ## Resume
 
-Checkout `workflow/issue-{n}`, read handoff files, or use session comment link.
+Checkout `workflow/state`, read `issues/{n}/`, or use session comment link.
 
 ## On human answers
 
-1. Update `requirements.md`, `language.md`, `state.json` on branch.
-2. Commit + push.
+1. Update `requirements.md`, `language.md`, `state.json` on `workflow/state`.
+2. Commit + push `workflow/state`.
 3. Ask next question or ask for `approve requirements`.
 
 ## On `approve requirements`
@@ -94,7 +95,7 @@ Checkout `workflow/issue-{n}`, read handoff files, or use session comment link.
 1. Verify `requirements.md` complete.
 2. Finalize `state.json` — `requirements_approved: true`, `status: done`, history.
 3. Check approval in `requirements.md`.
-4. Commit + push.
+4. Commit + push `workflow/state`.
 5. **Post approval comment** on the issue:
    - **Varied header** (see handoff-format approve example bank — not always "Requirements approved")
    - `---`
@@ -127,15 +128,16 @@ Checkout `workflow/issue-{n}`, read handoff files, or use session comment link.
 
 | When | Git | Issue |
 |------|-----|-------|
-| Start | CREATE branch + init commit | Session comment with **session + branch links** |
-| Q&A turn | COMMIT + push handoff | None |
-| Approve | COMMIT + push | Header + **full requirements.md** → label swap last |
+| Start | Ensure `workflow/state` + init commit under `issues/{n}/` | Session comment with **session + state tree links** |
+| Q&A turn | COMMIT + push on `workflow/state` | None |
+| Approve | COMMIT + push on `workflow/state` | Header + **full requirements.md** → label swap last |
 
 ## Hard rules
 
 - Never write application source code.
-- **Only write** `workflow/issues/{n}/` during clarify.
-- **Create branch at start** — before session comment and Q1.
+- Never create `workflow/issue-{n}` during clarify.
+- **Only write** `issues/{n}/` on `workflow/state` during clarify.
+- **Ensure state branch at start** — before session comment and Q1.
 - **Issue comments:** varied, engaging — see handoff-format example bank. Never repeat the same comment verbatim across issues.
 - **Commit handoff after every Q&A turn** and at approve.
 - **Never put `state.json` or other machine handoff in issue comments** — publish **approved `requirements.md` only** at clarify approve.

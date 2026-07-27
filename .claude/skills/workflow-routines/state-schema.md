@@ -1,20 +1,20 @@
 # State Schema (Branch Handoff + Human Issue Comments)
 
-Ephemeral state and artifacts live on **`workflow/issue-{n}`** under `workflow/issues/{n}/`. Issue comments are human-only. See [handoff-format.md](handoff-format.md).
+Ephemeral state and artifacts live on the long-lived branch **`workflow/state`** under `issues/{n}/`. Product code lives on **`workflow/issue-{n}`**. Issue comments are human-only. See [handoff-format.md](handoff-format.md).
 
-## One branch rule
+## Two-branch rule
 
-| Phase | Branch write | Updates `state.json` |
-|-------|--------------|----------------------|
-| **Clarify start** | CREATE branch + initial commit | Yes — `work_branch`, `handoff_path`, history |
-| **Clarify Q&A** | COMMIT each answer | Yes — `status`, history as needed |
-| **Clarify approve** | COMMIT final handoff | Yes — `requirements_approved`, clarify complete |
-| **Implement** | COMMIT at phase start | Yes — `phase: implement`, `status: ai_running`, history |
-| **Implement** | COMMIT at phase complete | Yes — `status: done`, history |
-| **Review** | COMMIT at phase start | Yes — `phase: review`, `status: ai_running`, history |
-| **Review** | COMMIT at phase complete | Yes — `status: done`, `review_verdict`, history |
+| Phase | State branch (`workflow/state`) | Work branch (`workflow/issue-{n}`) |
+|-------|----------------------------------|-------------------------------------|
+| **Clarify start** | Ensure branch + init `issues/{n}/` | — (not created yet) |
+| **Clarify Q&A** | COMMIT each answer | — |
+| **Clarify approve** | COMMIT final handoff | — |
+| **Implement start** | COMMIT `state.json` (`work_branch` set) | **CREATE** from `base_branch` |
+| **Implement complete** | COMMIT `implement-handoff.md` + state | App code commits + draft PR |
+| **Review start** | COMMIT `state.json` | Read-only (diff) |
+| **Review complete** | COMMIT `review-report.md` + state | Read-only |
 
-All phases use the **same branch** clarify created. Implement and review **never create a new branch**.
+Never merge `workflow/state` into `main`. Implement creates the work branch once; review never creates a new work branch.
 
 ## Label routing
 
@@ -29,10 +29,12 @@ All phases use the **same branch** clarify created. Implement and review **never
 
 ## Handoff files by writer
 
+All paths below are on **`workflow/state`** under `issues/{n}/`.
+
 | File | clarify | implement | review |
 |------|---------|-----------|--------|
 | `state.json` | start + Q&A + approve | commit start + complete | commit start + complete |
-| `task.md`, `language.md`, `requirements.md`, `adrs.md` | start + Q&A + approve | read; merge language → PROJECT.md | read |
+| `task.md`, `language.md`, `requirements.md`, `adrs.md` | start + Q&A + approve | read; merge language → PROJECT.md on **work** branch | read |
 | `implement-handoff.md` | — | commit at complete | read |
 | `review-report.md` | — | — | commit at complete |
 
@@ -40,8 +42,9 @@ All phases use the **same branch** clarify created. Implement and review **never
 
 | Field | Set by |
 |-------|--------|
-| `work_branch` | clarify start — `workflow/issue-{n}` |
-| `handoff_path` | clarify start — `workflow/issues/{n}` |
+| `state_branch` | clarify start — always `workflow/state` |
+| `handoff_path` | clarify start — `issues/{n}` |
+| `work_branch` | implement start — `workflow/issue-{n}` (null until then) |
 | `base_branch` | clarify start |
 | `workflow_label` | last phase to swap labels |
 | `phase` | current or last-completed phase |
@@ -55,9 +58,10 @@ All phases use the **same branch** clarify created. Implement and review **never
 
 | `event` | When |
 |---------|------|
-| `handoff_initialized` | Branch + first commit at clarify start |
+| `handoff_initialized` | First handoff commit on `workflow/state` at clarify start |
 | `started` | Clarify start / phase start commit |
 | `phase_completed` | Phase complete commit |
+| `work_branch_created` | Implement start — work branch pushed |
 | `labels_updated` | Intended next label |
 | `human_approved` | clarify approve |
 | `pr_comment_posted` | review complete — single PR comment with verdict |
@@ -68,12 +72,12 @@ Short, **varied**, engaging issue comments (Claude Code voice) — see handoff-f
 
 ## Implement policy
 
-Commit start → code on same branch → draft PR → commit complete → short comment → **`workflow:review` label last**.
+Handoff start on state → create work branch → code on work branch → draft PR → handoff complete on state → short comment → **`workflow:review` label last**.
 
 ## Review policy
 
-Commit start → review (diff + code reading only — **no tests/build**) → **one** PR comment (`gh pr comment`, verdict in text) → commit complete → short issue comment → **`workflow:human-review` label last**.
+Handoff start on state → review work-branch diff + code reading only (**no tests/build**) → **one** PR comment (`gh pr comment`, verdict in text) → handoff complete on state → short issue comment → **`workflow:human-review` label last**.
 
 ## Comprehension policy (optional, local)
 
-No handoff commits. Dev checks out `work_branch`, reads `workflow/issues/{n}/`, runs **`/workflow-comprehension`**.
+No handoff commits. Dev checks out `work_branch` for code; reads handoff from `workflow/state` / `issues/{n}/`; runs **`/workflow-comprehension`**.

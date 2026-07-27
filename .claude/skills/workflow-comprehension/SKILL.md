@@ -29,17 +29,17 @@ Adapted from ai-workflow **workflow-comprehension** — local session only (no h
 ## Preconditions
 
 1. Issue has label **`workflow:human-review`** (AI review finished).
-2. Branch **`workflow/issue-{n}`** with `workflow/issues/{n}/` containing requirements, implement-handoff, review-report, and `work_branch` / `base_branch` in `state.json`.
+2. **`workflow/state`** has `issues/{n}/` containing requirements, implement-handoff, review-report, and `work_branch` / `base_branch` in `state.json`.
 3. Dev has **`work_branch` checked out locally** (or checks out as first step).
 4. Dev has run tests and previewed the change locally (recommended before starting).
 
-If preconditions fail, explain what's missing and stop. Do not change labels or handoff files on the branch.
+If preconditions fail, explain what's missing and stop. Do not change labels or handoff files on `workflow/state`.
 
 ## Start sequence
 
 1. **Resolve issue** — from user message (`issue #42`, URL) or ask.
-2. **Fetch handoff** — checkout `workflow/issue-{n}`; read `workflow/issues/{n}/` per [handoff-format.md](../workflow-routines/handoff-format.md).
-3. **Confirm branch** — `work_branch` and `base_branch` from `state.json`.
+2. **Fetch handoff** — checkout `workflow/state`; read `issues/{n}/` per [handoff-format.md](../workflow-routines/handoff-format.md).
+3. **Confirm branch** — `work_branch` and `base_branch` from `state.json`; checkout `work_branch` for code/diff.
 4. **Local verification** — encourage dev to have already run PROJECT.md test commands and previewed the feature; offer to run tests now if not done.
 5. **Read context** — handoff files, `workflow/PROJECT.md`, gotchas, `git diff`, key changed files.
 6. Enter **start** mode (interview below).
