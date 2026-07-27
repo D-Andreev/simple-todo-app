@@ -12,9 +12,9 @@
   "work_branch": null,
   "handoff_path": "issues/28",
   "requirements_approved": false,
-  "clarify_rounds": 1,
+  "clarify_rounds": 2,
   "created_at": "2026-07-27T09:07:31.000Z",
-  "updated_at": "2026-07-27T09:13:54.000Z",
+  "updated_at": "2026-07-27T09:14:35.000Z",
   "last_session_url": "https://claude.ai/code/session_01QHL6NP6y1f7oMyQfo3Fvdr",
   "history": [
     {
@@ -34,6 +34,12 @@
       "event": "human_answered",
       "at": "2026-07-27T09:13:54.000Z",
       "note": "Q1 export destination -> stdout by default, --file flag"
+    },
+    {
+      "phase": "clarify",
+      "event": "human_answered",
+      "at": "2026-07-27T09:14:35.000Z",
+      "note": "Q2 import mode/collision -> merge by default, skip on id collision"
     }
   ],
   "human_feedback": [
@@ -41,6 +47,11 @@
       "at": "2026-07-27T09:13:54.000Z",
       "question": "Export destination — stdout by default, or a fixed default file path?",
       "answer": "stdout by default, with a --file flag"
+    },
+    {
+      "at": "2026-07-27T09:14:35.000Z",
+      "question": "Import default mode (merge vs replace) and id-collision handling on merge",
+      "answer": "merge by default, skip on id collision"
     }
   ],
   "comprehension_attempt": 0,
