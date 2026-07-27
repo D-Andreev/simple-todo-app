@@ -12,9 +12,9 @@
   "work_branch": null,
   "handoff_path": "issues/24",
   "requirements_approved": false,
-  "clarify_rounds": 1,
+  "clarify_rounds": 2,
   "created_at": "2026-07-27T06:47:22.000Z",
-  "updated_at": "2026-07-27T06:49:41.000Z",
+  "updated_at": "2026-07-27T06:54:36.000Z",
   "last_session_url": "https://claude.ai/code/session_015cxrmCJ5xCgkDZ29MJ5QtZ",
   "history": [
     {
@@ -34,6 +34,12 @@
       "event": "human_answered",
       "at": "2026-07-27T06:49:41.000Z",
       "note": "Q1: --due flag optional on add, YYYY-MM-DD format — confirmed"
+    },
+    {
+      "phase": "clarify",
+      "event": "human_answered",
+      "at": "2026-07-27T06:54:36.000Z",
+      "note": "Q2: exact-match --due filter plus separate --overdue flag — confirmed"
     }
   ],
   "human_feedback": [
@@ -41,6 +47,11 @@
       "at": "2026-07-27T06:49:41.000Z",
       "question": "Should --due <date> be an optional flag on todo add, using YYYY-MM-DD?",
       "answer": "Yes, optional flag with YYYY-MM-DD format"
+    },
+    {
+      "at": "2026-07-27T06:54:36.000Z",
+      "question": "Should todo filter --due match exact date only, or also have a dedicated --overdue flag?",
+      "answer": "Yes, exact match plus a separate --overdue flag"
     }
   ],
   "comprehension_attempt": 0,
