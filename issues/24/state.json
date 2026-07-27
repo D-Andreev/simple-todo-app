@@ -4,8 +4,8 @@
   "issue_url": "https://github.com/D-Andreev/simple-todo-app/issues/24",
   "mode": "feature",
   "task": "Add due date for todo items",
-  "phase": "implement",
-  "status": "done",
+  "phase": "review",
+  "status": "ai_running",
   "workflow_label": "workflow:review",
   "base_branch": "main",
   "state_branch": "workflow/state",
@@ -14,8 +14,8 @@
   "requirements_approved": true,
   "clarify_rounds": 5,
   "created_at": "2026-07-27T06:47:22.000Z",
-  "updated_at": "2026-07-27T07:25:00.000Z",
-  "last_session_url": "https://claude.ai/code/session_01TLfwqToSnroiMuipsZhYbe",
+  "updated_at": "2026-07-27T07:30:00.000Z",
+  "last_session_url": "https://claude.ai/code/session_015k4QAhtYw33WkAvF6EUv6X",
   "history": [
     {
       "phase": "clarify",
@@ -100,6 +100,12 @@
       "event": "labels_updated",
       "at": "2026-07-27T07:25:00.000Z",
       "note": "workflow:implement -> workflow:review (intended)"
+    },
+    {
+      "phase": "review",
+      "event": "started",
+      "at": "2026-07-27T07:30:00.000Z",
+      "note": "fresh-eyes review of workflow/issue-24 against main; PR #25"
     }
   ],
   "human_feedback": [
