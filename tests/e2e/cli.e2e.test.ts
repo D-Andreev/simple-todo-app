@@ -127,6 +127,43 @@ describe('CLI e2e', () => {
     expect(result.stderr).toContain('Todo with id nonexistent not found');
   });
 
+  test('reopen moves a done todo back to pending', () => {
+    const add1 = runCli(['add', 'Buy milk'], TEST_HOME);
+    const id1 = add1.stdout.trim().split(' ')[1];
+    runCli(['done', id1], TEST_HOME);
+
+    const reopen = runCli(['reopen', id1], TEST_HOME);
+    expect(reopen.status).toBe(0);
+    expect(reopen.stdout).toContain('Reopened:');
+    expect(reopen.stdout).toContain(id1);
+    expect(reopen.stdout).toContain('Buy milk');
+
+    const list = runCli(['list'], TEST_HOME);
+    const listLines = list.stdout.trim().split('\n');
+    expect(listLines[0]).toContain('pending');
+    expect(listLines[0]).toContain('Buy milk');
+  });
+
+  test('reopen on an already-pending todo is a no-op with the same success message', () => {
+    const add1 = runCli(['add', 'Buy milk'], TEST_HOME);
+    const id1 = add1.stdout.trim().split(' ')[1];
+
+    const reopen = runCli(['reopen', id1], TEST_HOME);
+    expect(reopen.status).toBe(0);
+    expect(reopen.stdout).toContain('Reopened:');
+    expect(reopen.stdout).toContain('Buy milk');
+
+    const list = runCli(['list'], TEST_HOME);
+    const listLines = list.stdout.trim().split('\n');
+    expect(listLines[0]).toContain('pending');
+  });
+
+  test('errors when reopening a non-existent id', () => {
+    const result = runCli(['reopen', 'nonexistent'], TEST_HOME);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('Todo with id nonexistent not found');
+  });
+
   test('errors when updating a non-existent id', () => {
     const result = runCli(['update', 'nonexistent', 'New title'], TEST_HOME);
     expect(result.status).toBe(1);
@@ -451,6 +488,20 @@ describe('CLI e2e', () => {
       expect(result.stdout).toContain('pending');
       expect(result.stdout).toContain(`Done: ${id}`);
       expect(result.stdout).toMatch(new RegExp(`${id} done`));
+    });
+
+    test('happy path: add, done <id>, reopen <id>, list, exit', () => {
+      const addResult = runCli(['add', 'Buy milk'], TEST_HOME);
+      const id = addResult.stdout.trim().split(' ')[1];
+
+      const result = runInteractive(
+        [`done ${id}`, `reopen ${id}`, 'list', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain(`Reopened: ${id}`);
+      expect(result.stdout).toMatch(new RegExp(`${id} pending`));
     });
 
     test('multi-word add and update without quotes', () => {

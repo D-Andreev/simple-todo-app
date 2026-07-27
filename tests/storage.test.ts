@@ -121,6 +121,28 @@ describe('Storage', () => {
     );
   });
 
+  test('reopenTodo changes state from done back to pending', () => {
+    storage.addTodo('Test', 'test-1');
+    storage.markTodoDone('test-1');
+    const reopened = storage.reopenTodo('test-1');
+    expect(reopened.state).toBe('pending');
+
+    const fetched = storage.findTodoById('test-1');
+    expect(fetched?.state).toBe('pending');
+  });
+
+  test('reopenTodo is a no-op when todo is already pending', () => {
+    storage.addTodo('Test', 'test-1');
+    const reopened = storage.reopenTodo('test-1');
+    expect(reopened.state).toBe('pending');
+  });
+
+  test('reopenTodo throws when todo not found', () => {
+    expect(() => storage.reopenTodo('nonexistent')).toThrow(
+      'Todo with id nonexistent not found'
+    );
+  });
+
   test('deleteTodo removes todo', () => {
     storage.addTodo('Test', 'test-1');
     expect(storage.getTodos()).toHaveLength(1);

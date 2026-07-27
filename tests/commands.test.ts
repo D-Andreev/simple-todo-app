@@ -250,6 +250,34 @@ describe('Commands', () => {
     });
   });
 
+  describe('handleReopen', () => {
+    test('moves a done todo back to pending and returns message', () => {
+      storage.addTodo('Test', 'id-1');
+      commands.handleDone('id-1');
+      const message = commands.handleReopen('id-1');
+      expect(message).toContain('Reopened:');
+      expect(message).toContain('id-1'.substring(0, 8));
+      expect(message).toContain('Test');
+
+      const todo = storage.findTodoById('id-1');
+      expect(todo?.state).toBe('pending');
+    });
+
+    test('no-ops on an already-pending todo with the same success message', () => {
+      storage.addTodo('Test', 'id-1');
+      const message = commands.handleReopen('id-1');
+      expect(message).toContain('Reopened:');
+      expect(message).toContain('Test');
+
+      const todo = storage.findTodoById('id-1');
+      expect(todo?.state).toBe('pending');
+    });
+
+    test('throws when todo not found', () => {
+      expect(() => commands.handleReopen('nonexistent')).toThrow('Todo with id nonexistent not found');
+    });
+  });
+
   describe('handleUpdate', () => {
     test('updates todo title and returns message', () => {
       storage.addTodo('Original', 'id-1');

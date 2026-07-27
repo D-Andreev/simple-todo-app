@@ -81,6 +81,11 @@ export function handleDone(id: string): string {
   return `Done: ${todo.id.substring(0, 8)} ${todo.title}`;
 }
 
+export function handleReopen(id: string): string {
+  const todo = storage.reopenTodo(id);
+  return `Reopened: ${todo.id.substring(0, 8)} ${todo.title}`;
+}
+
 export function handleUpdate(id: string, newTitle: string): string {
   const todo = storage.updateTodoTitle(id, newTitle);
   return `Updated: ${todo.id.substring(0, 8)} ${todo.title}`;

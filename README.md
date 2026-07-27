@@ -57,6 +57,15 @@ Output:
 Done: a1b2c3d4 Buy groceries
 ```
 
+#### Reopen a done todo
+```bash
+npm start -- reopen a1b2c3d4
+```
+Output:
+```
+Reopened: a1b2c3d4 Buy groceries
+```
+
 #### Update a todo's title
 ```bash
 npm start -- update a1b2c3d4 "Buy groceries and cook dinner"
