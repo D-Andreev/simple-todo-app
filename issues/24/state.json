@@ -12,9 +12,9 @@
   "work_branch": null,
   "handoff_path": "issues/24",
   "requirements_approved": false,
-  "clarify_rounds": 3,
+  "clarify_rounds": 4,
   "created_at": "2026-07-27T06:47:22.000Z",
-  "updated_at": "2026-07-27T07:01:05.000Z",
+  "updated_at": "2026-07-27T07:04:19.000Z",
   "last_session_url": "https://claude.ai/code/session_015cxrmCJ5xCgkDZ29MJ5QtZ",
   "history": [
     {
@@ -46,6 +46,12 @@
       "event": "human_answered",
       "at": "2026-07-27T07:01:05.000Z",
       "note": "Q3: show due date in list/filter output (text + JSON), no sort-order change — confirmed"
+    },
+    {
+      "phase": "clarify",
+      "event": "human_answered",
+      "at": "2026-07-27T07:04:19.000Z",
+      "note": "Q4: due-date editing via todo update — out of scope for this issue"
     }
   ],
   "human_feedback": [
@@ -63,6 +69,11 @@
       "at": "2026-07-27T07:01:05.000Z",
       "question": "Should due date show in list/filter output (text + JSON), and should it change the existing sort order?",
       "answer": "Yes, show it in both, don't change sort order"
+    },
+    {
+      "at": "2026-07-27T07:04:19.000Z",
+      "question": "Should todo update also support changing/clearing a due date, or is that out of scope?",
+      "answer": "Yes, keep it out of scope for now"
     }
   ],
   "comprehension_attempt": 0,
