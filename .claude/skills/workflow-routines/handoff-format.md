@@ -1,6 +1,6 @@
 # Branch Handoff Format (Ephemeral Files) + Human Issue Comments
 
-Ephemeral machine files live on the **long-lived state branch** `workflow/state` under `issues/{n}/`. The **work branch** `workflow/issue-{n}` holds only product code (and shipped workflow docs). Issue comments are **human-only** — engaging, short where possible. **Approved `requirements.md` is posted on the issue at clarify approve.** Never put `state.json` or other machine handoff in comments.
+Ephemeral machine files live on the **long-lived state branch** `workflow/state` under `issues/{n}/`. The **work branch** `workflow/issue-{n}` holds only product code (and shipped workflow docs). Issue comments are **agent→human status only** — engaging, short where possible. **Clarify Q&A (questions and answers) happens in the Claude Code session**, not the issue thread. **Approved `requirements.md` is posted on the issue at clarify approve.** Never put `state.json` or other machine handoff in comments.
 
 Full schema: [state-schema.md](state-schema.md)
 
@@ -9,7 +9,8 @@ Full schema: [state-schema.md](state-schema.md)
 | Layer | Where | Audience |
 |-------|-------|----------|
 | **Handoff files** | `workflow/state` → `issues/{n}/` | Agents read/write; audit forever |
-| **Issue comments** | Issue thread | Humans only |
+| **Session** | Claude Code session chat | Clarify Q&A — humans answer **here only** |
+| **Issue comments** | Issue thread | Agent→human status (links, approved requirements) — **not** a Q&A reply channel |
 | **Work branch** | `workflow/issue-{n}` — app code, `workflow/PROJECT.md`, `docs/adr/` | Shipped artifacts (implement+) |
 
 **Clarify writes only to `workflow/state`.** Implement **creates** `workflow/issue-{n}` for code and keeps updating handoff on `workflow/state`. Never merge `workflow/state` into `main`.
@@ -34,7 +35,9 @@ Full schema: [state-schema.md](state-schema.md)
 
 During clarify, **only write** under `issues/{n}/` on `workflow/state` — not application code, not `workflow/PROJECT.md`, not a work branch.
 
-## Issue comments (humans only)
+## Issue comments (status only)
+
+Clarify questions and human answers live in the **session**, not here. Issue comments are status for humans (session/PR links; approved requirements at clarify approve).
 
 ### Voice
 
@@ -193,12 +196,13 @@ git push origin workflow/state
 ```
 
 3. Post short session comment with **both markdown links** (session + state tree). See **Clarify start**.
-4. Ask first question.
+4. Ask first question **in the session** (not as an issue comment). Wait for the human's **session** reply.
 
-### Clarify Q&A (each human answer)
+### Clarify Q&A (each human session answer)
 
-1. On `workflow/state`, update files under `issues/{n}/`.
-2. Commit and push:
+1. Read the answer from the **session** — do not wait for or use issue-thread replies.
+2. On `workflow/state`, update files under `issues/{n}/`.
+3. Commit and push:
 
 ```bash
 git add issues/{n}/
@@ -206,12 +210,15 @@ git commit -m "workflow(issue-{n}): clarify — update requirements"
 git push origin workflow/state
 ```
 
+4. Ask the next question in the session (or request `approve requirements` in the session).
+
 ### Clarify approve
 
-1. Finalize `state.json` (`requirements_approved: true`, `status: done`, history).
-2. Commit and push handoff on `workflow/state`.
-3. Post approval comment — engaging header + `---` + **full approved `requirements.md`**. See **Clarify approve (post requirements)** above.
-4. **Swap labels last** — `workflow:implement`.
+1. Human says `approve requirements` **in the session**.
+2. Finalize `state.json` (`requirements_approved: true`, `status: done`, history).
+3. Commit and push handoff on `workflow/state`.
+4. Post approval comment — engaging header + `---` + **full approved `requirements.md`**. See **Clarify approve (post requirements)** above.
+5. **Swap labels last** — `workflow:implement`.
 
 ### Implement
 

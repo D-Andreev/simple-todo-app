@@ -8,7 +8,7 @@ When a phase **advances**, **label swap is usually last** — after handoff comm
 
 **Exception — clarify start:** swap to `workflow:clarify` **first**.
 
-**Clarify start order:** label swap → **ensure `workflow/state` + init handoff commit** → session comment → Q1.
+**Clarify start order:** label swap → **ensure `workflow/state` + init handoff commit** → session comment → Q1 **in session**.
 
 ```bash
 # implement complete
@@ -20,7 +20,7 @@ When a phase **advances**, **label swap is usually last** — after handoff comm
 
 Record `labels_updated` in `state.json` when committing; swap labels after all other writes.
 
-**Handoff:** branch `workflow/state`, files under `issues/{n}/`. **Work branch:** `workflow/issue-{n}` (created at implement). Issue comments: engaging, varied — [handoff-format.md](handoff-format.md#issue-comments-humans-only).
+**Handoff:** branch `workflow/state`, files under `issues/{n}/`. **Work branch:** `workflow/issue-{n}` (created at implement). Issue comments: engaging, varied status for humans — [handoff-format.md](handoff-format.md#issue-comments-status-only). Clarify Q&A answers come from the **session**, not the issue thread.
 
 ## Label swap
 
@@ -39,9 +39,11 @@ gh issue edit 42 --remove-label "workflow:review" --add-label "workflow:human-re
 | `workflow:implement` | Implement |
 | `workflow:review` | AI Review |
 
-## Session comments (human-only voice)
+## Session comments (status only)
 
-Warm, lightly playful, professional — **vary wording every time**; never copy the same template. Reference something specific from the issue when you can. Example bank: [handoff-format.md#issue-comments-humans-only](handoff-format.md#issue-comments-humans-only).
+Warm, lightly playful, professional — **vary wording every time**; never copy the same template. Reference something specific from the issue when you can. Example bank: [handoff-format.md#issue-comments-status-only](handoff-format.md#issue-comments-status-only).
+
+Clarify Q&A is **session-only** — these comments point humans at the session; they are not where answers are collected.
 
 | Phase | Must include |
 |-------|----------------|
@@ -56,4 +58,4 @@ Warm, lightly playful, professional — **vary wording every time**; never copy 
 
 | Phase | User says | Effect |
 |-------|-----------|--------|
-| Clarify | `approve requirements` | Commit handoff on state → post requirements on issue → **`workflow:implement` last** |
+| Clarify | `approve requirements` **in the session** | Commit handoff on state → post requirements on issue → **`workflow:implement` last** |

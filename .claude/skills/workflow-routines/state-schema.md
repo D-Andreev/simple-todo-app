@@ -1,6 +1,6 @@
 # State Schema (Branch Handoff + Human Issue Comments)
 
-Ephemeral state and artifacts live on the long-lived branch **`workflow/state`** under `issues/{n}/`. Product code lives on **`workflow/issue-{n}`**. Issue comments are human-only. See [handoff-format.md](handoff-format.md).
+Ephemeral state and artifacts live on the long-lived branch **`workflow/state`** under `issues/{n}/`. Product code lives on **`workflow/issue-{n}`**. Issue comments are agent→human status only; clarify Q&A is **session-only**. See [handoff-format.md](handoff-format.md).
 
 ## Two-branch rule
 
@@ -48,7 +48,7 @@ All paths below are on **`workflow/state`** under `issues/{n}/`.
 | `base_branch` | clarify start |
 | `workflow_label` | last phase to swap labels |
 | `phase` | current or last-completed phase |
-| `status` | `ai_running` / `awaiting_human` / `done` |
+| `status` | `ai_running` / `awaiting_human` / `done` — during clarify, `awaiting_human` means waiting for a **session** reply, not an issue comment |
 | `requirements_approved` | clarify approve |
 | `review_verdict` | review complete |
 | `last_session_url` | each phase start commit |
