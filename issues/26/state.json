@@ -12,9 +12,9 @@
   "work_branch": null,
   "handoff_path": "issues/26",
   "requirements_approved": false,
-  "clarify_rounds": 0,
+  "clarify_rounds": 1,
   "created_at": "2026-07-27T08:32:34.000Z",
-  "updated_at": "2026-07-27T08:32:34.000Z",
+  "updated_at": "2026-07-27T08:36:00.000Z",
   "last_session_url": "https://claude.ai/code/session_01Pmz3KN4Wzy1B2dRHoHzPAh",
   "history": [
     {
@@ -28,9 +28,21 @@
       "event": "started",
       "at": "2026-07-27T08:32:34.000Z",
       "note": "base_branch=main"
+    },
+    {
+      "phase": "clarify",
+      "event": "human_answered",
+      "at": "2026-07-27T08:36:00.000Z",
+      "note": "Q1: command named `reopen` (todo reopen <id>) — confirmed"
     }
   ],
-  "human_feedback": [],
+  "human_feedback": [
+    {
+      "at": "2026-07-27T08:36:00.000Z",
+      "question": "What should the new command be called — todo reopen <id> or todo pending <id>?",
+      "answer": "reopen"
+    }
+  ],
   "comprehension_attempt": 0,
   "comprehension_passed": false,
   "comprehension_skipped": false,
