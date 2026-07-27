@@ -12,9 +12,9 @@
   "work_branch": null,
   "handoff_path": "issues/28",
   "requirements_approved": false,
-  "clarify_rounds": 4,
+  "clarify_rounds": 5,
   "created_at": "2026-07-27T09:07:31.000Z",
-  "updated_at": "2026-07-27T09:18:06.000Z",
+  "updated_at": "2026-07-27T09:18:42.000Z",
   "last_session_url": "https://claude.ai/code/session_01QHL6NP6y1f7oMyQfo3Fvdr",
   "history": [
     {
@@ -52,6 +52,12 @@
       "event": "human_answered",
       "at": "2026-07-27T09:18:06.000Z",
       "note": "Q4 validation strategy -> abort on invalid top-level, skip+count bad entries"
+    },
+    {
+      "phase": "clarify",
+      "event": "human_answered",
+      "at": "2026-07-27T09:18:42.000Z",
+      "note": "Q5 missing/malformed id -> skip and count as invalid"
     }
   ],
   "human_feedback": [
@@ -74,6 +80,11 @@
       "at": "2026-07-27T09:18:06.000Z",
       "question": "Validation strategy for malformed import data",
       "answer": "abort on invalid top-level, skip and count bad entries"
+    },
+    {
+      "at": "2026-07-27T09:18:42.000Z",
+      "question": "Missing/malformed id on an imported entry — invalid (skip) or auto-generate?",
+      "answer": "skip and count as invalid"
     }
   ],
   "comprehension_attempt": 0,
