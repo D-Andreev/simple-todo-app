@@ -12,9 +12,9 @@
   "work_branch": null,
   "handoff_path": "issues/24",
   "requirements_approved": false,
-  "clarify_rounds": 4,
+  "clarify_rounds": 5,
   "created_at": "2026-07-27T06:47:22.000Z",
-  "updated_at": "2026-07-27T07:04:19.000Z",
+  "updated_at": "2026-07-27T07:05:11.000Z",
   "last_session_url": "https://claude.ai/code/session_015cxrmCJ5xCgkDZ29MJ5QtZ",
   "history": [
     {
@@ -52,6 +52,12 @@
       "event": "human_answered",
       "at": "2026-07-27T07:04:19.000Z",
       "note": "Q4: due-date editing via todo update — out of scope for this issue"
+    },
+    {
+      "phase": "clarify",
+      "event": "human_answered",
+      "at": "2026-07-27T07:05:11.000Z",
+      "note": "Q5: reject invalid --due values with an error; allow past dates — confirmed"
     }
   ],
   "human_feedback": [
@@ -74,6 +80,11 @@
       "at": "2026-07-27T07:04:19.000Z",
       "question": "Should todo update also support changing/clearing a due date, or is that out of scope?",
       "answer": "Yes, keep it out of scope for now"
+    },
+    {
+      "at": "2026-07-27T07:05:11.000Z",
+      "question": "What should happen on a malformed/invalid --due value, and should past dates be allowed?",
+      "answer": "Yes, reject invalid dates and allow past dates"
     }
   ],
   "comprehension_attempt": 0,
