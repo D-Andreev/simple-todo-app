@@ -1,0 +1,47 @@
+{
+  "id": "issue-24",
+  "issue_number": 24,
+  "issue_url": "https://github.com/D-Andreev/simple-todo-app/issues/24",
+  "mode": "feature",
+  "task": "Add due date for todo items",
+  "phase": "clarify",
+  "status": "ai_running",
+  "workflow_label": "workflow:clarify",
+  "base_branch": "main",
+  "state_branch": "workflow/state",
+  "work_branch": null,
+  "handoff_path": "issues/24",
+  "requirements_approved": false,
+  "clarify_rounds": 0,
+  "created_at": "2026-07-27T06:47:22.000Z",
+  "updated_at": "2026-07-27T06:47:22.000Z",
+  "last_session_url": "https://claude.ai/code/session_015cxrmCJ5xCgkDZ29MJ5QtZ",
+  "history": [
+    {
+      "phase": "clarify",
+      "event": "handoff_initialized",
+      "at": "2026-07-27T06:47:22.000Z",
+      "note": "state_branch=workflow/state path=issues/24"
+    },
+    {
+      "phase": "clarify",
+      "event": "started",
+      "at": "2026-07-27T06:47:22.000Z",
+      "note": "base_branch=main"
+    }
+  ],
+  "human_feedback": [],
+  "comprehension_attempt": 0,
+  "comprehension_passed": false,
+  "comprehension_skipped": false,
+  "artifacts": {
+    "task": "task.md",
+    "language": "language.md",
+    "requirements": "requirements.md",
+    "adrs": "adrs.md",
+    "implement_handoff": "implement-handoff.md",
+    "review_report": "review-report.md",
+    "comprehension_test": "comprehension-test.md",
+    "retro": "retro.md"
+  }
+}
