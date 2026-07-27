@@ -11,6 +11,7 @@ Since storage is already JSON, this is a natural fit:
 |---|----------|--------|-------------|
 | 1 | Export destination — stdout by default, or a fixed default file path? | stdout by default, with a `--file` flag to write to a path instead | stdout by default, with a `--file` flag |
 | 2 | Import default mode (merge vs replace) and `id`-collision handling on merge | Merge by default; skip imported todo on `id` collision | Merge by default; skip on collision |
+| 3 | Import source — stdin by default, or always require a path/flag? | stdin by default, with a `--file` flag to read from a path instead | stdin by default, with a `--file` flag |
 
 ## Acceptance criteria
 - [ ] `todo export` with no flags prints the full todos array as JSON to stdout
@@ -18,6 +19,9 @@ Since storage is already JSON, this is a natural fit:
 - [ ] `todo import` merges imported todos into the existing list by default
 - [ ] `todo import --replace` replaces the existing list wholesale
 - [ ] On merge, an imported todo whose `id` already exists locally is skipped (existing todo wins); the command reports how many were imported vs. skipped
+- [ ] `todo import` with no flags reads JSON from stdin
+- [ ] `todo import --file <path>` reads JSON from `<path>` instead of stdin
+- [ ] `todo export | todo import` round-trips without any flags
 
 ## Approved by human
 - [ ] Pending — say `approve requirements` in the session when ready
