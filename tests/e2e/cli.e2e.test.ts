@@ -399,6 +399,36 @@ describe('CLI e2e', () => {
     expect(program.stdout).not.toContain('--json');
   });
 
+  describe('help output', () => {
+    test('todo --help shows the banner, group headers, and a usage example', () => {
+      const result = runCli(['--help'], TEST_HOME);
+      expect(result.status).toBe(0);
+      expect(result.stdout).toMatch(/_____/);
+      expect(result.stdout).toContain('Manage todos:');
+      expect(result.stdout).toContain('Find & filter:');
+      expect(result.stdout).toContain('Data:');
+      expect(result.stdout).toContain('Session:');
+      expect(result.stdout).toContain('add "Buy milk"');
+    });
+
+    test('bare todo (no args) shows the same improved help', () => {
+      const result = runCli([], TEST_HOME);
+      expect(result.status).toBe(0);
+      expect(result.stdout).toMatch(/_____/);
+      expect(result.stdout).toContain('Manage todos:');
+      expect(result.stdout).toContain('Find & filter:');
+      expect(result.stdout).toContain('Data:');
+      expect(result.stdout).toContain('Session:');
+    });
+
+    test('add --help (subcommand help) does not show the banner or grouped sections', () => {
+      const result = runCli(['add', '--help'], TEST_HOME);
+      expect(result.status).toBe(0);
+      expect(result.stdout).not.toMatch(/_____/);
+      expect(result.stdout).not.toContain('Manage todos:');
+    });
+  });
+
   test('clear --state <invalid> errors', () => {
     runCli(['add', 'Buy milk'], TEST_HOME);
 
@@ -953,6 +983,18 @@ describe('CLI e2e', () => {
       expect(result.stdout).toContain('clear');
       expect(result.stdout).toContain('exit');
       expect(result.stdout).toContain('quit');
+    });
+
+    test('help shows the banner, group headers, and a usage example, but not the one-shot-only "interactive" entry', () => {
+      const result = runInteractive(['help', 'exit', ''].join('\n'), TEST_HOME);
+      expect(result.status).toBe(0);
+      expect(result.stdout).toMatch(/_____/);
+      expect(result.stdout).toContain('Manage todos:');
+      expect(result.stdout).toContain('Find & filter:');
+      expect(result.stdout).toContain('Data:');
+      expect(result.stdout).toContain('Session:');
+      expect(result.stdout).toContain('add "Buy milk"');
+      expect(result.stdout).not.toMatch(/^\s*interactive\s/m);
     });
 
     test('quit ends the REPL cleanly (exit code 0)', () => {
