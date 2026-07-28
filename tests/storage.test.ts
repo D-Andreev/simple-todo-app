@@ -36,7 +36,7 @@ describe('Storage', () => {
 
   test('saveTodos creates storage directory and file', () => {
     const todos = [
-      { id: 'test-1', title: 'Test', state: 'pending' as const, createdAt: Date.now(), dueDate: null },
+      { id: 'test-1', title: 'Test', state: 'pending' as const, createdAt: Date.now(), dueDate: null, priority: 'mid' as const },
     ];
     storage.saveTodos(todos);
     expect(fs.existsSync(TEST_STORAGE)).toBe(true);
@@ -72,6 +72,31 @@ describe('Storage', () => {
 
     const fetched = storage.findTodoById('test-1');
     expect(fetched?.dueDate).toBe('2026-08-15');
+  });
+
+  test('addTodo defaults priority to mid when not provided', () => {
+    const todo = storage.addTodo('Test Todo', 'test-1');
+    expect(todo.priority).toBe('mid');
+  });
+
+  test('addTodo stores the given priority', () => {
+    const todo = storage.addTodo('Test Todo', 'test-1', null, 'high');
+    expect(todo.priority).toBe('high');
+
+    const fetched = storage.findTodoById('test-1');
+    expect(fetched?.priority).toBe('high');
+  });
+
+  test('getTodos treats a stored todo with no priority field as mid', () => {
+    fs.mkdirSync(path.dirname(TEST_STORAGE), { recursive: true });
+    fs.writeFileSync(
+      TEST_STORAGE,
+      JSON.stringify([{ id: 'legacy-1', title: 'Legacy', state: 'pending', createdAt: 1, dueDate: null }]),
+      'utf-8'
+    );
+
+    const todos = storage.getTodos();
+    expect(todos[0].priority).toBe('mid');
   });
 
   test('findTodoById returns todo when found', () => {
@@ -186,7 +211,7 @@ describe('Storage', () => {
   });
 
   test('writeTodosToFile writes JSON to an arbitrary path', () => {
-    const todos = [{ id: 'x', title: 'T', state: 'pending' as const, createdAt: 1, dueDate: null }];
+    const todos = [{ id: 'x', title: 'T', state: 'pending' as const, createdAt: 1, dueDate: null, priority: 'mid' as const }];
     const filePath = path.join(TEST_DIR, 'export.json');
 
     storage.writeTodosToFile(filePath, todos);

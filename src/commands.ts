@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as storage from './storage';
 
 const DUE_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const VALID_PRIORITIES: storage.Priority[] = ['low', 'mid', 'high'];
 
 function isValidDueDate(value: string): boolean {
   if (!DUE_DATE_REGEX.test(value)) {
@@ -22,6 +23,16 @@ function validateDueDate(value: string): void {
   }
 }
 
+function isValidPriority(value: string): value is storage.Priority {
+  return VALID_PRIORITIES.includes(value as storage.Priority);
+}
+
+function validatePriority(value: string): void {
+  if (!isValidPriority(value)) {
+    throw new Error(`Invalid priority. Valid values: ${VALID_PRIORITIES.join(', ')}`);
+  }
+}
+
 function getTodayDateString(): string {
   const now = new Date();
   const year = now.getFullYear();
@@ -37,7 +48,7 @@ function isOverdue(todo: storage.Todo, today: string): boolean {
 function formatTodoRow(todo: storage.Todo): string {
   const iso = new Date(todo.createdAt).toISOString();
   const dueSuffix = todo.dueDate ? ` due: ${todo.dueDate}` : '';
-  return `${todo.id.substring(0, 8)} ${todo.state} ${todo.title} (created: ${iso})${dueSuffix}`;
+  return `${todo.id.substring(0, 8)} ${todo.state} ${todo.title} (created: ${iso}) priority: ${todo.priority}${dueSuffix}`;
 }
 
 function compareTodos(a: storage.Todo, b: storage.Todo): number {
@@ -54,12 +65,15 @@ function compareTodos(a: storage.Todo, b: storage.Todo): number {
   return a.createdAt - b.createdAt;
 }
 
-export function handleAdd(title: string, dueDate?: string): string {
+export function handleAdd(title: string, dueDate?: string, priority?: string): string {
   if (dueDate !== undefined) {
     validateDueDate(dueDate);
   }
+  if (priority !== undefined) {
+    validatePriority(priority);
+  }
   const id = uuidv4();
-  const todo = storage.addTodo(title, id, dueDate ?? null);
+  const todo = storage.addTodo(title, id, dueDate ?? null, priority as storage.Priority | undefined);
   return `Added: ${todo.id.substring(0, 8)} pending ${todo.title}`;
 }
 
@@ -101,7 +115,8 @@ export function handleFilter(
   state?: string,
   json?: boolean,
   due?: string,
-  overdue?: boolean
+  overdue?: boolean,
+  priority?: string
 ): string {
   if (state !== undefined && state !== 'pending' && state !== 'done') {
     throw new Error('Invalid state. Valid values: pending, done');
@@ -111,11 +126,15 @@ export function handleFilter(
     validateDueDate(due);
   }
 
+  if (priority !== undefined) {
+    validatePriority(priority);
+  }
+
   const hasName = searchTerm !== undefined;
   const trimmedTerm = hasName ? searchTerm.trim() : '';
   const nameFilterActive = trimmedTerm.length > 0;
 
-  if (!nameFilterActive && state === undefined && due === undefined && !overdue) {
+  if (!nameFilterActive && state === undefined && due === undefined && !overdue && priority === undefined) {
     throw new Error(hasName ? 'Filter term cannot be empty' : 'Provide a name or --state to filter by');
   }
 
@@ -128,7 +147,8 @@ export function handleFilter(
       const stateMatches = state === undefined || todo.state === state;
       const dueMatches = due === undefined || todo.dueDate === due;
       const overdueMatches = !overdue || isOverdue(todo, today);
-      return nameMatches && stateMatches && dueMatches && overdueMatches;
+      const priorityMatches = priority === undefined || todo.priority === priority;
+      return nameMatches && stateMatches && dueMatches && overdueMatches && priorityMatches;
     })
     .sort(compareTodos);
 
@@ -145,6 +165,9 @@ export function handleFilter(
     }
     if (state !== undefined) {
       return `No todos with state "${state}".`;
+    }
+    if (priority !== undefined) {
+      return `No todos with priority "${priority}".`;
     }
     if (overdue) {
       return 'No overdue todos.';
@@ -200,6 +223,9 @@ function isValidImportEntry(entry: unknown): entry is storage.Todo {
   if (candidate.dueDate !== null && (typeof candidate.dueDate !== 'string' || !isValidDueDate(candidate.dueDate))) {
     return false;
   }
+  if (candidate.priority !== undefined && !isValidPriority(candidate.priority as string)) {
+    return false;
+  }
   return true;
 }
 
@@ -220,7 +246,7 @@ export function handleImport(filePath?: string, replace?: boolean): string {
   let skippedInvalid = 0;
   for (const entry of parsed) {
     if (isValidImportEntry(entry)) {
-      valid.push(entry);
+      valid.push({ ...entry, priority: entry.priority ?? 'mid' });
     } else {
       skippedInvalid++;
     }

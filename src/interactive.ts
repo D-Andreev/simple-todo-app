@@ -4,13 +4,13 @@ import * as commands from './commands';
 const PROMPT = 'todo> ';
 
 const HELP_TEXT = [
-  'add <title> [--due <date>]  Add a new todo',
+  'add <title> [--due <date>] [--priority <priority>]  Add a new todo',
   'list                     List all todos',
   'done <id>                Mark a todo as done',
   'reopen <id>              Move a done todo back to pending',
   'update <id> <newTitle>   Update a todo\'s title',
   'delete <id>              Delete a todo',
-  'filter [name] [--state <state>] [--due <date>] [--overdue]  Filter todos by name, state, and/or due date',
+  'filter [name] [--state <state>] [--due <date>] [--overdue] [--priority <priority>]  Filter todos by name, state, due date, and/or priority',
   'clear [--state <state>]  Clear todos, optionally by state',
   'exit                     Exit interactive mode',
   'quit                     Exit interactive mode',
@@ -20,8 +20,8 @@ type Handler = (rest: string) => string;
 
 const handlers: Record<string, Handler> = {
   add: (rest) => {
-    const { title, due } = parseAddArgs(rest);
-    return commands.handleAdd(title, due);
+    const { title, due, priority } = parseAddArgs(rest);
+    return commands.handleAdd(title, due, priority);
   },
   list: () => commands.handleList(),
   done: (rest) => commands.handleDone(rest.trim()),
@@ -34,8 +34,8 @@ const handlers: Record<string, Handler> = {
   },
   delete: (rest) => commands.handleDelete(rest.trim()),
   filter: (rest) => {
-    const { name, state, due, overdue } = parseFilterArgs(rest);
-    return commands.handleFilter(name, state, undefined, due, overdue);
+    const { name, state, due, overdue, priority } = parseFilterArgs(rest);
+    return commands.handleFilter(name, state, undefined, due, overdue, priority);
   },
   clear: (rest) => {
     const { state } = parseClearArgs(rest);
@@ -43,14 +43,25 @@ const handlers: Record<string, Handler> = {
   },
 };
 
-function parseAddArgs(rest: string): { title: string; due?: string } {
-  const dueMatch = rest.match(/--due\s+(\S+)/);
+function parseAddArgs(rest: string): { title: string; due?: string; priority?: string } {
+  let remaining = rest;
+
+  const priorityMatch = remaining.match(/--priority\s+(\S+)/);
+  const priority = priorityMatch ? priorityMatch[1] : undefined;
+  if (priorityMatch) {
+    remaining =
+      remaining.slice(0, priorityMatch.index) + remaining.slice(priorityMatch.index! + priorityMatch[0].length);
+  }
+
+  const dueMatch = remaining.match(/--due\s+(\S+)/);
   const due = dueMatch ? dueMatch[1] : undefined;
-  const title = (dueMatch ? rest.slice(0, dueMatch.index) : rest).trim();
-  return { title, due };
+  const title = (dueMatch ? remaining.slice(0, dueMatch.index) : remaining).trim();
+  return { title, due, priority };
 }
 
-function parseFilterArgs(rest: string): { name?: string; state?: string; due?: string; overdue?: boolean } {
+function parseFilterArgs(
+  rest: string
+): { name?: string; state?: string; due?: string; overdue?: boolean; priority?: string } {
   let remaining = rest;
 
   const stateMatch = remaining.match(/--state\s+(\S+)/);
@@ -65,6 +76,13 @@ function parseFilterArgs(rest: string): { name?: string; state?: string; due?: s
     remaining = remaining.slice(0, dueMatch.index) + remaining.slice(dueMatch.index! + dueMatch[0].length);
   }
 
+  const priorityMatch = remaining.match(/--priority\s+(\S+)/);
+  const priority = priorityMatch ? priorityMatch[1] : undefined;
+  if (priorityMatch) {
+    remaining =
+      remaining.slice(0, priorityMatch.index) + remaining.slice(priorityMatch.index! + priorityMatch[0].length);
+  }
+
   const overdueMatch = remaining.match(/--overdue\b/);
   const overdue = overdueMatch ? true : undefined;
   if (overdueMatch) {
@@ -72,7 +90,7 @@ function parseFilterArgs(rest: string): { name?: string; state?: string; due?: s
   }
 
   const nameOnly = remaining.trim();
-  return { name: nameOnly === '' ? undefined : nameOnly, state, due, overdue };
+  return { name: nameOnly === '' ? undefined : nameOnly, state, due, overdue, priority };
 }
 
 function parseClearArgs(rest: string): { state?: string } {

@@ -76,6 +76,25 @@ describe('Commands', () => {
       );
       expect(storage.getTodos()).toHaveLength(0);
     });
+
+    test('with no --priority, defaults the todo priority to mid', () => {
+      commands.handleAdd('New Todo');
+      const todos = storage.getTodos();
+      expect(todos[0].priority).toBe('mid');
+    });
+
+    test('with a valid --priority, sets the priority', () => {
+      commands.handleAdd('New Todo', undefined, 'high');
+      const todos = storage.getTodos();
+      expect(todos[0].priority).toBe('high');
+    });
+
+    test('with an invalid --priority, throws and does not create the todo', () => {
+      expect(() => commands.handleAdd('New Todo', undefined, 'urgent')).toThrow(
+        'Invalid priority. Valid values: low, mid, high'
+      );
+      expect(storage.getTodos()).toHaveLength(0);
+    });
   });
 
   describe('handleList', () => {
@@ -132,8 +151,8 @@ describe('Commands', () => {
 
     test('breaks ties between identical case-insensitive titles by createdAt ascending', () => {
       storage.saveTodos([
-        { id: 'id-1', title: 'Todo', state: 'pending', createdAt: 200, dueDate: null },
-        { id: 'id-2', title: 'todo', state: 'pending', createdAt: 100, dueDate: null },
+        { id: 'id-1', title: 'Todo', state: 'pending', createdAt: 200, dueDate: null, priority: 'mid' },
+        { id: 'id-2', title: 'todo', state: 'pending', createdAt: 100, dueDate: null, priority: 'mid' },
       ]);
 
       const message = commands.handleList();
@@ -177,6 +196,7 @@ describe('Commands', () => {
         state: 'pending',
         createdAt: expect.any(Number),
         dueDate: null,
+        priority: 'mid',
       });
       expect(parsed[1].id).toBe('id-2');
       expect(message).toBe(JSON.stringify(parsed, null, 2));
@@ -230,6 +250,38 @@ describe('Commands', () => {
       const message = commands.handleList(true);
       const parsed = JSON.parse(message);
       expect(parsed[0].dueDate).toBeNull();
+    });
+
+    test('shows the todo priority in the row', () => {
+      storage.addTodo('Test', 'id-1', undefined, 'high');
+
+      const message = commands.handleList();
+      expect(message).toContain('priority: high');
+    });
+
+    test('shows the default mid priority in the row when not set', () => {
+      storage.addTodo('Test', 'id-1');
+
+      const message = commands.handleList();
+      expect(message).toContain('priority: mid');
+    });
+
+    test('priority does not change sort order', () => {
+      storage.addTodo('Banana', 'id-1', undefined, 'low');
+      storage.addTodo('Apple', 'id-2', undefined, 'high');
+
+      const message = commands.handleList();
+      const lines = message.split('\n');
+      expect(lines[0]).toContain('Apple');
+      expect(lines[1]).toContain('Banana');
+    });
+
+    test('with json=true, includes priority field', () => {
+      storage.addTodo('Test', 'id-1', undefined, 'low');
+
+      const message = commands.handleList(true);
+      const parsed = JSON.parse(message);
+      expect(parsed[0].priority).toBe('low');
     });
   });
 
@@ -490,6 +542,7 @@ describe('Commands', () => {
         state: 'pending',
         createdAt: expect.any(Number),
         dueDate: null,
+        priority: 'mid',
       });
       expect(message).toBe(JSON.stringify(parsed, null, 2));
     });
@@ -581,6 +634,50 @@ describe('Commands', () => {
       expect(parsed).toHaveLength(1);
       expect(parsed[0].dueDate).toBe('2026-08-15');
     });
+
+    test('--priority works standalone without name or --state', () => {
+      storage.addTodo('Buy milk', 'id-1', undefined, 'high');
+      storage.addTodo('Walk dog', 'id-2', undefined, 'low');
+
+      const message = commands.handleFilter(undefined, undefined, false, undefined, undefined, 'high');
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toContain('Buy milk');
+    });
+
+    test('--priority combines with name, --state, --due, and --overdue using AND logic', () => {
+      storage.addTodo('Buy milk', 'id-1', '2026-08-15', 'high');
+      storage.addTodo('Buy eggs', 'id-2', '2026-08-15', 'low');
+      storage.markTodoDone('id-1');
+
+      const message = commands.handleFilter('buy', 'done', false, '2026-08-15', undefined, 'high');
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toContain('Buy milk');
+    });
+
+    test('throws on invalid --priority value, matching the --state validation pattern', () => {
+      expect(() => commands.handleFilter(undefined, undefined, false, undefined, undefined, 'urgent')).toThrow(
+        'Invalid priority. Valid values: low, mid, high'
+      );
+    });
+
+    test('--priority with no matches returns a priority-specific message', () => {
+      storage.addTodo('Buy milk', 'id-1', undefined, 'low');
+
+      const message = commands.handleFilter(undefined, undefined, false, undefined, undefined, 'high');
+      expect(message).toBe('No todos with priority "high".');
+    });
+
+    test('with json=true, --priority filters and includes priority field', () => {
+      storage.addTodo('Buy milk', 'id-1', undefined, 'high');
+      storage.addTodo('Walk dog', 'id-2', undefined, 'low');
+
+      const message = commands.handleFilter(undefined, undefined, true, undefined, undefined, 'high');
+      const parsed = JSON.parse(message);
+      expect(parsed).toHaveLength(1);
+      expect(parsed[0].priority).toBe('high');
+    });
   });
 
   describe('handleClear', () => {
@@ -667,6 +764,19 @@ describe('Commands', () => {
       const written = JSON.parse(fs.readFileSync(exportPath, 'utf-8'));
       expect(written).toHaveLength(1);
       expect(written[0].title).toBe('Buy milk');
+    });
+
+    test('includes the priority field for every todo, defaulting legacy entries to mid', () => {
+      storage.addTodo('Has priority', 'id-1', undefined, 'high');
+      storage.saveTodos([
+        ...storage.getTodos(),
+        { id: 'id-2', title: 'Legacy', state: 'pending', createdAt: 2, dueDate: null } as storage.Todo,
+      ]);
+
+      const result = commands.handleExport();
+      const parsed = JSON.parse(result);
+      expect(parsed.find((t: storage.Todo) => t.id === 'id-1').priority).toBe('high');
+      expect(parsed.find((t: storage.Todo) => t.id === 'id-2').priority).toBe('mid');
     });
   });
 
@@ -756,6 +866,39 @@ describe('Commands', () => {
       expect(message).toContain('Imported 1');
       expect(message).toContain('skipped 1 invalid');
       expect(storage.getTodos()[0].dueDate).toBe('2026-08-15');
+    });
+
+    test('accepts a valid priority and rejects an invalid one', () => {
+      const payload = [
+        { id: 'priority-ok', title: 'Has priority', state: 'pending', createdAt: 1, dueDate: null, priority: 'high' },
+        { id: 'priority-bad', title: 'Bad priority', state: 'pending', createdAt: 1, dueDate: null, priority: 'urgent' },
+      ];
+
+      const message = commands.handleImport(importFile(payload));
+
+      expect(message).toContain('Imported 1');
+      expect(message).toContain('skipped 1 invalid');
+      expect(storage.getTodos()[0].priority).toBe('high');
+    });
+
+    test('an entry with no priority field is imported and treated as mid, not rejected', () => {
+      const payload = [{ id: 'no-priority', title: 'Legacy import', state: 'pending', createdAt: 1, dueDate: null }];
+
+      const message = commands.handleImport(importFile(payload));
+
+      expect(message).toContain('Imported 1');
+      expect(message).toContain('skipped 0 invalid');
+      expect(storage.getTodos()[0].priority).toBe('mid');
+    });
+
+    test('export/import round-trips priority', () => {
+      storage.addTodo('Buy milk', 'id-1', undefined, 'high');
+      const exported = commands.handleExport();
+
+      storage.clearTodos();
+      commands.handleImport(importFile(JSON.parse(exported)));
+
+      expect(storage.getTodos()[0].priority).toBe('high');
     });
   });
 });

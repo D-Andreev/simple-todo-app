@@ -480,6 +480,93 @@ describe('CLI e2e', () => {
     expect(parsed[0].dueDate).toBe('2026-08-15');
   });
 
+  test('add --priority <priority> sets the priority, shown in list and --json', () => {
+    const add = runCli(['add', 'Buy milk', '--priority', 'high'], TEST_HOME);
+    expect(add.status).toBe(0);
+
+    const list = runCli(['list'], TEST_HOME);
+    expect(list.stdout).toContain('priority: high');
+
+    const listJson = runCli(['list', '--json'], TEST_HOME);
+    const parsed = JSON.parse(listJson.stdout);
+    expect(parsed[0].priority).toBe('high');
+  });
+
+  test('add without --priority defaults to mid', () => {
+    runCli(['add', 'Buy milk'], TEST_HOME);
+
+    const list = runCli(['list'], TEST_HOME);
+    expect(list.stdout).toContain('priority: mid');
+
+    const listJson = runCli(['list', '--json'], TEST_HOME);
+    const parsed = JSON.parse(listJson.stdout);
+    expect(parsed[0].priority).toBe('mid');
+  });
+
+  test('add --priority <invalid> errors and does not create the todo', () => {
+    const result = runCli(['add', 'Buy milk', '--priority', 'urgent'], TEST_HOME);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('Invalid priority. Valid values: low, mid, high');
+
+    const list = runCli(['list'], TEST_HOME);
+    expect(list.stdout.trim()).toBe('No todos.');
+  });
+
+  test('filter --priority <priority> matches todos with that priority', () => {
+    runCli(['add', 'Buy milk', '--priority', 'high'], TEST_HOME);
+    runCli(['add', 'Walk dog', '--priority', 'low'], TEST_HOME);
+
+    const result = runCli(['filter', '--priority', 'high'], TEST_HOME);
+    expect(result.status).toBe(0);
+    const lines = result.stdout.trim().split('\n');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('Buy milk');
+  });
+
+  test('filter --priority combines with --state using AND logic', () => {
+    const add1 = runCli(['add', 'Buy milk', '--priority', 'high'], TEST_HOME);
+    const id1 = add1.stdout.trim().split(' ')[1];
+    runCli(['add', 'Buy eggs', '--priority', 'high'], TEST_HOME);
+    runCli(['done', id1], TEST_HOME);
+
+    const result = runCli(['filter', '--priority', 'high', '--state', 'done'], TEST_HOME);
+    expect(result.status).toBe(0);
+    const lines = result.stdout.trim().split('\n');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('Buy milk');
+  });
+
+  test('filter --priority <invalid> errors', () => {
+    const result = runCli(['filter', '--priority', 'urgent'], TEST_HOME);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('Invalid priority. Valid values: low, mid, high');
+  });
+
+  test('filter --json includes priority field', () => {
+    runCli(['add', 'Buy milk', '--priority', 'high'], TEST_HOME);
+
+    const result = runCli(['filter', '--priority', 'high', '--json'], TEST_HOME);
+    expect(result.status).toBe(0);
+    const parsed = JSON.parse(result.stdout);
+    expect(parsed[0].priority).toBe('high');
+  });
+
+  test('a stored todo with no priority field (legacy data) is treated as mid in list', () => {
+    const storageDir = path.join(TEST_HOME, '.simple-todo');
+    fs.mkdirSync(storageDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(storageDir, 'todos.json'),
+      JSON.stringify([{ id: 'legacy-1', title: 'Legacy todo', state: 'pending', createdAt: Date.now(), dueDate: null }]),
+      'utf-8'
+    );
+
+    const list = runCli(['list'], TEST_HOME);
+    expect(list.stdout).toContain('priority: mid');
+
+    const listJson = runCli(['list', '--json'], TEST_HOME);
+    expect(JSON.parse(listJson.stdout)[0].priority).toBe('mid');
+  });
+
   describe('export / import', () => {
     test('export with no flags prints the full todos array as JSON to stdout', () => {
       runCli(['add', 'Buy milk'], TEST_HOME);
@@ -598,6 +685,42 @@ describe('CLI e2e', () => {
       expect(result.stdout).toContain('Imported 1');
       expect(result.stdout).toContain('skipped 2 invalid');
       expect(readStorage(TEST_HOME)).toHaveLength(1);
+    });
+
+    test('export includes priority for every todo, and export | import round-trips it', () => {
+      runCli(['add', 'Buy milk', '--priority', 'high'], TEST_HOME);
+
+      const exportResult = runCli(['export'], TEST_HOME);
+      const exported = JSON.parse(exportResult.stdout);
+      expect(exported[0].priority).toBe('high');
+
+      runCli(['clear'], TEST_HOME);
+      const importResult = runCliWithStdin(['import'], exportResult.stdout, TEST_HOME);
+      expect(importResult.status).toBe(0);
+      expect(importResult.stdout).toContain('Imported 1');
+      expect(readStorage(TEST_HOME)[0].priority).toBe('high');
+    });
+
+    test('importing an entry with no priority field treats it as mid, not invalid', () => {
+      const payload = JSON.stringify([{ id: 'no-priority', title: 'Legacy', state: 'pending', createdAt: Date.now(), dueDate: null }]);
+
+      const result = runCliWithStdin(['import'], payload, TEST_HOME);
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Imported 1');
+      expect(result.stdout).toContain('skipped 0 invalid');
+      expect(readStorage(TEST_HOME)[0].priority).toBe('mid');
+    });
+
+    test('importing an entry with an invalid priority is skipped as invalid', () => {
+      const payload = JSON.stringify([
+        { id: 'bad-priority', title: 'Bad priority', state: 'pending', createdAt: Date.now(), dueDate: null, priority: 'urgent' },
+      ]);
+
+      const result = runCliWithStdin(['import'], payload, TEST_HOME);
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Imported 0');
+      expect(result.stdout).toContain('skipped 1 invalid');
+      expect(readStorage(TEST_HOME)).toHaveLength(0);
     });
   });
 
@@ -851,6 +974,42 @@ describe('CLI e2e', () => {
       expect(result.status).toBe(0);
       expect(result.stdout).toContain('Overdue pending');
       expect(result.stdout).not.toContain('Future pending');
+    });
+
+    test('add <title> --priority <priority> sets the priority', () => {
+      const result = runInteractive(
+        ['add Buy milk --priority high', 'list', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Buy milk');
+      expect(result.stdout).toContain('priority: high');
+    });
+
+    test('add <title> --priority <invalid> prints error and does not create the todo', () => {
+      const result = runInteractive(
+        ['add Buy milk --priority urgent', 'list', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Error: Invalid priority. Valid values: low, mid, high');
+      expect(result.stdout).toContain('No todos.');
+    });
+
+    test('filter --priority <priority> matches todos with that priority', () => {
+      runCli(['add', 'Buy milk', '--priority', 'high'], TEST_HOME);
+      runCli(['add', 'Walk dog', '--priority', 'low'], TEST_HOME);
+
+      const result = runInteractive(
+        ['filter --priority high', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Buy milk');
+      expect(result.stdout).not.toContain('Walk dog');
     });
   });
 });
