@@ -7,6 +7,7 @@ I want to be able to add a priority for todods when creating them and later to b
 | # | Question | Answer | Recommended |
 |---|----------|--------|-------------|
 | 1 | Is priority required on `add`, or optional with a default? | Optional; defaults to `mid` when omitted | Optional `--priority <low\|mid\|high>`, default `mid` |
+| 2 | Should priority affect `list`/`filter` sort order? | No — keep existing `state → title → createdAt` order unchanged | Leave sort order unchanged |
 
 ## Acceptance criteria
 - [ ] ...

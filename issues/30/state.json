@@ -12,9 +12,9 @@
   "work_branch": null,
   "handoff_path": "issues/30",
   "requirements_approved": false,
-  "clarify_rounds": 1,
+  "clarify_rounds": 2,
   "created_at": "2026-07-28T05:52:40.000Z",
-  "updated_at": "2026-07-28T05:56:44.000Z",
+  "updated_at": "2026-07-28T05:57:25.000Z",
   "last_session_url": "https://claude.ai/code/session_01Ey51Qfo13kUxq3V6TwVAjt",
   "history": [
     {
@@ -34,6 +34,12 @@
       "event": "human_answered",
       "at": "2026-07-28T05:56:44.000Z",
       "note": "Q1 priority required/default -> optional, default mid"
+    },
+    {
+      "phase": "clarify",
+      "event": "human_answered",
+      "at": "2026-07-28T05:57:25.000Z",
+      "note": "Q2 sort order -> keep unchanged"
     }
   ],
   "human_feedback": [
@@ -41,6 +47,11 @@
       "at": "2026-07-28T05:56:44.000Z",
       "question": "Is priority required on add, or optional with a default?",
       "answer": "optional, default to mid"
+    },
+    {
+      "at": "2026-07-28T05:57:25.000Z",
+      "question": "Should priority affect list/filter sort order?",
+      "answer": "keep sort order unchanged"
     }
   ],
   "comprehension_attempt": 0,
