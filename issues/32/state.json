@@ -5,16 +5,17 @@
   "mode": "feature",
   "task": "Add date-range filters to `todo filter`: --due-before <date>, --due-after <date>, --due-today",
   "phase": "implement",
-  "status": "ai_running",
-  "workflow_label": "workflow:implement",
+  "status": "done",
+  "workflow_label": "workflow:review",
   "base_branch": "main",
   "state_branch": "workflow/state",
   "work_branch": "workflow/issue-32",
   "handoff_path": "issues/32",
   "requirements_approved": true,
   "clarify_rounds": 6,
+  "pr_url": "https://github.com/D-Andreev/simple-todo-app/pull/33",
   "created_at": "2026-07-28T08:43:02.000Z",
-  "updated_at": "2026-07-28T09:45:00.000Z",
+  "updated_at": "2026-07-28T10:05:00.000Z",
   "last_session_url": "https://claude.ai/code/session_017eC53RcrVBE7ym4qAPUfVk",
   "history": [
     {
@@ -88,6 +89,24 @@
       "event": "started",
       "at": "2026-07-28T09:45:00.000Z",
       "note": "base_branch=main work_branch=workflow/issue-32"
+    },
+    {
+      "phase": "implement",
+      "event": "work_branch_created",
+      "at": "2026-07-28T09:46:00.000Z",
+      "note": "workflow/issue-32 pushed from main"
+    },
+    {
+      "phase": "implement",
+      "event": "phase_completed",
+      "at": "2026-07-28T10:05:00.000Z",
+      "note": "draft PR #33 opened; 134 unit + 95 e2e tests passing"
+    },
+    {
+      "phase": "implement",
+      "event": "labels_updated",
+      "at": "2026-07-28T10:05:00.000Z",
+      "note": "workflow:implement -> workflow:review"
     }
   ],
   "human_feedback": [
