@@ -26,4 +26,4 @@ I want to be able to add a priority for todods when creating them and later to b
 - [ ] `todo export` includes the `priority` field for every todo; export/import round-trips priority
 
 ## Approved by human
-- [ ] Pending — say `approve requirements` in the session when ready
+- [x] Approved in session on 2026-07-28

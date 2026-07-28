@@ -5,16 +5,16 @@
   "mode": "feature",
   "task": "Add priority (Low/Mid/High) to todos, settable on create and filterable",
   "phase": "clarify",
-  "status": "awaiting_human",
+  "status": "done",
   "workflow_label": "workflow:clarify",
   "base_branch": "main",
   "state_branch": "workflow/state",
   "work_branch": null,
   "handoff_path": "issues/30",
-  "requirements_approved": false,
+  "requirements_approved": true,
   "clarify_rounds": 6,
   "created_at": "2026-07-28T05:52:40.000Z",
-  "updated_at": "2026-07-28T06:03:00.000Z",
+  "updated_at": "2026-07-28T06:06:39.000Z",
   "last_session_url": "https://claude.ai/code/session_01Ey51Qfo13kUxq3V6TwVAjt",
   "history": [
     {
@@ -64,6 +64,24 @@
       "event": "human_answered",
       "at": "2026-07-28T06:03:00.000Z",
       "note": "Q6 legacy data missing priority -> treat as mid everywhere"
+    },
+    {
+      "phase": "clarify",
+      "event": "human_approved",
+      "at": "2026-07-28T06:06:39.000Z",
+      "note": "requirements approved in session"
+    },
+    {
+      "phase": "clarify",
+      "event": "phase_completed",
+      "at": "2026-07-28T06:06:39.000Z",
+      "note": "clarify complete, requirements_approved=true"
+    },
+    {
+      "phase": "clarify",
+      "event": "labels_updated",
+      "at": "2026-07-28T06:06:39.000Z",
+      "note": "workflow:clarify -> workflow:implement"
     }
   ],
   "human_feedback": [
