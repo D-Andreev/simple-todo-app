@@ -10,6 +10,7 @@ export interface Todo {
   createdAt: number;
   dueDate: string | null;
   priority: Priority;
+  tags: string[];
 }
 
 function getStoragePaths() {
@@ -22,6 +23,10 @@ function normalizePriority(todo: Todo): Todo {
   return todo.priority ? todo : { ...todo, priority: 'mid' };
 }
 
+function normalizeTags(todo: Todo): Todo {
+  return todo.tags ? todo : { ...todo, tags: [] };
+}
+
 export function getTodos(): Todo[] {
   const { storageFile } = getStoragePaths();
   if (!fs.existsSync(storageFile)) {
@@ -30,7 +35,7 @@ export function getTodos(): Todo[] {
   try {
     const data = fs.readFileSync(storageFile, 'utf-8');
     const todos: Todo[] = JSON.parse(data);
-    return todos.map(normalizePriority);
+    return todos.map(normalizePriority).map(normalizeTags);
   } catch (error) {
     throw new Error(`Corrupted todo file at ${storageFile}: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -52,7 +57,13 @@ export function findTodoById(idOrPrefix: string): Todo | undefined {
   return prefix;
 }
 
-export function addTodo(title: string, id: string, dueDate?: string | null, priority?: Priority): Todo {
+export function addTodo(
+  title: string,
+  id: string,
+  dueDate?: string | null,
+  priority?: Priority,
+  tags?: string[]
+): Todo {
   if (!title.trim()) {
     throw new Error('Todo title cannot be empty');
   }
@@ -64,6 +75,7 @@ export function addTodo(title: string, id: string, dueDate?: string | null, prio
     createdAt: Date.now(),
     dueDate: dueDate ?? null,
     priority: priority ?? 'mid',
+    tags: tags ?? [],
   };
   todos.push(newTodo);
   saveTodos(todos);

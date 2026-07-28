@@ -16,9 +16,10 @@ program
   .description('Add a new todo')
   .option('--due <date>', 'Set a due date (YYYY-MM-DD)')
   .option('--priority <priority>', 'Set a priority (low, mid, or high; defaults to mid)')
-  .action((title: string, options: { due?: string; priority?: string }) => {
+  .option('--tag <name>', 'Attach a tag (repeatable)', (val: string, prev: string[]) => prev.concat([val]), [] as string[])
+  .action((title: string, options: { due?: string; priority?: string; tag: string[] }) => {
     try {
-      const message = commands.handleAdd(title, options.due, options.priority);
+      const message = commands.handleAdd(title, options.due, options.priority, options.tag);
       console.log(message);
     } catch (error) {
       console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -94,7 +95,7 @@ program
 
 program
   .command('filter [name]')
-  .description('Filter todos by name, state, priority, and/or due date (exact, before, after, today)')
+  .description('Filter todos by name, state, priority, tag, and/or due date (exact, before, after, today)')
   .option('--state <state>', 'Filter by state (pending or done)')
   .option('--due <date>', 'Filter by exact due date (YYYY-MM-DD)')
   .option('--overdue', 'Show pending todos whose due date has passed')
@@ -102,6 +103,7 @@ program
   .option('--due-before <date>', 'Filter by due date strictly before this date (YYYY-MM-DD)')
   .option('--due-after <date>', 'Filter by due date strictly after this date (YYYY-MM-DD)')
   .option('--due-today', 'Show todos whose due date is today')
+  .option('--tag <name>', 'Filter by tag (case-insensitive)')
   .option('--json', 'Output as JSON')
   .action(
     (
@@ -115,6 +117,7 @@ program
         dueBefore?: string;
         dueAfter?: string;
         dueToday?: boolean;
+        tag?: string;
       }
     ) => {
       try {
@@ -127,7 +130,8 @@ program
           options.priority,
           options.dueBefore,
           options.dueAfter,
-          options.dueToday
+          options.dueToday,
+          options.tag
         );
         console.log(message);
       } catch (error) {

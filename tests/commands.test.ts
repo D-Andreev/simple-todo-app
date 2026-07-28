@@ -103,6 +103,41 @@ describe('Commands', () => {
       );
       expect(storage.getTodos()).toHaveLength(0);
     });
+
+    test('with no --tag, creates a todo with an empty tags array', () => {
+      commands.handleAdd('New Todo');
+      const todos = storage.getTodos();
+      expect(todos[0].tags).toEqual([]);
+    });
+
+    test('with a single --tag, attaches it lowercased and trimmed', () => {
+      commands.handleAdd('New Todo', undefined, undefined, ['  Work  ']);
+      const todos = storage.getTodos();
+      expect(todos[0].tags).toEqual(['work']);
+    });
+
+    test('with repeated --tag flags, attaches all tags', () => {
+      commands.handleAdd('New Todo', undefined, undefined, ['work', 'urgent']);
+      const todos = storage.getTodos();
+      expect(todos[0].tags).toEqual(['work', 'urgent']);
+    });
+
+    test('allows tags with internal spaces and no charset restriction', () => {
+      commands.handleAdd('New Todo', undefined, undefined, ['home improvement', "boss's request"]);
+      const todos = storage.getTodos();
+      expect(todos[0].tags).toEqual(['home improvement', "boss's request"]);
+    });
+
+    test('with an empty/whitespace-only --tag, throws and does not create the todo', () => {
+      expect(() => commands.handleAdd('New Todo', undefined, undefined, ['   '])).toThrow('Tag cannot be empty');
+      expect(storage.getTodos()).toHaveLength(0);
+    });
+
+    test('deduplicates case-insensitive duplicate tags in the same add call', () => {
+      commands.handleAdd('New Todo', undefined, undefined, ['Work', 'work', 'WORK']);
+      const todos = storage.getTodos();
+      expect(todos[0].tags).toEqual(['work']);
+    });
   });
 
   describe('handleList', () => {
@@ -159,8 +194,8 @@ describe('Commands', () => {
 
     test('breaks ties between identical case-insensitive titles by createdAt ascending', () => {
       storage.saveTodos([
-        { id: 'id-1', title: 'Todo', state: 'pending', createdAt: 200, dueDate: null, priority: 'mid' },
-        { id: 'id-2', title: 'todo', state: 'pending', createdAt: 100, dueDate: null, priority: 'mid' },
+        { id: 'id-1', title: 'Todo', state: 'pending', createdAt: 200, dueDate: null, priority: 'mid', tags: [] },
+        { id: 'id-2', title: 'todo', state: 'pending', createdAt: 100, dueDate: null, priority: 'mid', tags: [] },
       ]);
 
       const message = commands.handleList();
@@ -186,6 +221,18 @@ describe('Commands', () => {
       expect(message).toContain(`(created: ${expectedIso})`);
     });
 
+    test('appends tags to the row when present', () => {
+      commands.handleAdd('Tagged', undefined, undefined, ['work', 'urgent']);
+      const message = commands.handleList();
+      expect(message).toContain('tags: work, urgent');
+    });
+
+    test('omits the tags suffix when a todo has no tags', () => {
+      storage.addTodo('Untagged', 'id-1');
+      const message = commands.handleList();
+      expect(message).not.toContain('tags:');
+    });
+
     test('with json=true returns "[]" when empty', () => {
       const message = commands.handleList(true);
       expect(message).toBe('[]');
@@ -205,6 +252,7 @@ describe('Commands', () => {
         createdAt: expect.any(Number),
         dueDate: null,
         priority: 'mid',
+        tags: [],
       });
       expect(parsed[1].id).toBe('id-2');
       expect(message).toBe(JSON.stringify(parsed, null, 2));
@@ -551,6 +599,7 @@ describe('Commands', () => {
         createdAt: expect.any(Number),
         dueDate: null,
         priority: 'mid',
+        tags: [],
       });
       expect(message).toBe(JSON.stringify(parsed, null, 2));
     });
@@ -685,6 +734,43 @@ describe('Commands', () => {
       const parsed = JSON.parse(message);
       expect(parsed).toHaveLength(1);
       expect(parsed[0].priority).toBe('high');
+    });
+
+    test('--tag matches todos whose tags list contains that tag, case-insensitively', () => {
+      storage.addTodo('Buy milk', 'id-1', undefined, undefined, ['errand']);
+      storage.addTodo('Walk dog', 'id-2', undefined, undefined, ['pet']);
+
+      const message = commands.handleFilter(undefined, undefined, false, undefined, undefined, undefined, undefined, undefined, undefined, 'ERRAND');
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toContain('Buy milk');
+    });
+
+    test('--tag combines with other active filters using AND logic', () => {
+      storage.addTodo('Buy milk', 'id-1', '2026-08-15', undefined, ['errand']);
+      storage.addTodo('Buy eggs', 'id-2', '2026-08-15', undefined, ['pet']);
+
+      const message = commands.handleFilter('buy', undefined, false, '2026-08-15', undefined, undefined, undefined, undefined, undefined, 'errand');
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toContain('Buy milk');
+    });
+
+    test('--tag with no matches returns a tag-specific message', () => {
+      storage.addTodo('Buy milk', 'id-1', undefined, undefined, ['errand']);
+
+      const message = commands.handleFilter(undefined, undefined, false, undefined, undefined, undefined, undefined, undefined, undefined, 'missing');
+      expect(message).toBe('No todos with tag "missing".');
+    });
+
+    test('--tag works standalone without name or --state', () => {
+      storage.addTodo('Buy milk', 'id-1', undefined, undefined, ['errand']);
+      storage.addTodo('Walk dog', 'id-2');
+
+      const message = commands.handleFilter(undefined, undefined, false, undefined, undefined, undefined, undefined, undefined, undefined, 'errand');
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toContain('Buy milk');
     });
 
     test('--due-before matches todos with a due date strictly earlier, excludes the boundary date itself', () => {
@@ -1041,6 +1127,46 @@ describe('Commands', () => {
       expect(storage.getTodos()[0].priority).toBe('high');
     });
 
+    test('an entry with no tags field is imported and treated as an empty array', () => {
+      const payload = [{ id: 'no-tags', title: 'Legacy import', state: 'pending', createdAt: 1, dueDate: null }];
+
+      const message = commands.handleImport(importFile(payload));
+
+      expect(message).toContain('Imported 1');
+      expect(storage.getTodos()[0].tags).toEqual([]);
+    });
+
+    test('imports a valid tags array as-is', () => {
+      const payload = [
+        { id: 'has-tags', title: 'Tagged', state: 'pending', createdAt: 1, dueDate: null, tags: ['work', 'urgent'] },
+      ];
+
+      const message = commands.handleImport(importFile(payload));
+
+      expect(message).toContain('Imported 1');
+      expect(storage.getTodos()[0].tags).toEqual(['work', 'urgent']);
+    });
+
+    test('a malformed tags field (not an array) aborts the entire import, unlike other malformed fields', () => {
+      storage.addTodo('Existing', 'existing-id');
+      const payload = [
+        { id: 'ok-id', title: 'Would be valid', state: 'pending', createdAt: 1, dueDate: null },
+        { id: 'bad-tags', title: 'Bad tags', state: 'pending', createdAt: 1, dueDate: null, tags: 'not-an-array' },
+      ];
+
+      expect(() => commands.handleImport(importFile(payload))).toThrow('Invalid import data: malformed tags field');
+      expect(storage.getTodos()).toEqual([expect.objectContaining({ id: 'existing-id' })]);
+    });
+
+    test('a tags array containing a non-string/empty entry aborts the entire import', () => {
+      const payload = [
+        { id: 'bad-tags', title: 'Bad tags', state: 'pending', createdAt: 1, dueDate: null, tags: ['ok', ''] },
+      ];
+
+      expect(() => commands.handleImport(importFile(payload))).toThrow('Invalid import data: malformed tags field');
+      expect(storage.getTodos()).toHaveLength(0);
+    });
+
     test('an entry with no priority field is imported and treated as mid, not rejected', () => {
       const payload = [{ id: 'no-priority', title: 'Legacy import', state: 'pending', createdAt: 1, dueDate: null }];
 
@@ -1059,6 +1185,16 @@ describe('Commands', () => {
       commands.handleImport(importFile(JSON.parse(exported)));
 
       expect(storage.getTodos()[0].priority).toBe('high');
+    });
+
+    test('export/import round-trips tags', () => {
+      commands.handleAdd('Buy milk', undefined, undefined, ['errand', 'urgent']);
+      const exported = commands.handleExport();
+
+      storage.clearTodos();
+      commands.handleImport(importFile(JSON.parse(exported)));
+
+      expect(storage.getTodos()[0].tags).toEqual(['errand', 'urgent']);
     });
   });
 });

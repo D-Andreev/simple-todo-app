@@ -36,7 +36,7 @@ describe('Storage', () => {
 
   test('saveTodos creates storage directory and file', () => {
     const todos = [
-      { id: 'test-1', title: 'Test', state: 'pending' as const, createdAt: Date.now(), dueDate: null, priority: 'mid' as const },
+      { id: 'test-1', title: 'Test', state: 'pending' as const, createdAt: Date.now(), dueDate: null, priority: 'mid' as const, tags: [] },
     ];
     storage.saveTodos(todos);
     expect(fs.existsSync(TEST_STORAGE)).toBe(true);
@@ -97,6 +97,31 @@ describe('Storage', () => {
 
     const todos = storage.getTodos();
     expect(todos[0].priority).toBe('mid');
+  });
+
+  test('addTodo defaults tags to an empty array when not provided', () => {
+    const todo = storage.addTodo('Test Todo', 'test-1');
+    expect(todo.tags).toEqual([]);
+  });
+
+  test('addTodo stores the given tags', () => {
+    const todo = storage.addTodo('Test Todo', 'test-1', null, undefined, ['work', 'urgent']);
+    expect(todo.tags).toEqual(['work', 'urgent']);
+
+    const fetched = storage.findTodoById('test-1');
+    expect(fetched?.tags).toEqual(['work', 'urgent']);
+  });
+
+  test('getTodos treats a stored todo with no tags field as an empty array', () => {
+    fs.mkdirSync(path.dirname(TEST_STORAGE), { recursive: true });
+    fs.writeFileSync(
+      TEST_STORAGE,
+      JSON.stringify([{ id: 'legacy-1', title: 'Legacy', state: 'pending', createdAt: 1, dueDate: null, priority: 'mid' }]),
+      'utf-8'
+    );
+
+    const todos = storage.getTodos();
+    expect(todos[0].tags).toEqual([]);
   });
 
   test('findTodoById returns todo when found', () => {
@@ -211,7 +236,7 @@ describe('Storage', () => {
   });
 
   test('writeTodosToFile writes JSON to an arbitrary path', () => {
-    const todos = [{ id: 'x', title: 'T', state: 'pending' as const, createdAt: 1, dueDate: null, priority: 'mid' as const }];
+    const todos = [{ id: 'x', title: 'T', state: 'pending' as const, createdAt: 1, dueDate: null, priority: 'mid' as const, tags: [] }];
     const filePath = path.join(TEST_DIR, 'export.json');
 
     storage.writeTodosToFile(filePath, todos);

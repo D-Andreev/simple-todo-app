@@ -84,3 +84,12 @@ _Avoid_: `--after`, inclusive-of-boundary reading
 
 **Due-today filter**: `todo filter --due-today` — matches todos whose `dueDate` equals today's date, regardless of `state`. Todos with no `dueDate` never match. Combines (AND) with all other `filter` flags, including `--due-before`/`--due-after`, to form a range.
 _Avoid_: `--today`, pending-only semantics (that's `--overdue`)
+
+**Tag**: A free-form, user-typed string label attached to a `Todo`, lowercased and trimmed for consistency, with no charset restriction (internal spaces allowed). No predefined/managed registry — no `tag create`/`tag list` admin commands. A todo may carry zero or more tags, stored as `tags: string[]`, added via a repeatable `--tag <name>` CLI flag.
+_Avoid_: Label (as the field name — reserved for GitHub labels in this project's vocabulary), category
+
+**Tag filter**: `todo filter --tag <name>` — matches todos whose `tags` list contains `<name>` (case-insensitive exact match), AND-combined with any other active `filter` flags.
+_Avoid_: `--has-tag`, partial/substring tag matching
+
+**Malformed tags (import)**: An import entry whose `tags` field is present but not an array of non-empty strings — throws and aborts the whole `handleImport` call. Deliberately different from the existing *Invalid entry (import)* behavior, which skips-and-continues for other malformed fields. See `docs/adr/0001-tags-import-abort.md`.
+_Avoid_: Treating this the same as "invalid entry" (skip-and-continue)
