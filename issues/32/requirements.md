@@ -13,6 +13,7 @@ Add:
 | 2 | Do `--due-before`/`--due-after` combine with each other and with `--due`/`--overdue`/`--state`/`--priority`/name search, or should some combinations be rejected? | AND-combine with everything, no special-case rejection — nonsensical combos (e.g. `--due-after` later than `--due-before`) just return zero results | AND-combine with everything, matching existing precedent (no mutual-exclusivity checks anywhere today) |
 | 3 | Should `--due-before`/`--due-after`/`--due-today` match regardless of `state`, or only `pending` todos (like `--overdue`)? | Regardless of state — same as `--due` today; `--state pending` can be AND'd on top if only pending is wanted | Match regardless of state, matching `--due` precedent |
 | 4 | Should todos with no due date (`dueDate: null`) be excluded from all three new filters? | Yes | Yes — mirrors existing `--due` behavior (`null` never matches) |
+| 5 | Interactive mode's `filter` has its own regex arg parser that's missing `--priority` and `--json` wiring already (pre-existing gap, predates this issue). Add the three new flags to interactive only, or also fix the pre-existing gap? | Add the three new flags to interactive only; leave the pre-existing `--priority`/`--json` interactive gap out of scope | Same — keep this issue scoped to date-range filters; track the gap separately |
 
 ## Acceptance criteria
 - [ ] `todo filter --due-before <date>` matches todos with `dueDate < date` (strict, exclusive)
@@ -26,6 +27,9 @@ Add:
 - [ ] `--json` output is unaffected (already returns full todo objects, no schema change needed)
 - [ ] `filter`'s `--help` / command description mentions the new date-range options alongside the existing ones
 - [ ] No-results messages for the new filters follow the existing per-condition style (e.g. distinct message when a date-range/`--due-today` filter yields zero matches)
+- [ ] Interactive mode's `filter` command parses `--due-before <date>`, `--due-after <date>`, and `--due-today` (mirroring the existing `--due`/`--overdue`/`--state` regex parsing in `parseFilterArgs`) and passes them through to `handleFilter`, behaving identically to the one-shot CLI
+- [ ] Interactive mode's `help` text is updated to list the three new flags on `filter`
+- [ ] Out of scope: fixing interactive mode's pre-existing missing `--priority`/`--json` support — not touched by this issue (tracked as a known gap, not a regression introduced here)
 
 ## Approved by human
 - [ ] Pending — say `approve requirements` in the session when ready

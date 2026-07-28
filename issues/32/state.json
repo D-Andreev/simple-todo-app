@@ -12,9 +12,9 @@
   "work_branch": null,
   "handoff_path": "issues/32",
   "requirements_approved": false,
-  "clarify_rounds": 4,
+  "clarify_rounds": 5,
   "created_at": "2026-07-28T08:43:02.000Z",
-  "updated_at": "2026-07-28T09:14:00.000Z",
+  "updated_at": "2026-07-28T09:24:00.000Z",
   "last_session_url": "https://claude.ai/code/session_01JfS5SWWKP7LPAt31EbAxaz",
   "history": [
     {
@@ -52,6 +52,12 @@
       "event": "human_answered",
       "at": "2026-07-28T09:14:00.000Z",
       "note": "Q4 null dueDate exclusion -> excluded from all three filters (accepted recommendation)"
+    },
+    {
+      "phase": "clarify",
+      "event": "human_answered",
+      "at": "2026-07-28T09:24:00.000Z",
+      "note": "Q5 interactive-mode scope -> add new flags only, pre-existing --priority/--json gap out of scope (accepted recommendation)"
     }
   ],
   "human_feedback": [
@@ -74,6 +80,11 @@
       "at": "2026-07-28T09:14:00.000Z",
       "question": "Should todos with no due date be excluded from all three new filters?",
       "answer": "Yes, go with your recommendation"
+    },
+    {
+      "at": "2026-07-28T09:24:00.000Z",
+      "question": "Interactive mode is missing --priority/--json wiring already (pre-existing). Add new flags to interactive only, or also fix the pre-existing gap?",
+      "answer": "a (new flags only, leave pre-existing gap out of scope)"
     }
   ],
   "comprehension_attempt": 0,
