@@ -1,18 +1,18 @@
 # State Schema (Branch Handoff + Human Issue Comments)
 
-Ephemeral state and artifacts live on the long-lived branch **`workflow/state`** under `issues/{n}/`. Product code lives on **`workflow/issue-{n}`**. Issue comments are agent→human status only; clarify Q&A is **session-only**. See [handoff-format.md](handoff-format.md).
+Ephemeral state and artifacts live on the long-lived branch **`workflow/state`** under `issues/{n}/`. Product code lives on **`workflow/issue-{n}`**. Issue comments are agent→human status only; clarify Q&A is **session-only**. See [handoff-format.md](handoff-format.md). Analytics append-only log: [metrics.md](metrics.md).
 
 ## Two-branch rule
 
 | Phase | State branch (`workflow/state`) | Work branch (`workflow/issue-{n}`) |
 |-------|----------------------------------|-------------------------------------|
 | **Clarify start** | Ensure branch + init `issues/{n}/` | — (not created yet) |
-| **Clarify Q&A** | COMMIT each answer | — |
+| **Clarify Q&A** | COMMIT each answer + append `metrics.jsonl` | — |
 | **Clarify approve** | COMMIT final handoff | — |
 | **Implement start** | COMMIT `state.json` (`work_branch` set) | **CREATE** from `base_branch` |
 | **Implement complete** | COMMIT `implement-handoff.md` + state | App code commits + draft PR |
 | **Review start** | COMMIT `state.json` | Read-only (diff) |
-| **Review complete** | COMMIT `review-report.md` + state | Read-only |
+| **Review complete** | COMMIT `review-report.md` + state + append `metrics.jsonl` | Read-only |
 
 Never merge `workflow/state` into `main`. Implement creates the work branch once; review never creates a new work branch.
 
@@ -34,6 +34,7 @@ All paths below are on **`workflow/state`** under `issues/{n}/`.
 | File | clarify | implement | review |
 |------|---------|-----------|--------|
 | `state.json` | start + Q&A + approve | commit start + complete | commit start + complete |
+| `metrics.jsonl` | create empty at start; **append** `clarify_turn` each Q&A | — | **append** `review_completed` at complete |
 | `task.md`, `language.md`, `requirements.md`, `adrs.md` | start + Q&A + approve | read; merge language → PROJECT.md on **work** branch | read |
 | `implement-handoff.md` | — | commit at complete | read |
 | `review-report.md` | — | — | commit at complete |
@@ -53,6 +54,8 @@ All paths below are on **`workflow/state`** under `issues/{n}/`.
 | `review_verdict` | review complete |
 | `last_session_url` | each phase start commit |
 | `history[]` | append on start/complete/label swap |
+
+Analytics events live in **`metrics.jsonl`** (not `state.json`) — see [metrics.md](metrics.md).
 
 ### History events
 

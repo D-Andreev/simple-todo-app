@@ -38,12 +38,15 @@ After handoff exists, **only write** under `issues/{n}/` on **`workflow/state`**
 | File | Path |
 |------|------|
 | `state.json` | `issues/{n}/state.json` |
+| `metrics.jsonl` | `issues/{n}/metrics.jsonl` (append-only analytics) |
 | `task.md` | `issues/{n}/task.md` |
 | `language.md` | `issues/{n}/language.md` |
 | `requirements.md` | `issues/{n}/requirements.md` |
 | `adrs.md` | `issues/{n}/adrs.md` (optional) |
 
 `workflow/state` is **source of truth** for machine handoff — commit after every update. Do **not** create `workflow/issue-{n}` during clarify.
+
+Analytics events: [metrics.md](../workflow-routines/metrics.md).
 
 ## Trigger modes
 
@@ -68,6 +71,7 @@ Same as A/B.
    - Ensure-or-create long-lived `workflow/state`
    - Write `state.json` per [fixture](../workflow-routines/fixtures/state-example-clarify-start.json)
    - Write initial `task.md`, `language.md`, `requirements.md` under `issues/{n}/`
+   - Create empty `issues/{n}/metrics.jsonl`
    - Commit + push `workflow/state`
 5. **Post session comment** — pick a **fresh phrasing** from handoff-format example bank (or invent one). **Must link** session + **state tree** (`…/tree/workflow/state/issues/{n}`). Reference the issue topic when natural.
 
@@ -94,8 +98,13 @@ Checkout `workflow/state`, read `issues/{n}/`, or use session comment link. Cont
 
 1. Read the answer from the **session** (not the issue thread).
 2. Update `requirements.md`, `language.md`, `state.json` on `workflow/state`.
-3. Commit + push `workflow/state`.
-4. Ask next question in the session, or ask for `approve requirements` in the session.
+3. **Append one `clarify_turn` to `metrics.jsonl`** (same commit):
+   - `category` — exactly one from [metrics.md](../workflow-routines/metrics.md#question-categories)
+   - `recommendation_outcome` — exactly one of: `skipped` | `accepted_recommendation` | `accepted_with_adjustment` | `rejected_recommendation`
+   - `q_index`, `question` text
+   - Never rewrite prior JSONL lines
+4. Commit + push `workflow/state`.
+5. Ask next question in the session, or ask for `approve requirements` in the session.
 
 ## On `approve requirements` (session message)
 
@@ -135,8 +144,8 @@ Checkout `workflow/state`, read `issues/{n}/`, or use session comment link. Cont
 
 | When | Git | Issue |
 |------|-----|-------|
-| Start | Ensure `workflow/state` + init commit under `issues/{n}/` | Session comment with **session + state tree links** |
-| Q&A turn | COMMIT + push on `workflow/state` | **None** — questions and answers stay in the session |
+| Start | Ensure `workflow/state` + init commit under `issues/{n}/` (incl. empty `metrics.jsonl`) | Session comment with **session + state tree links** |
+| Q&A turn | COMMIT + push on `workflow/state` (handoff + **append** `clarify_turn` to `metrics.jsonl`) | **None** — questions and answers stay in the session |
 | Approve | COMMIT + push on `workflow/state` | Header + **full requirements.md** → label swap last |
 
 ## Hard rules
@@ -147,7 +156,7 @@ Checkout `workflow/state`, read `issues/{n}/`, or use session comment link. Cont
 - **Ensure state branch at start** — before session comment and Q1.
 - **Q&A in session only** — never ask clarifying questions via `gh issue comment`; never wait for issue-thread answers.
 - **Issue comments:** varied, engaging — see handoff-format example bank. Never repeat the same comment verbatim across issues. Only at **start** (session link) and **approve** (requirements), plus failures.
-- **Commit handoff after every Q&A turn** and at approve.
+- **Commit handoff after every Q&A turn** and at approve — include a `clarify_turn` metrics line each answered/skipped question.
 - **Never put `state.json` or other machine handoff in issue comments** — publish **approved `requirements.md` only** at clarify approve.
 - If push fails, short issue comment and **stop**; do not swap to `workflow:implement`.
 - **Label swap first** at start; **last** at approve.

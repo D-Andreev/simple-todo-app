@@ -19,9 +19,9 @@ workflow:start → clarify → workflow:implement → implement → workflow:rev
 
 No routine for `workflow:human-review` or comprehension. Comprehension is an optional local skill — skip by merging and closing the issue.
 
-Docs: [handoff-format.md](handoff-format.md) · [state-schema.md](state-schema.md) · [label-rules.md](label-rules.md)
+Docs: [handoff-format.md](handoff-format.md) · [state-schema.md](state-schema.md) · [label-rules.md](label-rules.md) · [metrics.md](metrics.md)
 
-**Label swap is always the last GitHub write** when a phase advances. Handoff lives on long-lived **`workflow/state`**. Clarify writes only there; implement **creates the work branch**. Implement opens PRs as **draft**.
+**Label swap is always the last GitHub write** when a phase advances. Handoff lives on long-lived **`workflow/state`**. Clarify writes only there; implement **creates the work branch**. Implement opens PRs as **draft**. Append analytics to `issues/{n}/metrics.jsonl` (clarify turns + review complete).
 
 ## Phase skills
 

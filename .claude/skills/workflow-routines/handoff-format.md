@@ -2,7 +2,7 @@
 
 Ephemeral machine files live on the **long-lived state branch** `workflow/state` under `issues/{n}/`. The **work branch** `workflow/issue-{n}` holds only product code (and shipped workflow docs). Issue comments are **agent→human status only** — engaging, short where possible. **Clarify Q&A (questions and answers) happens in the Claude Code session**, not the issue thread. **Approved `requirements.md` is posted on the issue at clarify approve.** Never put `state.json` or other machine handoff in comments.
 
-Full schema: [state-schema.md](state-schema.md)
+Full schema: [state-schema.md](state-schema.md) · Analytics: [metrics.md](metrics.md)
 
 ## Split
 
@@ -26,12 +26,15 @@ Full schema: [state-schema.md](state-schema.md)
 | File | First writer | Updated by |
 |------|--------------|------------|
 | `state.json` | clarify (start) | **every phase** (start + complete) |
+| `metrics.jsonl` | clarify (start — empty or first turn) | clarify (each Q&A); review (complete) — **append only** |
 | `task.md` | clarify (start) | clarify (Q&A commits) |
 | `language.md` | clarify (start) | clarify (Q&A commits) |
 | `requirements.md` | clarify (start) | clarify (Q&A + approve) |
 | `adrs.md` | clarify (optional) | clarify |
 | `implement-handoff.md` | implement (complete) | — |
 | `review-report.md` | review (complete) | — |
+
+Analytics event shapes and enums: [metrics.md](metrics.md).
 
 During clarify, **only write** under `issues/{n}/` on `workflow/state` — not application code, not `workflow/PROJECT.md`, not a work branch.
 
@@ -190,6 +193,8 @@ After label swap to `workflow:clarify`:
 ```bash
 mkdir -p issues/{n}
 # write state.json, task.md, language.md, requirements.md (initial shell)
+# create empty metrics.jsonl for analytics (append-only later)
+: > issues/{n}/metrics.jsonl
 git add issues/{n}/
 git commit -m "workflow(issue-{n}): clarify — init handoff"
 git push origin workflow/state
@@ -202,7 +207,8 @@ git push origin workflow/state
 
 1. Read the answer from the **session** — do not wait for or use issue-thread replies.
 2. On `workflow/state`, update files under `issues/{n}/`.
-3. Commit and push:
+3. **Append one `clarify_turn` line** to `issues/{n}/metrics.jsonl` — category + recommendation outcome per [metrics.md](metrics.md). Never rewrite prior lines.
+4. Commit and push:
 
 ```bash
 git add issues/{n}/
@@ -210,7 +216,7 @@ git commit -m "workflow(issue-{n}): clarify — update requirements"
 git push origin workflow/state
 ```
 
-4. Ask the next question in the session (or request `approve requirements` in the session).
+5. Ask the next question in the session (or request `approve requirements` in the session).
 
 ### Clarify approve
 
@@ -259,7 +265,7 @@ Prefer a clean working tree before switching. If needed, commit or stash work-br
 1. Pull `workflow/state`; read handoff. Checkout `work_branch` for diff/code.
 2. **At phase start** — update `state.json` on `workflow/state`; commit + push.
 3. Review (diff + code reading only — no tests/build). Do not commit code fixes.
-4. **At phase complete** — write `review-report.md` + update `state.json` on `workflow/state`; commit + push.
+4. **At phase complete** — write `review-report.md` + update `state.json` on `workflow/state`; **append one `review_completed` line** to `metrics.jsonl` (verdict + critical/minor/notes counts per [metrics.md](metrics.md)); commit + push.
 5. Post short issue comment; **label swap last**.
 
 ### On handoff write failure

@@ -20,7 +20,7 @@ When a phase **advances**, **label swap is usually last** — after handoff comm
 
 Record `labels_updated` in `state.json` when committing; swap labels after all other writes.
 
-**Handoff:** branch `workflow/state`, files under `issues/{n}/`. **Work branch:** `workflow/issue-{n}` (created at implement). Issue comments: engaging, varied status for humans — [handoff-format.md](handoff-format.md#issue-comments-status-only). Clarify Q&A answers come from the **session**, not the issue thread.
+**Handoff:** branch `workflow/state`, files under `issues/{n}/` (incl. append-only `metrics.jsonl`). **Work branch:** `workflow/issue-{n}` (created at implement). Issue comments: engaging, varied status for humans — [handoff-format.md](handoff-format.md#issue-comments-status-only). Clarify Q&A answers come from the **session**, not the issue thread. Analytics: [metrics.md](metrics.md).
 
 ## Label swap
 
