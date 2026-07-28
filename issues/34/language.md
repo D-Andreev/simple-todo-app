@@ -7,3 +7,6 @@ _Avoid_: Label (as the field name — reserved for GitHub labels in this project
 
 **Tag filter**: `todo filter --tag <name>` — matches todos whose `tags` list contains `<name>` (case-insensitive exact match), AND-combined with any other active `filter` flags.
 _Avoid_: `--has-tag`, partial/substring tag matching
+
+**Malformed tags (import)**: An import entry whose `tags` field is present but not an array of non-empty strings — throws and aborts the whole `handleImport` call. Deliberately different from the existing *Invalid entry (import)* behavior, which skips-and-continues for other malformed fields. See `adrs.md` ADR-1.
+_Avoid_: Treating this the same as "invalid entry" (skip-and-continue)
