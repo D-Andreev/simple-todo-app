@@ -16,14 +16,14 @@ Make the help command better, more descriptive. Maybe add some ascii art
 | 8 | Should individual subcommand help pages (e.g. `todo add --help`) also get usage examples, or stay untouched? | Leave subcommand help pages untouched | Same |
 
 ## Acceptance criteria
-- [ ] `todo --help`, bare `todo` (no args), and interactive mode's `help` command all show the improved output; per-subcommand help (e.g. `todo add --help`) is untouched
-- [ ] A compact "TODO" ASCII banner (figlet-style block letters, plain text, no color codes) appears above the help text on all three of those surfaces, and nowhere else
-- [ ] Commands are grouped into four sections: **Manage todos** (`add`, `update`, `done`, `reopen`, `delete`, `clear`), **Find & filter** (`list`, `filter`), **Data** (`export`, `import`), **Session** (`interactive` — one-shot only; `help`, `exit`, `quit` — interactive only)
-- [ ] Each command line includes a one-line usage example (e.g. `add "Buy milk" --due 2026-08-01 --priority high`) alongside its description
-- [ ] The one-shot CLI and interactive mode share the same grouping/description/example content so they stay consistent
-- [ ] Existing tests continue to pass unmodified (`.toContain()`-style assertions on command names/flags in `tests/e2e/cli.e2e.test.ts`)
-- [ ] New test assertions added for: presence of each group header, presence of the ASCII banner text, and presence of at least one example line
-- [ ] `add --help` (and other subcommand `--help` pages) still do not leak unrelated flags (e.g. `--json` must still not appear on `add --help`)
+- [x] `todo --help`, bare `todo` (no args), and interactive mode's `help` command all show the improved output; per-subcommand help (e.g. `todo add --help`) is untouched
+- [x] A compact "TODO" ASCII banner (figlet-style block letters, plain text, no color codes) appears above the help text on all three of those surfaces, and nowhere else
+- [x] Commands are grouped into four sections: **Manage todos** (`add`, `update`, `done`, `reopen`, `delete`, `clear`), **Find & filter** (`list`, `filter`), **Data** (`export`, `import`), **Session** (`interactive` — one-shot only; `help`, `exit`, `quit` — interactive only)
+- [x] Each command line includes a one-line usage example (e.g. `add "Buy milk" --due 2026-08-01 --priority high`) alongside its description
+- [x] The one-shot CLI and interactive mode share the same grouping/description/example content so they stay consistent
+- [x] Existing tests continue to pass unmodified (`.toContain()`-style assertions on command names/flags in `tests/e2e/cli.e2e.test.ts`)
+- [x] New test assertions added for: presence of each group header, presence of the ASCII banner text, and presence of at least one example line
+- [x] `add --help` (and other subcommand `--help` pages) still do not leak unrelated flags (e.g. `--json` must still not appear on `add --help`)
 
 ## Approved by human
-- [ ] Pending — say `approve requirements` in the session when ready
+- [x] Approved — `approve requirements` said in the session
