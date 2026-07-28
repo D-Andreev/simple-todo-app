@@ -4,8 +4,8 @@
   "issue_url": "https://github.com/D-Andreev/simple-todo-app/issues/34",
   "mode": "feature",
   "task": "Add tags for todos",
-  "phase": "implement",
-  "status": "done",
+  "phase": "review",
+  "status": "ai_running",
   "workflow_label": "workflow:review",
   "base_branch": "main",
   "state_branch": "workflow/state",
@@ -18,8 +18,8 @@
   "pr_number": 35,
   "pr_url": "https://github.com/D-Andreev/simple-todo-app/pull/35",
   "created_at": "2026-07-28T11:21:48.000Z",
-  "updated_at": "2026-07-28T12:14:56.000Z",
-  "last_session_url": "https://claude.ai/code/session_01EDf4bnPFCNsLxFczZT1vzb",
+  "updated_at": "2026-07-28T12:20:00.000Z",
+  "last_session_url": "https://claude.ai/code/session_01F3fzn1f8nMtvg1Nv7Liayb",
   "history": [
     {
       "phase": "clarify",
@@ -110,6 +110,12 @@
       "event": "labels_updated",
       "at": "2026-07-28T12:14:56.000Z",
       "note": "intended next label workflow:review"
+    },
+    {
+      "phase": "review",
+      "event": "started",
+      "at": "2026-07-28T12:20:00.000Z",
+      "note": "pr_number=35"
     }
   ],
   "human_feedback": [],
