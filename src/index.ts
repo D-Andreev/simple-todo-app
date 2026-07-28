@@ -3,6 +3,13 @@
 import { Command } from 'commander';
 import * as commands from './commands';
 import { runInteractive } from './interactive';
+import { renderHelp } from './help';
+
+const rawArgs = process.argv.slice(2);
+if (rawArgs.length === 0 || rawArgs[0] === '--help' || rawArgs[0] === '-h') {
+  console.log(renderHelp('cli'));
+  process.exit(0);
+}
 
 const program = new Command();
 

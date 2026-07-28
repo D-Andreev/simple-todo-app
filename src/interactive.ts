@@ -1,20 +1,8 @@
 import * as readline from 'readline';
 import * as commands from './commands';
+import { renderHelp } from './help';
 
 const PROMPT = 'todo> ';
-
-const HELP_TEXT = [
-  'add <title> [--due <date>] [--priority <priority>] [--tag <name> ...]  Add a new todo',
-  'list [--json]            List all todos',
-  'done <id>                Mark a todo as done',
-  'reopen <id>              Move a done todo back to pending',
-  'update <id> <newTitle>   Update a todo\'s title',
-  'delete <id>              Delete a todo',
-  'filter [name] [--state <state>] [--due <date>] [--overdue] [--priority <priority>] [--due-before <date>] [--due-after <date>] [--due-today] [--tag <name>] [--json]  Filter todos by name, state, priority, tag, due date, date range, and/or JSON output',
-  'clear [--state <state>]  Clear todos, optionally by state',
-  'exit                     Exit interactive mode',
-  'quit                     Exit interactive mode',
-].join('\n');
 
 type Handler = (rest: string) => string;
 
@@ -207,7 +195,7 @@ export function runInteractive(): void {
     }
 
     if (command === 'help') {
-      console.log(HELP_TEXT);
+      console.log(renderHelp('interactive'));
       rl.prompt();
       return;
     }
