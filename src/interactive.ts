@@ -5,12 +5,12 @@ const PROMPT = 'todo> ';
 
 const HELP_TEXT = [
   'add <title> [--due <date>] [--priority <priority>]  Add a new todo',
-  'list                     List all todos',
+  'list [--json]            List all todos',
   'done <id>                Mark a todo as done',
   'reopen <id>              Move a done todo back to pending',
   'update <id> <newTitle>   Update a todo\'s title',
   'delete <id>              Delete a todo',
-  'filter [name] [--state <state>] [--due <date>] [--overdue] [--priority <priority>]  Filter todos by name, state, due date, and/or priority',
+  'filter [name] [--state <state>] [--due <date>] [--overdue] [--priority <priority>] [--due-before <date>] [--due-after <date>] [--due-today] [--json]  Filter todos by name, state, priority, due date, date range, and/or JSON output',
   'clear [--state <state>]  Clear todos, optionally by state',
   'exit                     Exit interactive mode',
   'quit                     Exit interactive mode',
@@ -23,7 +23,10 @@ const handlers: Record<string, Handler> = {
     const { title, due, priority } = parseAddArgs(rest);
     return commands.handleAdd(title, due, priority);
   },
-  list: () => commands.handleList(),
+  list: (rest) => {
+    const { json } = parseListArgs(rest);
+    return commands.handleList(json);
+  },
   done: (rest) => commands.handleDone(rest.trim()),
   reopen: (rest) => commands.handleReopen(rest.trim()),
   update: (rest) => {
@@ -34,8 +37,8 @@ const handlers: Record<string, Handler> = {
   },
   delete: (rest) => commands.handleDelete(rest.trim()),
   filter: (rest) => {
-    const { name, state, due, overdue, priority } = parseFilterArgs(rest);
-    return commands.handleFilter(name, state, undefined, due, overdue, priority);
+    const { name, state, due, overdue, priority, dueBefore, dueAfter, dueToday, json } = parseFilterArgs(rest);
+    return commands.handleFilter(name, state, json, due, overdue, priority, dueBefore, dueAfter, dueToday);
   },
   clear: (rest) => {
     const { state } = parseClearArgs(rest);
@@ -61,13 +64,43 @@ function parseAddArgs(rest: string): { title: string; due?: string; priority?: s
 
 function parseFilterArgs(
   rest: string
-): { name?: string; state?: string; due?: string; overdue?: boolean; priority?: string } {
+): {
+  name?: string;
+  state?: string;
+  due?: string;
+  overdue?: boolean;
+  priority?: string;
+  dueBefore?: string;
+  dueAfter?: string;
+  dueToday?: boolean;
+  json?: boolean;
+} {
   let remaining = rest;
 
   const stateMatch = remaining.match(/--state\s+(\S+)/);
   const state = stateMatch ? stateMatch[1] : undefined;
   if (stateMatch) {
     remaining = remaining.slice(0, stateMatch.index) + remaining.slice(stateMatch.index! + stateMatch[0].length);
+  }
+
+  const dueBeforeMatch = remaining.match(/--due-before\s+(\S+)/);
+  const dueBefore = dueBeforeMatch ? dueBeforeMatch[1] : undefined;
+  if (dueBeforeMatch) {
+    remaining =
+      remaining.slice(0, dueBeforeMatch.index) + remaining.slice(dueBeforeMatch.index! + dueBeforeMatch[0].length);
+  }
+
+  const dueAfterMatch = remaining.match(/--due-after\s+(\S+)/);
+  const dueAfter = dueAfterMatch ? dueAfterMatch[1] : undefined;
+  if (dueAfterMatch) {
+    remaining =
+      remaining.slice(0, dueAfterMatch.index) + remaining.slice(dueAfterMatch.index! + dueAfterMatch[0].length);
+  }
+
+  const dueTodayMatch = remaining.match(/--due-today\b/);
+  const dueToday = dueTodayMatch ? true : undefined;
+  if (dueTodayMatch) {
+    remaining = remaining.slice(0, dueTodayMatch.index) + remaining.slice(dueTodayMatch.index! + dueTodayMatch[0].length);
   }
 
   const dueMatch = remaining.match(/--due\s+(\S+)/);
@@ -89,13 +122,24 @@ function parseFilterArgs(
     remaining = remaining.slice(0, overdueMatch.index) + remaining.slice(overdueMatch.index! + overdueMatch[0].length);
   }
 
+  const jsonMatch = remaining.match(/--json\b/);
+  const json = jsonMatch ? true : undefined;
+  if (jsonMatch) {
+    remaining = remaining.slice(0, jsonMatch.index) + remaining.slice(jsonMatch.index! + jsonMatch[0].length);
+  }
+
   const nameOnly = remaining.trim();
-  return { name: nameOnly === '' ? undefined : nameOnly, state, due, overdue, priority };
+  return { name: nameOnly === '' ? undefined : nameOnly, state, due, overdue, priority, dueBefore, dueAfter, dueToday, json };
 }
 
 function parseClearArgs(rest: string): { state?: string } {
   const stateMatch = rest.match(/--state\s+(\S+)/);
   return { state: stateMatch ? stateMatch[1] : undefined };
+}
+
+function parseListArgs(rest: string): { json?: boolean } {
+  const jsonMatch = rest.match(/--json\b/);
+  return { json: jsonMatch ? true : undefined };
 }
 
 export function runInteractive(): void {

@@ -116,7 +116,10 @@ export function handleFilter(
   json?: boolean,
   due?: string,
   overdue?: boolean,
-  priority?: string
+  priority?: string,
+  dueBefore?: string,
+  dueAfter?: string,
+  dueToday?: boolean
 ): string {
   if (state !== undefined && state !== 'pending' && state !== 'done') {
     throw new Error('Invalid state. Valid values: pending, done');
@@ -130,11 +133,28 @@ export function handleFilter(
     validatePriority(priority);
   }
 
+  if (dueBefore !== undefined) {
+    validateDueDate(dueBefore);
+  }
+
+  if (dueAfter !== undefined) {
+    validateDueDate(dueAfter);
+  }
+
   const hasName = searchTerm !== undefined;
   const trimmedTerm = hasName ? searchTerm.trim() : '';
   const nameFilterActive = trimmedTerm.length > 0;
 
-  if (!nameFilterActive && state === undefined && due === undefined && !overdue && priority === undefined) {
+  if (
+    !nameFilterActive &&
+    state === undefined &&
+    due === undefined &&
+    !overdue &&
+    priority === undefined &&
+    dueBefore === undefined &&
+    dueAfter === undefined &&
+    !dueToday
+  ) {
     throw new Error(hasName ? 'Filter term cannot be empty' : 'Provide a name or --state to filter by');
   }
 
@@ -148,7 +168,19 @@ export function handleFilter(
       const dueMatches = due === undefined || todo.dueDate === due;
       const overdueMatches = !overdue || isOverdue(todo, today);
       const priorityMatches = priority === undefined || todo.priority === priority;
-      return nameMatches && stateMatches && dueMatches && overdueMatches && priorityMatches;
+      const dueBeforeMatches = dueBefore === undefined || (todo.dueDate !== null && todo.dueDate < dueBefore);
+      const dueAfterMatches = dueAfter === undefined || (todo.dueDate !== null && todo.dueDate > dueAfter);
+      const dueTodayMatches = !dueToday || (todo.dueDate !== null && todo.dueDate === today);
+      return (
+        nameMatches &&
+        stateMatches &&
+        dueMatches &&
+        overdueMatches &&
+        priorityMatches &&
+        dueBeforeMatches &&
+        dueAfterMatches &&
+        dueTodayMatches
+      );
     })
     .sort(compareTodos);
 
@@ -171,6 +203,18 @@ export function handleFilter(
     }
     if (overdue) {
       return 'No overdue todos.';
+    }
+    if (dueToday) {
+      return 'No todos due today.';
+    }
+    if (dueBefore !== undefined && dueAfter !== undefined) {
+      return `No todos due after "${dueAfter}" and before "${dueBefore}".`;
+    }
+    if (dueBefore !== undefined) {
+      return `No todos due before "${dueBefore}".`;
+    }
+    if (dueAfter !== undefined) {
+      return `No todos due after "${dueAfter}".`;
     }
     return `No todos match due date "${due}".`;
   }
