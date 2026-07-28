@@ -12,9 +12,9 @@
   "work_branch": null,
   "handoff_path": "issues/32",
   "requirements_approved": false,
-  "clarify_rounds": 3,
+  "clarify_rounds": 4,
   "created_at": "2026-07-28T08:43:02.000Z",
-  "updated_at": "2026-07-28T09:08:00.000Z",
+  "updated_at": "2026-07-28T09:14:00.000Z",
   "last_session_url": "https://claude.ai/code/session_01JfS5SWWKP7LPAt31EbAxaz",
   "history": [
     {
@@ -46,6 +46,12 @@
       "event": "human_answered",
       "at": "2026-07-28T09:08:00.000Z",
       "note": "Q3 state scope -> match regardless of state, mention --state for narrowing (accepted with adjustment)"
+    },
+    {
+      "phase": "clarify",
+      "event": "human_answered",
+      "at": "2026-07-28T09:14:00.000Z",
+      "note": "Q4 null dueDate exclusion -> excluded from all three filters (accepted recommendation)"
     }
   ],
   "human_feedback": [
@@ -63,6 +69,11 @@
       "at": "2026-07-28T09:08:00.000Z",
       "question": "Should --due-before/--due-after/--due-today match regardless of state, or only pending?",
       "answer": "Regardless of state, but we can instruct them that they can use --state to get only pending"
+    },
+    {
+      "at": "2026-07-28T09:14:00.000Z",
+      "question": "Should todos with no due date be excluded from all three new filters?",
+      "answer": "Yes, go with your recommendation"
     }
   ],
   "comprehension_attempt": 0,
