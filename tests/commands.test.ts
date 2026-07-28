@@ -4,6 +4,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
+function getTodayDateString(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 describe('Commands', () => {
   let TEST_DIR: string;
   let originalHome: string | undefined;
@@ -677,6 +685,158 @@ describe('Commands', () => {
       const parsed = JSON.parse(message);
       expect(parsed).toHaveLength(1);
       expect(parsed[0].priority).toBe('high');
+    });
+
+    test('--due-before matches todos with a due date strictly earlier, excludes the boundary date itself', () => {
+      storage.addTodo('Earlier', 'id-1', '2026-08-14');
+      storage.addTodo('Boundary', 'id-2', '2026-08-15');
+      storage.addTodo('Later', 'id-3', '2026-08-16');
+
+      const message = commands.handleFilter(undefined, undefined, false, undefined, undefined, undefined, '2026-08-15');
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toContain('Earlier');
+    });
+
+    test('--due-before excludes todos with no due date', () => {
+      storage.addTodo('No due date', 'id-1');
+
+      const message = commands.handleFilter(undefined, undefined, false, undefined, undefined, undefined, '2026-08-15');
+      expect(message).toBe('No todos due before "2026-08-15".');
+    });
+
+    test('--due-before with an invalid value throws the same message as --due', () => {
+      expect(() =>
+        commands.handleFilter(undefined, undefined, false, undefined, undefined, undefined, '2026-13-40')
+      ).toThrow('Invalid due date. Expected format: YYYY-MM-DD');
+    });
+
+    test('--due-before works standalone without name or --state', () => {
+      storage.addTodo('Earlier', 'id-1', '2026-08-14');
+
+      const message = commands.handleFilter(undefined, undefined, false, undefined, undefined, undefined, '2026-08-15');
+      expect(message).toContain('Earlier');
+    });
+
+    test('--due-after matches todos with a due date strictly later, excludes the boundary date itself', () => {
+      storage.addTodo('Earlier', 'id-1', '2026-07-14');
+      storage.addTodo('Boundary', 'id-2', '2026-07-15');
+      storage.addTodo('Later', 'id-3', '2026-07-16');
+
+      const message = commands.handleFilter(
+        undefined, undefined, false, undefined, undefined, undefined, undefined, '2026-07-15'
+      );
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toContain('Later');
+    });
+
+    test('--due-after excludes todos with no due date', () => {
+      storage.addTodo('No due date', 'id-1');
+
+      const message = commands.handleFilter(
+        undefined, undefined, false, undefined, undefined, undefined, undefined, '2026-07-01'
+      );
+      expect(message).toBe('No todos due after "2026-07-01".');
+    });
+
+    test('--due-after with an invalid value throws the same message as --due', () => {
+      expect(() =>
+        commands.handleFilter(undefined, undefined, false, undefined, undefined, undefined, undefined, '2026-13-40')
+      ).toThrow('Invalid due date. Expected format: YYYY-MM-DD');
+    });
+
+    test('--due-before and --due-after combine to express a range', () => {
+      storage.addTodo('Too early', 'id-1', '2026-06-30');
+      storage.addTodo('In range', 'id-2', '2026-07-15');
+      storage.addTodo('Too late', 'id-3', '2026-08-01');
+
+      const message = commands.handleFilter(
+        undefined, undefined, false, undefined, undefined, undefined, '2026-08-01', '2026-07-01'
+      );
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toContain('In range');
+    });
+
+    test('contradictory --due-before/--due-after range yields zero results, not an error', () => {
+      storage.addTodo('Somewhere in the middle', 'id-1', '2026-07-15');
+
+      const message = commands.handleFilter(
+        undefined, undefined, false, undefined, undefined, undefined, '2026-07-01', '2026-08-01'
+      );
+      expect(message).toBe('No todos due after "2026-08-01" and before "2026-07-01".');
+    });
+
+    test('--due-today matches todos whose due date is exactly today, regardless of state', () => {
+      const today = getTodayDateString();
+      storage.addTodo('Due today pending', 'id-1', today);
+      const doneId = 'id-2';
+      storage.addTodo('Due today done', doneId, today);
+      storage.markTodoDone(doneId);
+      storage.addTodo('Due yesterday', 'id-3', '2000-01-01');
+      storage.addTodo('No due date', 'id-4');
+
+      const message = commands.handleFilter(
+        undefined, undefined, false, undefined, undefined, undefined, undefined, undefined, true
+      );
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(2);
+      expect(message).toContain('Due today pending');
+      expect(message).toContain('Due today done');
+    });
+
+    test('--due-today with no matches returns a due-today-specific message', () => {
+      storage.addTodo('Not due today', 'id-1', '2000-01-01');
+
+      const message = commands.handleFilter(
+        undefined, undefined, false, undefined, undefined, undefined, undefined, undefined, true
+      );
+      expect(message).toBe('No todos due today.');
+    });
+
+    test('--due-today works standalone without name or --state', () => {
+      const today = getTodayDateString();
+      storage.addTodo('Due today', 'id-1', today);
+
+      const message = commands.handleFilter(
+        undefined, undefined, false, undefined, undefined, undefined, undefined, undefined, true
+      );
+      expect(message).toContain('Due today');
+    });
+
+    test('--due-before/--due-after/--due-today each satisfy the "must provide at least one filter" check alone', () => {
+      storage.addTodo('Some todo', 'id-1', '2026-08-15');
+
+      expect(() => commands.handleFilter(undefined, undefined, false, undefined, undefined, undefined, '2026-09-01')).not.toThrow();
+      expect(() => commands.handleFilter(undefined, undefined, false, undefined, undefined, undefined, undefined, '2026-07-01')).not.toThrow();
+      expect(() => commands.handleFilter(undefined, undefined, false, undefined, undefined, undefined, undefined, undefined, true)).not.toThrow();
+    });
+
+    test('--due-before/--due-after/--due-today combine with name, --state, --due, --overdue, and --priority using AND logic', () => {
+      storage.addTodo('Buy milk', 'id-1', '2026-07-15', 'high');
+      storage.addTodo('Buy eggs', 'id-2', '2026-07-15', 'low');
+      storage.markTodoDone('id-1');
+
+      const message = commands.handleFilter(
+        'buy', 'done', false, undefined, undefined, 'high', '2026-08-01', '2026-07-01'
+      );
+      const lines = message.split('\n');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toContain('Buy milk');
+    });
+
+    test('with json=true, --due-before/--due-after/--due-today filter and include dueDate field', () => {
+      const today = getTodayDateString();
+      storage.addTodo('Due today', 'id-1', today);
+      storage.addTodo('Not due today', 'id-2', '2000-01-01');
+
+      const message = commands.handleFilter(
+        undefined, undefined, true, undefined, undefined, undefined, undefined, undefined, true
+      );
+      const parsed = JSON.parse(message);
+      expect(parsed).toHaveLength(1);
+      expect(parsed[0].dueDate).toBe(today);
     });
   });
 

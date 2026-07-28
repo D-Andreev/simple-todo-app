@@ -94,16 +94,28 @@ program
 
 program
   .command('filter [name]')
-  .description('Filter todos by name, state, and/or priority')
+  .description('Filter todos by name, state, priority, and/or due date (exact, before, after, today)')
   .option('--state <state>', 'Filter by state (pending or done)')
   .option('--due <date>', 'Filter by exact due date (YYYY-MM-DD)')
   .option('--overdue', 'Show pending todos whose due date has passed')
   .option('--priority <priority>', 'Filter by priority (low, mid, or high)')
+  .option('--due-before <date>', 'Filter by due date strictly before this date (YYYY-MM-DD)')
+  .option('--due-after <date>', 'Filter by due date strictly after this date (YYYY-MM-DD)')
+  .option('--due-today', 'Show todos whose due date is today')
   .option('--json', 'Output as JSON')
   .action(
     (
       name: string | undefined,
-      options: { state?: string; json?: boolean; due?: string; overdue?: boolean; priority?: string }
+      options: {
+        state?: string;
+        json?: boolean;
+        due?: string;
+        overdue?: boolean;
+        priority?: string;
+        dueBefore?: string;
+        dueAfter?: string;
+        dueToday?: boolean;
+      }
     ) => {
       try {
         const message = commands.handleFilter(
@@ -112,7 +124,10 @@ program
           options.json,
           options.due,
           options.overdue,
-          options.priority
+          options.priority,
+          options.dueBefore,
+          options.dueAfter,
+          options.dueToday
         );
         console.log(message);
       } catch (error) {

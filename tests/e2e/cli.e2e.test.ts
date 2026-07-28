@@ -26,6 +26,14 @@ function readStorage(home: string) {
   return JSON.parse(fs.readFileSync(file, 'utf-8'));
 }
 
+function getTodayDateString(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 describe('CLI e2e', () => {
   let TEST_HOME: string;
 
@@ -551,6 +559,91 @@ describe('CLI e2e', () => {
     expect(parsed[0].priority).toBe('high');
   });
 
+  test('filter --due-before <date> matches todos with a due date strictly before it', () => {
+    runCli(['add', 'Earlier', '--due', '2026-08-14'], TEST_HOME);
+    runCli(['add', 'Boundary', '--due', '2026-08-15'], TEST_HOME);
+    runCli(['add', 'Later', '--due', '2026-08-16'], TEST_HOME);
+
+    const result = runCli(['filter', '--due-before', '2026-08-15'], TEST_HOME);
+    expect(result.status).toBe(0);
+    const lines = result.stdout.trim().split('\n');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('Earlier');
+  });
+
+  test('filter --due-before <invalid> errors', () => {
+    const result = runCli(['filter', '--due-before', 'nope'], TEST_HOME);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('Invalid due date. Expected format: YYYY-MM-DD');
+  });
+
+  test('filter --due-after <date> matches todos with a due date strictly after it', () => {
+    runCli(['add', 'Earlier', '--due', '2026-07-14'], TEST_HOME);
+    runCli(['add', 'Boundary', '--due', '2026-07-15'], TEST_HOME);
+    runCli(['add', 'Later', '--due', '2026-07-16'], TEST_HOME);
+
+    const result = runCli(['filter', '--due-after', '2026-07-15'], TEST_HOME);
+    expect(result.status).toBe(0);
+    const lines = result.stdout.trim().split('\n');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('Later');
+  });
+
+  test('filter --due-after <invalid> errors', () => {
+    const result = runCli(['filter', '--due-after', 'nope'], TEST_HOME);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('Invalid due date. Expected format: YYYY-MM-DD');
+  });
+
+  test('filter --due-before and --due-after combine to express a range', () => {
+    runCli(['add', 'Too early', '--due', '2026-06-30'], TEST_HOME);
+    runCli(['add', 'In range', '--due', '2026-07-15'], TEST_HOME);
+    runCli(['add', 'Too late', '--due', '2026-08-01'], TEST_HOME);
+
+    const result = runCli(['filter', '--due-before', '2026-08-01', '--due-after', '2026-07-01'], TEST_HOME);
+    expect(result.status).toBe(0);
+    const lines = result.stdout.trim().split('\n');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('In range');
+  });
+
+  test('filter --due-today matches todos due today regardless of state', () => {
+    const today = getTodayDateString();
+    runCli(['add', 'Due today', '--due', today], TEST_HOME);
+    runCli(['add', 'Due later', '--due', '2999-01-01'], TEST_HOME);
+    runCli(['add', 'No due date'], TEST_HOME);
+
+    const result = runCli(['filter', '--due-today'], TEST_HOME);
+    expect(result.status).toBe(0);
+    const lines = result.stdout.trim().split('\n');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('Due today');
+  });
+
+  test('filter --due-before/--due-after/--due-today with no matches return distinct messages', () => {
+    runCli(['add', 'Some todo', '--due', '2026-08-15'], TEST_HOME);
+
+    const before = runCli(['filter', '--due-before', '2000-01-01'], TEST_HOME);
+    expect(before.stdout.trim()).toBe('No todos due before "2000-01-01".');
+
+    const after = runCli(['filter', '--due-after', '2999-01-01'], TEST_HOME);
+    expect(after.stdout.trim()).toBe('No todos due after "2999-01-01".');
+
+    const today = runCli(['filter', '--due-today'], TEST_HOME);
+    expect(today.stdout.trim()).toBe('No todos due today.');
+  });
+
+  test('filter --json includes dueDate field with --due-before/--due-after/--due-today', () => {
+    const today = getTodayDateString();
+    runCli(['add', 'Due today', '--due', today], TEST_HOME);
+
+    const result = runCli(['filter', '--due-today', '--json'], TEST_HOME);
+    expect(result.status).toBe(0);
+    const parsed = JSON.parse(result.stdout);
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0].dueDate).toBe(today);
+  });
+
   test('a stored todo with no priority field (legacy data) is treated as mid in list', () => {
     const storageDir = path.join(TEST_HOME, '.simple-todo');
     fs.mkdirSync(storageDir, { recursive: true });
@@ -1010,6 +1103,86 @@ describe('CLI e2e', () => {
       expect(result.status).toBe(0);
       expect(result.stdout).toContain('Buy milk');
       expect(result.stdout).not.toContain('Walk dog');
+    });
+
+    test('filter --due-before <date> parses correctly', () => {
+      runCli(['add', 'Earlier', '--due', '2026-08-14'], TEST_HOME);
+      runCli(['add', 'Later', '--due', '2026-08-16'], TEST_HOME);
+
+      const result = runInteractive(
+        ['filter --due-before 2026-08-15', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Earlier');
+      expect(result.stdout).not.toContain('Later');
+    });
+
+    test('filter --due-after <date> parses correctly', () => {
+      runCli(['add', 'Earlier', '--due', '2026-07-14'], TEST_HOME);
+      runCli(['add', 'Later', '--due', '2026-07-16'], TEST_HOME);
+
+      const result = runInteractive(
+        ['filter --due-after 2026-07-15', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Later');
+      expect(result.stdout).not.toContain('Earlier');
+    });
+
+    test('filter --due-today matches todos due today', () => {
+      const today = getTodayDateString();
+      runCli(['add', 'Due today', '--due', today], TEST_HOME);
+      runCli(['add', 'Due later', '--due', '2999-01-01'], TEST_HOME);
+
+      const result = runInteractive(
+        ['filter --due-today', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Due today');
+      expect(result.stdout).not.toContain('Due later');
+    });
+
+    test('filter --json emits raw todo objects', () => {
+      runCli(['add', 'Buy milk', '--priority', 'high'], TEST_HOME);
+      runCli(['add', 'Walk dog', '--priority', 'low'], TEST_HOME);
+
+      const result = runInteractive(
+        ['filter --priority high --json', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      const parsed = JSON.parse(result.stdout.slice(result.stdout.indexOf('[')).split('todo> ')[0]);
+      expect(parsed).toHaveLength(1);
+      expect(parsed[0].title).toBe('Buy milk');
+    });
+
+    test('list --json emits raw todo objects', () => {
+      runCli(['add', 'Buy milk'], TEST_HOME);
+
+      const result = runInteractive(['list --json', 'exit', ''].join('\n'), TEST_HOME);
+
+      expect(result.status).toBe(0);
+      const parsed = JSON.parse(result.stdout.slice(result.stdout.indexOf('[')).split('todo> ')[0]);
+      expect(parsed).toHaveLength(1);
+      expect(parsed[0].title).toBe('Buy milk');
+    });
+
+    test('help lists --json, --priority, and the date-range flags on filter, and --json on list', () => {
+      const result = runInteractive(['help', 'exit', ''].join('\n'), TEST_HOME);
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('--json');
+      expect(result.stdout).toContain('--priority');
+      expect(result.stdout).toContain('--due-before');
+      expect(result.stdout).toContain('--due-after');
+      expect(result.stdout).toContain('--due-today');
     });
   });
 });
