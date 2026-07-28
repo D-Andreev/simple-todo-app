@@ -5,8 +5,9 @@
   "mode": "feature",
   "task": "Add priority (Low/Mid/High) to todos, settable on create and filterable",
   "phase": "review",
-  "status": "ai_running",
-  "workflow_label": "workflow:review",
+  "status": "done",
+  "workflow_label": "workflow:human-review",
+  "review_verdict": "APPROVE WITH NOTES",
   "base_branch": "main",
   "state_branch": "workflow/state",
   "work_branch": "workflow/issue-30",
@@ -14,7 +15,7 @@
   "requirements_approved": true,
   "clarify_rounds": 6,
   "created_at": "2026-07-28T05:52:40.000Z",
-  "updated_at": "2026-07-28T07:00:00.000Z",
+  "updated_at": "2026-07-28T07:20:00.000Z",
   "last_session_url": "https://claude.ai/code/session_01S1cA8ycXfvwSnJND2wpc5X",
   "pr_url": "https://github.com/D-Andreev/simple-todo-app/pull/31",
   "history": [
@@ -113,6 +114,24 @@
       "event": "started",
       "at": "2026-07-28T07:00:00.000Z",
       "note": "base_branch=main, work_branch=workflow/issue-30, PR #31"
+    },
+    {
+      "phase": "review",
+      "event": "pr_comment_posted",
+      "at": "2026-07-28T07:15:00.000Z",
+      "note": "verdict=APPROVE WITH NOTES on PR #31"
+    },
+    {
+      "phase": "review",
+      "event": "phase_completed",
+      "at": "2026-07-28T07:20:00.000Z",
+      "note": "review-report.md written; verdict=APPROVE WITH NOTES"
+    },
+    {
+      "phase": "review",
+      "event": "labels_updated",
+      "at": "2026-07-28T07:20:00.000Z",
+      "note": "workflow:review -> workflow:human-review"
     }
   ],
   "human_feedback": [
