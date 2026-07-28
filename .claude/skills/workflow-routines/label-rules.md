@@ -29,15 +29,17 @@ gh issue edit 42 --remove-label "workflow:start" --add-label "workflow:clarify"
 gh issue edit 42 --remove-label "workflow:clarify" --add-label "workflow:implement"
 gh issue edit 42 --remove-label "workflow:implement" --add-label "workflow:review"
 gh issue edit 42 --remove-label "workflow:review" --add-label "workflow:human-review"
+gh issue edit 42 --remove-label "workflow:human-review" --add-label "workflow:done"
 ```
 
 ## Triggers
 
-| Label | Routine |
-|-------|---------|
-| `workflow:start` | Clarify |
-| `workflow:implement` | Implement |
-| `workflow:review` | AI Review |
+| Trigger | Routine |
+|---------|---------|
+| Label `workflow:start` | Clarify |
+| Label `workflow:implement` | Implement |
+| Label `workflow:review` | AI Review |
+| GitHub: issue **closed** + label `workflow:human-review` | Close |
 
 ## Session comments (status only)
 
@@ -53,6 +55,7 @@ Clarify Q&A is **session-only** — these comments point humans at the session; 
 | Implement complete | Draft PR link |
 | Review start | Session + PR links |
 | Review complete | Verdict + link to the **one** PR comment |
+| Close complete | Addressed / ignored counts (+ critical callouts) |
 
 ## Advance commands
 

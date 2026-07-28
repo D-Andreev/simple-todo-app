@@ -15,6 +15,8 @@ metadata:
 
 Grill the plan before implementation. **No application code changes. No test runs. No work branch.**
 
+**Working tree is `workflow/state`.** Stay checked out there for all handoff writes. The state branch has **no application source** — when you need product code, `workflow/PROJECT.md`, or learnings, read them from **`origin/{base_branch}`** (usually `main`) via `git show` / `git ls-tree`. Do **not** read those paths from the working tree, and do **not** checkout `base_branch` mid-clarify.
+
 **Q&A channel is the session only.** Ask clarifying questions in the Claude Code session chat. Humans answer **in the session** — never on the GitHub issue thread. Do **not** wait for, poll, or expect issue comments as answers. `approve requirements` is also said **in the session**.
 
 **First repo action after label swap:** ensure `workflow/state` and init `issues/{n}/`. Commit handoff files on each Q&A turn. Issue comments are **agent→human status only** (session link at start; approved requirements at approve) — not a reply channel for Q&A.
@@ -23,13 +25,22 @@ On **`approve requirements`** (session message), final handoff commit on `workfl
 
 See [handoff-format.md](../workflow-routines/handoff-format.md), [state-schema.md](../workflow-routines/state-schema.md), [label-rules.md](../workflow-routines/label-rules.md).
 
-## Read-only before handoff exists
+## Reading product files (from `base_branch`)
 
-| File | Use |
+Handoff lives on `workflow/state`; product files live on `base_branch`. Always stay on `workflow/state` and read via git:
+
+```bash
+git fetch origin {base_branch}
+git show origin/{base_branch}:workflow/PROJECT.md
+git show origin/{base_branch}:path/to/source.ext
+git ls-tree -r --name-only origin/{base_branch} | head
+```
+
+| File | How |
 |------|-----|
-| `workflow/PROJECT.md` | Read from `base_branch` |
-| `workflow/learnings/gotchas.md` | Skim |
-| Application code | Read-only |
+| `workflow/PROJECT.md` | `git show origin/{base_branch}:workflow/PROJECT.md` |
+| `workflow/learnings/gotchas.md` | Same pattern from `base_branch` |
+| Application code | Read-only from `origin/{base_branch}:…` — never from the state-branch working tree |
 
 After handoff exists, **only write** under `issues/{n}/` on **`workflow/state`** during clarify.
 
@@ -66,7 +77,7 @@ Same as A/B.
 
 1. **Swap labels first** — `workflow:clarify`. Nothing else on GitHub before this.
 2. **Read issue** — number, title, body, labels, URL.
-3. **Verify init** — `workflow/PROJECT.md` on base branch; else stop → `/workflow-init`.
+3. **Verify init** — `workflow/PROJECT.md` on `base_branch` via `git show origin/{base_branch}:workflow/PROJECT.md`; else stop → `/workflow-init`.
 4. **Ensure `workflow/state` + initial handoff commit** (see handoff-format):
    - Ensure-or-create long-lived `workflow/state`
    - Write `state.json` per [fixture](../workflow-routines/fixtures/state-example-clarify-start.json)
@@ -80,7 +91,7 @@ Same as A/B.
 
 ## Grilling loop
 
-One question at a time **in the session**, with a recommended answer. Explore codebase before asking.
+One question at a time **in the session**, with a recommended answer. Explore the codebase **from `origin/{base_branch}`** (via `git show` / `git ls-tree`) before asking — stay on `workflow/state`.
 
 After each question: **stop and wait for the human's next session message.** Do not post the question as an issue comment. Do not treat issue-thread replies as answers.
 
@@ -152,7 +163,7 @@ Checkout `workflow/state`, read `issues/{n}/`, or use session comment link. Cont
 
 - Never write application source code.
 - Never create `workflow/issue-{n}` during clarify.
-- **Only write** `issues/{n}/` on `workflow/state` during clarify.
+- **Stay on `workflow/state`** — only write under `issues/{n}/`. Read product source / `PROJECT.md` / learnings from **`origin/{base_branch}`**, not the working tree.
 - **Ensure state branch at start** — before session comment and Q1.
 - **Q&A in session only** — never ask clarifying questions via `gh issue comment`; never wait for issue-thread answers.
 - **Issue comments:** varied, engaging — see handoff-format example bank. Never repeat the same comment verbatim across issues. Only at **start** (session link) and **approve** (requirements), plus failures.

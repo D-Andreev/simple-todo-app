@@ -26,13 +26,15 @@ Full schema: [state-schema.md](state-schema.md) · Analytics: [metrics.md](metri
 | File | First writer | Updated by |
 |------|--------------|------------|
 | `state.json` | clarify (start) | **every phase** (start + complete) |
-| `metrics.jsonl` | clarify (start — empty or first turn) | clarify (each Q&A); review (complete) — **append only** |
+| `metrics.jsonl` | clarify (start — empty or first turn) | clarify (each Q&A); review (complete); **close (issue close)** — **append only** |
 | `task.md` | clarify (start) | clarify (Q&A commits) |
 | `language.md` | clarify (start) | clarify (Q&A commits) |
 | `requirements.md` | clarify (start) | clarify (Q&A + approve) |
 | `adrs.md` | clarify (optional) | clarify |
 | `implement-handoff.md` | implement (complete) | — |
 | `review-report.md` | review (complete) | — |
+| `review-findings.json` | review (complete) | — (checklist for close grader) |
+| `findings-grade.json` | close routine / `/workflow-close` | — |
 
 Analytics event shapes and enums: [metrics.md](metrics.md).
 
@@ -187,8 +189,8 @@ fi
 
 After label swap to `workflow:clarify`:
 
-1. Read issue; verify `workflow/PROJECT.md` exists on `base_branch`.
-2. Ensure `workflow/state` (above); write initial handoff:
+1. Read issue; verify `workflow/PROJECT.md` exists on `base_branch` (`git show origin/{base_branch}:workflow/PROJECT.md`).
+2. Ensure `workflow/state` (above); **stay checked out on it**; write initial handoff:
 
 ```bash
 mkdir -p issues/{n}
@@ -202,6 +204,8 @@ git push origin workflow/state
 
 3. Post short session comment with **both markdown links** (session + state tree). See **Clarify start**.
 4. Ask first question **in the session** (not as an issue comment). Wait for the human's **session** reply.
+
+**Reading product code during clarify:** working tree is `workflow/state` (no app source). Use `git show origin/{base_branch}:path` / `git ls-tree` — do not checkout `base_branch`.
 
 ### Clarify Q&A (each human session answer)
 
@@ -265,8 +269,13 @@ Prefer a clean working tree before switching. If needed, commit or stash work-br
 1. Pull `workflow/state`; read handoff. Checkout `work_branch` for diff/code.
 2. **At phase start** — update `state.json` on `workflow/state`; commit + push.
 3. Review (diff + code reading only — no tests/build). Do not commit code fixes.
-4. **At phase complete** — write `review-report.md` + update `state.json` on `workflow/state`; **append one `review_completed` line** to `metrics.jsonl` (verdict + critical/minor/notes counts per [metrics.md](metrics.md)); commit + push.
-5. Post short issue comment; **label swap last**.
+4. Capture `review_head_sha` on `work_branch` (`git rev-parse HEAD`).
+5. **At phase complete** — write `review-report.md` + **`review-findings.json`** + update `state.json` (`review_head_sha`, `review_verdict`, `pr_number`) on `workflow/state`; **append one `review_completed` line** to `metrics.jsonl`; commit + push.
+6. Post short issue comment; **label swap last**.
+
+### Close (issue close — close routine)
+
+When the issue is **closed** while labeled `workflow:human-review`, the **close routine** (GitHub issues event — not PR) resolves the merged PR from `state.json`, diffs `{review_head_sha}...{pr_head_sha}`, scores each finding with **LLM** judgment, writes `findings-grade.json`, appends `close_completed` to `metrics.jsonl`, and swaps to **`workflow:done`**. Unrelated PR merges do not run this. See [metrics.md](metrics.md#close-close_completed) and [close-routine.md](../../routines/close-routine.md).
 
 ### On handoff write failure
 

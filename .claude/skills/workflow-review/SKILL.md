@@ -44,11 +44,18 @@ State in the review-report header: **"Fresh-eyes: artifacts and diff only."**
 5. **Find PR** — `gh pr list --head workflow/issue-{n} --json number,url`.
 6. **Review pass** — scenario verification + principles review (below) against work-branch diff.
 7. **Verdict** — `APPROVE` | `APPROVE WITH NOTES` | `REQUEST CHANGES`.
-8. **Write `review-report.md`** to `issues/{n}/` on **`workflow/state`**. No code fixes during review.
-9. **Post one PR comment** with verdict — `gh pr comment` only. See below. **Never** `gh pr review`.
-10. **Update `state.json`** — `review_verdict`, `status: done`, history; **append one `review_completed` line** to `metrics.jsonl` (`verdict`, `critical_count`, `minor_count`, `notes_count` per [metrics.md](../workflow-routines/metrics.md)); commit + push with `review-report.md` on `workflow/state`.
+8. **Post one PR comment** with verdict — `gh pr comment` only. See below. **Never** `gh pr review`.
+9. **On work branch** — capture `review_head_sha=$(git rev-parse HEAD)` before switching away.
+10. **Update handoff on `workflow/state`:**
+    - Write `review-report.md`
+    - Write **`review-findings.json`** (structured checklist — see [metrics.md](../workflow-routines/metrics.md#review-findings-checklist); empty `findings` when `APPROVE` with nothing to track). Counts must match the report.
+    - Update `state.json` — `review_verdict`, `review_head_sha`, `pr_number` / `pr_url` when known, `status: done`, history (`phase_completed`, `pr_comment_posted`)
+    - **Append one `review_completed` line** to `metrics.jsonl` (`verdict`, `critical_count`, `minor_count`, `notes_count`)
+    - Commit + push `workflow/state`
 11. Post **short issue comment** — varied verdict line + PR comment link (handoff-format review complete bank).
 12. **Swap labels last** — **`workflow:human-review`**. **Stop.**
+
+Closeout (did humans address findings?) is **not** part of this phase — the **close routine** runs when the issue is **closed** with `workflow:human-review`.
 
 ## Review pass
 
@@ -174,11 +181,30 @@ APPROVE | APPROVE WITH NOTES | REQUEST CHANGES
 {One line: merge readiness and remaining risk}
 ```
 
+## review-findings.json (required at complete)
+
+Write alongside `review-report.md`. Every 🔴/🟡/note in the report becomes one finding. Use concrete `paths` whenever possible — the merge grader uses them.
+
+```bash
+# On work_branch, before checkout workflow/state:
+review_head_sha=$(git rev-parse HEAD)
+```
+
+Template shape: [fixtures/review-findings-example.json](../workflow-routines/fixtures/review-findings-example.json). Schema: [metrics.md](../workflow-routines/metrics.md#review-findings-checklist).
+
+| `severity` | From report | `required` |
+|-------------|-------------|------------|
+| `critical` | Critical / 🔴 / must fix | `true` |
+| `minor` | Minor / 🟡 / suggestions | `false` |
+| `note` | Nice to have / non-blocking | `false` |
+
+Ids: `F1`…`Fn` in report order. Empty `findings: []` when verdict is clean `APPROVE`.
+
 ## Writable locations
 
 | Location | When |
 |----------|------|
-| `workflow/state` → `issues/{n}/` | `state.json` start + complete; `review-report.md` at complete; **append** `review_completed` to `metrics.jsonl` at complete |
+| `workflow/state` → `issues/{n}/` | `state.json` start + complete; `review-report.md` + **`review-findings.json`** at complete; **append** `review_completed` to `metrics.jsonl` at complete |
 | GitHub PR | **One** comment via `gh pr comment` — never `gh pr review` |
 | GitHub issue | Short session/complete comments only |
 
@@ -192,6 +218,7 @@ APPROVE | APPROVE WITH NOTES | REQUEST CHANGES
 - **Do not fix code** during review — verdict and findings only.
 - Do not expand scope beyond requirements + review findings.
 - Reference specific files and lines in findings.
+- **Always write `review-findings.json`** with `review_head_sha` at complete (even if `findings` is empty).
 - **PR comment must be short** — details on `workflow/state` in `review-report.md`.
 - **Commit handoff at start and complete** on `workflow/state` — at complete, append `review_completed` to `metrics.jsonl` (do not rewrite prior lines).
 - If push fails, post short issue comment and **stop**; do not advance labels.

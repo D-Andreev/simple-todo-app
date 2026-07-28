@@ -13,6 +13,10 @@
   "handoff_path": "issues/42",
   "requirements_approved": false,
   "clarify_rounds": 0,
+  "review_verdict": null,
+  "review_head_sha": null,
+  "pr_number": null,
+  "pr_url": null,
   "created_at": "2026-07-26T07:00:00.000Z",
   "updated_at": "2026-07-26T07:00:00.000Z",
   "last_session_url": null,
@@ -41,6 +45,8 @@
     "adrs": "adrs.md",
     "implement_handoff": "implement-handoff.md",
     "review_report": "review-report.md",
+    "review_findings": "review-findings.json",
+    "findings_grade": "findings-grade.json",
     "comprehension_test": "comprehension-test.md",
     "retro": "retro.md"
   }

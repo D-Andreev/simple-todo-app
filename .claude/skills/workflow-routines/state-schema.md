@@ -12,7 +12,8 @@ Ephemeral state and artifacts live on the long-lived branch **`workflow/state`**
 | **Implement start** | COMMIT `state.json` (`work_branch` set) | **CREATE** from `base_branch` |
 | **Implement complete** | COMMIT `implement-handoff.md` + state | App code commits + draft PR |
 | **Review start** | COMMIT `state.json` | Read-only (diff) |
-| **Review complete** | COMMIT `review-report.md` + state + append `metrics.jsonl` | Read-only |
+| **Review complete** | COMMIT `review-report.md` + `review-findings.json` + state + append `metrics.jsonl` | Read-only (`review_head_sha` captured) |
+| **Close** | COMMIT `findings-grade.json` + append `metrics.jsonl` (close routine) | — (after issue close) |
 
 Never merge `workflow/state` into `main`. Implement creates the work branch once; review never creates a new work branch.
 
@@ -24,7 +25,9 @@ Never merge `workflow/state` into `main`. Implement creates the work branch once
 | `workflow:clarify` | clarify | in session |
 | `workflow:implement` | — | Implement routine |
 | `workflow:review` | — | AI Review routine |
-| `workflow:human-review` | human review | **none** |
+| `workflow:human-review` | human review | **none** (until issue close) |
+| _(issue closed + `workflow:human-review`)_ | close | Close routine (GitHub event) → **`workflow:done`** |
+| `workflow:done` | close (done) | **none** |
 | _(no label)_ | comprehension | **none** — optional local `/workflow-comprehension` |
 
 ## Handoff files by writer
@@ -34,10 +37,12 @@ All paths below are on **`workflow/state`** under `issues/{n}/`.
 | File | clarify | implement | review |
 |------|---------|-----------|--------|
 | `state.json` | start + Q&A + approve | commit start + complete | commit start + complete |
-| `metrics.jsonl` | create empty at start; **append** `clarify_turn` each Q&A | — | **append** `review_completed` at complete |
+| `metrics.jsonl` | create empty at start; **append** `clarify_turn` each Q&A | — | **append** `review_completed` at complete; **append** `close_completed` at close |
 | `task.md`, `language.md`, `requirements.md`, `adrs.md` | start + Q&A + approve | read; merge language → PROJECT.md on **work** branch | read |
 | `implement-handoff.md` | — | commit at complete | read |
 | `review-report.md` | — | — | commit at complete |
+| `review-findings.json` | — | — | commit at complete (checklist) |
+| `findings-grade.json` | — | — | close routine |
 
 ## Key `state.json` fields
 
@@ -52,6 +57,8 @@ All paths below are on **`workflow/state`** under `issues/{n}/`.
 | `status` | `ai_running` / `awaiting_human` / `done` — during clarify, `awaiting_human` means waiting for a **session** reply, not an issue comment |
 | `requirements_approved` | clarify approve |
 | `review_verdict` | review complete |
+| `review_head_sha` | review complete — work-branch tip SHA at review time |
+| `pr_number` / `pr_url` | implement or review complete |
 | `last_session_url` | each phase start commit |
 | `history[]` | append on start/complete/label swap |
 
@@ -68,6 +75,7 @@ Analytics events live in **`metrics.jsonl`** (not `state.json`) — see [metrics
 | `labels_updated` | Intended next label |
 | `human_approved` | clarify approve |
 | `pr_comment_posted` | review complete — single PR comment with verdict |
+| `findings_graded` | close routine wrote `findings-grade.json` |
 
 ## Issue comments (not state)
 
@@ -79,7 +87,11 @@ Handoff start on state → create work branch → code on work branch → draft 
 
 ## Review policy
 
-Handoff start on state → review work-branch diff + code reading only (**no tests/build**) → **one** PR comment (`gh pr comment`, verdict in text) → handoff complete on state → short issue comment → **`workflow:human-review` label last**.
+Handoff start on state → review work-branch diff + code reading only (**no tests/build**) → **one** PR comment (`gh pr comment`, verdict in text) → write `review-report.md` + **`review-findings.json`** (`review_head_sha`) → handoff complete on state → short issue comment → **`workflow:human-review` label last**.
+
+## Close policy (issue close)
+
+**Close routine** (GitHub trigger: issue **closed** + label `workflow:human-review`). Score `review-findings.json` against `{review_head_sha}...{pr_head_sha}` with LLM → `findings-grade.json` + `close_completed` → swap to **`workflow:done`**. Unrelated PR merges do not trigger this.
 
 ## Comprehension policy (optional, local)
 

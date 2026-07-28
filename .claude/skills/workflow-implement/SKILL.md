@@ -54,10 +54,10 @@ Write to `issues/{n}/implement-handoff.md` on **`workflow/state`** at complete. 
 
 ## Complete sequence
 
-1. Checkout `workflow/state`; write `implement-handoff.md`.
-2. Update `state.json` — `status: done`, `workflow_label: workflow:review`, history.
-3. Commit + push handoff on `workflow/state`.
-4. `gh pr create --draft --head workflow/issue-{n} --base {base_branch} …`
+1. Push final work-branch commits.
+2. `gh pr create --draft --head workflow/issue-{n} --base {base_branch} …` — capture `pr_number` / `pr_url`.
+3. Checkout `workflow/state`; write `implement-handoff.md`; update `state.json` (`status: done`, `workflow_label: workflow:review`, `pr_number`, `pr_url`, history).
+4. Commit + push handoff on `workflow/state`.
 5. Short issue comment — **vary phrasing** (handoff-format implement complete bank). Must link draft PR.
 6. **Swap labels last** — `workflow:review`. **Stop.**
 

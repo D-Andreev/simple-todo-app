@@ -30,9 +30,10 @@ One-time setup. Creates long-lived **`workflow/state`** for all issue handoffs (
    gh label create "workflow:implement"    --description "Start implement routine"   --color "1D76DB" --force
    gh label create "workflow:review"       --description "Start AI review routine"   --color "5319E7" --force
    gh label create "workflow:human-review" --description "Human PR review (no routine)" --color "D93F0B" --force
+   gh label create "workflow:done"         --description "Workflow complete"         --color "BFDADC" --force
    ```
 
-   If `gh` is unavailable or not authenticated, list the five labels and ask the user to create them in GitHub (Settings → Labels) or run the commands above.
+   If `gh` is unavailable or not authenticated, list the six labels and ask the user to create them in GitHub (Settings → Labels) or run the commands above.
 5. **Create long-lived `workflow/state` branch** (orphan; never merge to main). Idempotent — skip if `origin/workflow/state` already exists:
 
    ```bash
@@ -51,7 +52,10 @@ One-time setup. Creates long-lived **`workflow/state`** for all issue handoffs (
    ```
 
    If push fails (no remote auth), tell the user to create/push `workflow/state` once; clarify will also ensure-or-create it at start.
-6. Remind the user to configure routines — paste prompts from `routines/` at [claude.ai/code/routines](https://claude.ai/code/routines) with matching label triggers.
+6. Remind the user to configure **four** routines — paste prompts from `routines/` at [claude.ai/code/routines](https://claude.ai/code/routines):
+   - Clarify / Implement / AI Review — **label** triggers (`workflow:start`, `workflow:implement`, `workflow:review`)
+   - Close — **GitHub event** trigger: issue **closed** with label `workflow:human-review` (see [close-routine.md](../../routines/close-routine.md))
+   - Enable **Allow unrestricted branch pushes** on routines that push `workflow/state`
 
 ## PROJECT.md `## Language`
 
