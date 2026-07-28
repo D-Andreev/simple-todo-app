@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "issue_number": 34,
+  "pr_number": 35,
+  "review_head_sha": "60355b5873ff2e3309f7b40fcc8600b45ee76fb3",
+  "pr_head_sha": "46f82142dd742e17415f127d018a85474fd99a84",
+  "method": "llm",
+  "graded_at": "2026-07-28T13:00:00.000Z",
+  "suggestions_applicable": true,
+  "findings_total": 3,
+  "findings_addressed": 1,
+  "findings_partial": 0,
+  "findings_ignored": 2,
+  "findings_unknown": 0,
+  "critical_total": 1,
+  "critical_addressed": 1,
+  "minor_total": 1,
+  "minor_addressed": 0,
+  "notes_total": 1,
+  "notes_addressed": 0,
+  "commits_since_review": 1,
+  "dispositions": [
+    {
+      "id": "F1",
+      "severity": "critical",
+      "summary": "Interactive REPL --tag parsing only captures a single whitespace-delimited token, silently truncating multi-word tags and leaking the remainder into the title",
+      "required": true,
+      "disposition": "addressed",
+      "paths_touched": 1,
+      "paths_total": 1,
+      "method": "llm",
+      "evidence": "src/interactive.ts: parseAddArgs and parseFilterArgs now scan from '--tag ' to the next '--' flag (or end of string) instead of a single \\S+ token, so multi-word tag values are captured whole; tests/e2e/cli.e2e.test.ts adds coverage for 'add --tag home improvement' and 'filter --tag home improvement' preserving the full value."
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "summary": "workflow/PROJECT.md links the new 'Malformed tags (import)' entry to docs/adr/0001-tags-import-abort.md, which does not exist; the ADR added by this PR is docs/adr/0034-tags-import-abort.md",
+      "required": false,
+      "disposition": "ignored",
+      "paths_touched": 0,
+      "paths_total": 1,
+      "method": "llm",
+      "evidence": "Post-review diff only touches src/interactive.ts and tests/e2e/cli.e2e.test.ts; workflow/PROJECT.md is unchanged."
+    },
+    {
+      "id": "F3",
+      "severity": "note",
+      "summary": "Imported tags are stored as-is (no trim/lowercase) unlike tags added via --tag, so an imported tag with stray whitespace will never match filter --tag",
+      "required": false,
+      "disposition": "ignored",
+      "paths_touched": 0,
+      "paths_total": 1,
+      "method": "llm",
+      "evidence": "Post-review diff does not touch src/commands.ts; import normalization behavior is unchanged."
+    }
+  ]
+}
