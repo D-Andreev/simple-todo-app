@@ -33,4 +33,4 @@ Add:
 - [ ] Interactive mode's `help` text is updated to list `--priority`, `--json`, and the three new date-range flags on `filter` (and `--json` on `list`)
 
 ## Approved by human
-- [ ] Pending — say `approve requirements` in the session when ready
+- [x] Approved in session on 2026-07-28

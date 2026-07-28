@@ -5,16 +5,16 @@
   "mode": "feature",
   "task": "Add date-range filters to `todo filter`: --due-before <date>, --due-after <date>, --due-today",
   "phase": "clarify",
-  "status": "ai_running",
-  "workflow_label": "workflow:clarify",
+  "status": "done",
+  "workflow_label": "workflow:implement",
   "base_branch": "main",
   "state_branch": "workflow/state",
   "work_branch": null,
   "handoff_path": "issues/32",
-  "requirements_approved": false,
+  "requirements_approved": true,
   "clarify_rounds": 6,
   "created_at": "2026-07-28T08:43:02.000Z",
-  "updated_at": "2026-07-28T09:31:00.000Z",
+  "updated_at": "2026-07-28T09:36:00.000Z",
   "last_session_url": "https://claude.ai/code/session_01JfS5SWWKP7LPAt31EbAxaz",
   "history": [
     {
@@ -64,6 +64,24 @@
       "event": "human_answered",
       "at": "2026-07-28T09:31:00.000Z",
       "note": "Q5 revised -> also fix --priority and --json in interactive mode (rejected earlier recommendation)"
+    },
+    {
+      "phase": "clarify",
+      "event": "human_approved",
+      "at": "2026-07-28T09:36:00.000Z",
+      "note": "requirements approved in session"
+    },
+    {
+      "phase": "clarify",
+      "event": "phase_completed",
+      "at": "2026-07-28T09:36:00.000Z",
+      "note": "clarify complete, requirements_approved=true"
+    },
+    {
+      "phase": "clarify",
+      "event": "labels_updated",
+      "at": "2026-07-28T09:36:00.000Z",
+      "note": "workflow:clarify -> workflow:implement"
     }
   ],
   "human_feedback": [
