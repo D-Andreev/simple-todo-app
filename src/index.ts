@@ -4,6 +4,7 @@ import { Command } from 'commander';
 import * as commands from './commands';
 import { runInteractive } from './interactive';
 import { renderHelp } from './help';
+import { COMMAND_DESCRIPTIONS } from './descriptions';
 
 const rawArgs = process.argv.slice(2);
 if (rawArgs.length === 0 || rawArgs[0] === '--help' || rawArgs[0] === '-h') {
@@ -20,7 +21,7 @@ program
 
 program
   .command('add <title>')
-  .description('Add a new todo')
+  .description(COMMAND_DESCRIPTIONS.add)
   .option('--due <date>', 'Set a due date (YYYY-MM-DD)')
   .option('--priority <priority>', 'Set a priority (low, mid, or high; defaults to mid)')
   .option('--tag <name>', 'Attach a tag (repeatable)', (val: string, prev: string[]) => prev.concat([val]), [] as string[])
@@ -36,7 +37,7 @@ program
 
 program
   .command('list')
-  .description('List all todos')
+  .description(COMMAND_DESCRIPTIONS.list)
   .option('--json', 'Output as JSON')
   .action((options: { json?: boolean }) => {
     try {
@@ -50,7 +51,7 @@ program
 
 program
   .command('done <id>')
-  .description('Mark a todo as done')
+  .description(COMMAND_DESCRIPTIONS.done)
   .action((id: string) => {
     try {
       const message = commands.handleDone(id);
@@ -63,7 +64,7 @@ program
 
 program
   .command('reopen <id>')
-  .description('Move a done todo back to pending')
+  .description(COMMAND_DESCRIPTIONS.reopen)
   .action((id: string) => {
     try {
       const message = commands.handleReopen(id);
@@ -76,7 +77,7 @@ program
 
 program
   .command('update <id> <newTitle>')
-  .description('Update a todo\'s title')
+  .description(COMMAND_DESCRIPTIONS.update)
   .action((id: string, newTitle: string) => {
     try {
       const message = commands.handleUpdate(id, newTitle);
@@ -89,7 +90,7 @@ program
 
 program
   .command('delete <id>')
-  .description('Delete a todo')
+  .description(COMMAND_DESCRIPTIONS.delete)
   .action((id: string) => {
     try {
       const message = commands.handleDelete(id);
@@ -102,7 +103,7 @@ program
 
 program
   .command('filter [name]')
-  .description('Filter todos by name, state, priority, tag, and/or due date (exact, before, after, today)')
+  .description(COMMAND_DESCRIPTIONS.filter)
   .option('--state <state>', 'Filter by state (pending or done)')
   .option('--due <date>', 'Filter by exact due date (YYYY-MM-DD)')
   .option('--overdue', 'Show pending todos whose due date has passed')
@@ -150,7 +151,7 @@ program
 
 program
   .command('clear')
-  .description('Clear todos, optionally by state')
+  .description(COMMAND_DESCRIPTIONS.clear)
   .option('--state <state>', 'Only clear todos with this state (pending or done)')
   .action((options: { state?: string }) => {
     try {
@@ -164,7 +165,7 @@ program
 
 program
   .command('export')
-  .description('Export todos as JSON to stdout, or to a file with --file')
+  .description(COMMAND_DESCRIPTIONS.export)
   .option('--file <path>', 'Write to this file instead of stdout')
   .action((options: { file?: string }) => {
     try {
@@ -178,7 +179,7 @@ program
 
 program
   .command('import')
-  .description('Import todos from stdin, or from a file with --file (merges by default)')
+  .description(COMMAND_DESCRIPTIONS.import)
   .option('--file <path>', 'Read from this file instead of stdin')
   .option('--replace', 'Replace the existing todos with the imported list')
   .action((options: { file?: string; replace?: boolean }) => {
@@ -193,7 +194,7 @@ program
 
 program
   .command('interactive')
-  .description('Start interactive mode')
+  .description(COMMAND_DESCRIPTIONS.interactive)
   .action(() => {
     runInteractive();
   });

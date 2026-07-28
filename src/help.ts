@@ -1,3 +1,5 @@
+import { COMMAND_DESCRIPTIONS } from './descriptions';
+
 export type HelpMode = 'cli' | 'interactive';
 
 const BANNER_LETTERS: Record<string, string[]> = {
@@ -38,32 +40,32 @@ const GROUPS: CommandGroup[] = [
     commands: [
       {
         example: 'add "Buy milk" --due 2026-08-01 --priority high --tag errand',
-        description: 'Add a new todo',
+        description: COMMAND_DESCRIPTIONS.add,
         modes: ['cli', 'interactive'],
       },
       {
         example: 'update <id> "Buy milk and eggs"',
-        description: "Update a todo's title",
+        description: COMMAND_DESCRIPTIONS.update,
         modes: ['cli', 'interactive'],
       },
       {
         example: 'done <id>',
-        description: 'Mark a todo as done',
+        description: COMMAND_DESCRIPTIONS.done,
         modes: ['cli', 'interactive'],
       },
       {
         example: 'reopen <id>',
-        description: 'Move a done todo back to pending',
+        description: COMMAND_DESCRIPTIONS.reopen,
         modes: ['cli', 'interactive'],
       },
       {
         example: 'delete <id>',
-        description: 'Delete a todo',
+        description: COMMAND_DESCRIPTIONS.delete,
         modes: ['cli', 'interactive'],
       },
       {
         example: 'clear --state done',
-        description: 'Clear todos, optionally by state',
+        description: COMMAND_DESCRIPTIONS.clear,
         modes: ['cli', 'interactive'],
       },
     ],
@@ -73,13 +75,13 @@ const GROUPS: CommandGroup[] = [
     commands: [
       {
         example: 'list --json',
-        description: 'List all todos',
+        description: COMMAND_DESCRIPTIONS.list,
         modes: ['cli', 'interactive'],
       },
       {
         example:
-          'filter buy --state pending --priority high --due-before 2026-09-01 --due-after 2026-01-01 --due-today --tag errand --json',
-        description: 'Filter todos by name, state, priority, tag, and/or due date (exact, before, after, today)',
+          'filter buy --state pending --priority high --due 2026-08-15 --overdue --due-before 2026-09-01 --due-after 2026-01-01 --due-today --tag errand --json',
+        description: COMMAND_DESCRIPTIONS.filter,
         modes: ['cli', 'interactive'],
       },
     ],
@@ -89,12 +91,12 @@ const GROUPS: CommandGroup[] = [
     commands: [
       {
         example: 'export --file todos.json',
-        description: 'Export todos as JSON to stdout, or to a file with --file',
+        description: COMMAND_DESCRIPTIONS.export,
         modes: ['cli', 'interactive'],
       },
       {
         example: 'import --file todos.json',
-        description: 'Import todos from stdin, or from a file with --file (merges by default)',
+        description: COMMAND_DESCRIPTIONS.import,
         modes: ['cli', 'interactive'],
       },
     ],
@@ -104,7 +106,7 @@ const GROUPS: CommandGroup[] = [
     commands: [
       {
         example: 'interactive',
-        description: 'Start interactive mode',
+        description: COMMAND_DESCRIPTIONS.interactive,
         modes: ['cli'],
       },
       {
