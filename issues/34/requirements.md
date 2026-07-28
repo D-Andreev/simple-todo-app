@@ -15,17 +15,17 @@ I want to be able to add tags for todos.
 | 7 | Should tags be restricted to a charset, or is any non-empty trimmed string allowed (incl. internal spaces)? | No charset restriction | Same |
 
 ## Acceptance criteria
-- [ ] Tags are free-form strings (no predefined/managed registry, no `tag create`/`tag list` admin commands)
-- [ ] A todo can have zero or more tags, stored as `tags: string[]`
-- [ ] `todo add` accepts a repeatable `--tag <name>` flag to attach multiple tags at creation
-- [ ] `todo filter --tag <name>` matches todos containing that tag (case-insensitive), AND-combined with other active filters
-- [ ] `list`/`filter` text rows append `tags: <comma-separated>` when a todo has tags (omitted when empty, like `dueDate`); `--json` output needs no special handling
-- [ ] Out of scope: editing tags on an already-created todo (no `todo tag`/`todo untag`, no `--tag` on `todo update`) — deferred to a future issue
-- [ ] `todo add --tag <name>` rejects an empty/whitespace-only tag with a validation error (same style as `title`)
-- [ ] Duplicate tags passed to the same `add` invocation are silently deduplicated (case-insensitive), not an error
-- [ ] `getTodos()` normalizes stored todos with no `tags` field to `tags: []` (same pattern as `normalizePriority`)
-- [ ] **Deviation from existing import behavior**: an import entry with a malformed `tags` field (present but not an array of non-empty strings) aborts the whole `handleImport` call with a thrown error — unlike other malformed fields (`dueDate`, `priority`), which are silently skipped as invalid entries and never abort the import. See `adrs.md`.
-- [ ] Tag values have no charset restriction — any non-empty trimmed string is valid, including internal spaces
+- [x] Tags are free-form strings (no predefined/managed registry, no `tag create`/`tag list` admin commands)
+- [x] A todo can have zero or more tags, stored as `tags: string[]`
+- [x] `todo add` accepts a repeatable `--tag <name>` flag to attach multiple tags at creation
+- [x] `todo filter --tag <name>` matches todos containing that tag (case-insensitive), AND-combined with other active filters
+- [x] `list`/`filter` text rows append `tags: <comma-separated>` when a todo has tags (omitted when empty, like `dueDate`); `--json` output needs no special handling
+- [x] Out of scope: editing tags on an already-created todo (no `todo tag`/`todo untag`, no `--tag` on `todo update`) — deferred to a future issue
+- [x] `todo add --tag <name>` rejects an empty/whitespace-only tag with a validation error (same style as `title`)
+- [x] Duplicate tags passed to the same `add` invocation are silently deduplicated (case-insensitive), not an error
+- [x] `getTodos()` normalizes stored todos with no `tags` field to `tags: []` (same pattern as `normalizePriority`)
+- [x] **Deviation from existing import behavior**: an import entry with a malformed `tags` field (present but not an array of non-empty strings) aborts the whole `handleImport` call with a thrown error — unlike other malformed fields (`dueDate`, `priority`), which are silently skipped as invalid entries and never abort the import. See `adrs.md`.
+- [x] Tag values have no charset restriction — any non-empty trimmed string is valid, including internal spaces
 
 ## Approved by human
-- [ ] Pending — say `approve requirements` in the session when ready
+- [x] Approved — `approve requirements` said in the session on 2026-07-28
