@@ -11,6 +11,7 @@ Make the help command better, more descriptive. Maybe add some ascii art
 | 3 | What should "more descriptive" change beyond wording — flat list, grouped sections, or grouped sections + per-command usage examples? | Grouped sections + per-command usage examples | Same |
 | 4 | What should the ASCII art depict — a "TODO" banner, a checklist motif, or something else? | "TODO" ASCII banner (figlet-style block letters) | Same |
 | 5 | Is the proposed grouping (Manage todos / Find & filter / Data / Session) acceptable? | Yes | Same |
+| 6 | Should new tests assert the grouped headers/banner/examples, or is passing existing `.toContain()` checks enough? | Add new targeted assertions (headers, banner, one example line) | Same |
 
 ## Acceptance criteria
 - [ ] ...
