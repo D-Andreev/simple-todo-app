@@ -1162,6 +1162,30 @@ describe('CLI e2e', () => {
       expect(result.stdout).toContain('tags: errand, urgent');
     });
 
+    test('add <title> --tag with internal spaces parses the full tag value', () => {
+      const result = runInteractive(
+        ['add Buy milk --tag home improvement --tag urgent', 'list', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('tags: home improvement, urgent');
+    });
+
+    test('filter --tag with internal spaces parses the full tag value', () => {
+      runCli(['add', 'Buy milk', '--tag', 'home improvement'], TEST_HOME);
+      runCli(['add', 'Walk dog', '--tag', 'pet care'], TEST_HOME);
+
+      const result = runInteractive(
+        ['filter --tag home improvement', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Buy milk');
+      expect(result.stdout).not.toContain('Walk dog');
+    });
+
     test('filter --tag <name> matches todos containing that tag, case-insensitively', () => {
       runCli(['add', 'Buy milk', '--tag', 'errand'], TEST_HOME);
       runCli(['add', 'Walk dog', '--tag', 'pet'], TEST_HOME);

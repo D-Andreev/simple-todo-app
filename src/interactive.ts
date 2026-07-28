@@ -57,10 +57,19 @@ function parseAddArgs(rest: string): { title: string; due?: string; priority?: s
   }
 
   const tags: string[] = [];
-  remaining = remaining.replace(/--tag\s+(\S+)/g, (_match, tagValue: string) => {
-    tags.push(tagValue);
-    return '';
-  });
+  const tagMatches = [...remaining.matchAll(/--tag\s+/g)];
+  for (let i = 0; i < tagMatches.length; i++) {
+    const match = tagMatches[i];
+    const startIdx = match.index! + match[0].length;
+    const nextFlagIdx = remaining.indexOf('--', startIdx);
+    const endIdx = nextFlagIdx === -1 ? remaining.length : nextFlagIdx;
+    const tagValue = remaining.slice(startIdx, endIdx).trim();
+    if (tagValue) {
+      tags.push(tagValue);
+    }
+  }
+
+  remaining = remaining.replace(/--tag\s+[^-]*(?=--|\s*$)/g, '').trim();
 
   const dueMatch = remaining.match(/--due\s+(\S+)/);
   const due = dueMatch ? dueMatch[1] : undefined;
@@ -90,10 +99,15 @@ function parseFilterArgs(
     remaining = remaining.slice(0, stateMatch.index) + remaining.slice(stateMatch.index! + stateMatch[0].length);
   }
 
-  const tagMatch = remaining.match(/--tag\s+(\S+)/);
-  const tag = tagMatch ? tagMatch[1] : undefined;
+  let tag: string | undefined;
+  const tagMatch = remaining.match(/--tag\s+/);
   if (tagMatch) {
-    remaining = remaining.slice(0, tagMatch.index) + remaining.slice(tagMatch.index! + tagMatch[0].length);
+    const startIdx = tagMatch.index! + tagMatch[0].length;
+    const nextFlagIdx = remaining.indexOf('--', startIdx);
+    const endIdx = nextFlagIdx === -1 ? remaining.length : nextFlagIdx;
+    tag = remaining.slice(startIdx, endIdx).trim();
+    if (!tag) tag = undefined;
+    remaining = remaining.slice(0, tagMatch.index) + remaining.slice(endIdx);
   }
 
   const dueBeforeMatch = remaining.match(/--due-before\s+(\S+)/);
