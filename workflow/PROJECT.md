@@ -72,3 +72,6 @@ _Avoid_: Overwrite-all, reset, wipe-and-load
 
 **Invalid entry (import)**: An array entry in the import payload that fails validation (missing/wrong-typed required field, non-string or missing `id`, bad `state`, malformed `dueDate`) — skipped and counted separately from id-collision skips. Never causes the whole import to abort.
 _Avoid_: Corrupt entry, bad record
+
+**Priority**: A predefined urgency level on a `Todo` — `low`, `mid`, or `high`. Optional on `todo add` via `--priority <low|mid|high>`; defaults to `mid` when omitted, so every todo always has a priority. A stored or imported todo with no `priority` field (legacy data from before this change) is treated as `mid`, not `null`/unset.
+_Avoid_: Severity, urgency (as the field name), importance

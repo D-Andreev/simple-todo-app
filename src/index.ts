@@ -15,9 +15,10 @@ program
   .command('add <title>')
   .description('Add a new todo')
   .option('--due <date>', 'Set a due date (YYYY-MM-DD)')
-  .action((title: string, options: { due?: string }) => {
+  .option('--priority <priority>', 'Set a priority (low, mid, or high; defaults to mid)')
+  .action((title: string, options: { due?: string; priority?: string }) => {
     try {
-      const message = commands.handleAdd(title, options.due);
+      const message = commands.handleAdd(title, options.due, options.priority);
       console.log(message);
     } catch (error) {
       console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -93,18 +94,26 @@ program
 
 program
   .command('filter [name]')
-  .description('Filter todos by name and/or state')
+  .description('Filter todos by name, state, and/or priority')
   .option('--state <state>', 'Filter by state (pending or done)')
   .option('--due <date>', 'Filter by exact due date (YYYY-MM-DD)')
   .option('--overdue', 'Show pending todos whose due date has passed')
+  .option('--priority <priority>', 'Filter by priority (low, mid, or high)')
   .option('--json', 'Output as JSON')
   .action(
     (
       name: string | undefined,
-      options: { state?: string; json?: boolean; due?: string; overdue?: boolean }
+      options: { state?: string; json?: boolean; due?: string; overdue?: boolean; priority?: string }
     ) => {
       try {
-        const message = commands.handleFilter(name, options.state, options.json, options.due, options.overdue);
+        const message = commands.handleFilter(
+          name,
+          options.state,
+          options.json,
+          options.due,
+          options.overdue,
+          options.priority
+        );
         console.log(message);
       } catch (error) {
         console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
