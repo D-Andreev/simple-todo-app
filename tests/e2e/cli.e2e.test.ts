@@ -12,6 +12,20 @@ function runCli(args: string[], home: string) {
   });
 }
 
+function runCliWithStdin(args: string[], input: string, home: string) {
+  return spawnSync('node', [CLI_PATH, ...args], {
+    encoding: 'utf-8',
+    input,
+    env: { ...process.env, HOME: home },
+  });
+}
+
+function readStorage(home: string) {
+  const file = path.join(home, '.simple-todo', 'todos.json');
+  if (!fs.existsSync(file)) return [];
+  return JSON.parse(fs.readFileSync(file, 'utf-8'));
+}
+
 describe('CLI e2e', () => {
   let TEST_HOME: string;
 
@@ -464,6 +478,127 @@ describe('CLI e2e', () => {
     expect(result.status).toBe(0);
     const parsed = JSON.parse(result.stdout);
     expect(parsed[0].dueDate).toBe('2026-08-15');
+  });
+
+  describe('export / import', () => {
+    test('export with no flags prints the full todos array as JSON to stdout', () => {
+      runCli(['add', 'Buy milk'], TEST_HOME);
+      runCli(['add', 'Walk dog'], TEST_HOME);
+
+      const result = runCli(['export'], TEST_HOME);
+      expect(result.status).toBe(0);
+      const parsed = JSON.parse(result.stdout);
+      expect(parsed).toHaveLength(2);
+      expect(parsed.map((t: { title: string }) => t.title).sort()).toEqual(['Buy milk', 'Walk dog']);
+    });
+
+    test('export with no todos prints "[]"', () => {
+      const result = runCli(['export'], TEST_HOME);
+      expect(result.status).toBe(0);
+      expect(JSON.parse(result.stdout)).toEqual([]);
+    });
+
+    test('export --file <path> writes the JSON to <path> instead of stdout', () => {
+      runCli(['add', 'Buy milk'], TEST_HOME);
+      const exportPath = path.join(TEST_HOME, 'export.json');
+
+      const result = runCli(['export', '--file', exportPath], TEST_HOME);
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Exported 1 todo(s)');
+      const written = JSON.parse(fs.readFileSync(exportPath, 'utf-8'));
+      expect(written).toHaveLength(1);
+      expect(written[0].title).toBe('Buy milk');
+    });
+
+    test('import with no flags reads JSON from stdin and merges by default', () => {
+      runCli(['add', 'Existing'], TEST_HOME);
+      const existing = readStorage(TEST_HOME)[0];
+      const payload = JSON.stringify([
+        { ...existing, title: 'Existing (dup)' },
+        { id: 'new-id-1', title: 'Imported todo', state: 'pending', createdAt: Date.now(), dueDate: null },
+      ]);
+
+      const result = runCliWithStdin(['import'], payload, TEST_HOME);
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Imported 1');
+      expect(result.stdout).toContain('skipped 1 (id collision)');
+      const todos = readStorage(TEST_HOME);
+      expect(todos).toHaveLength(2);
+      expect(todos.find((t: { id: string }) => t.id === existing.id).title).toBe('Existing');
+    });
+
+    test('import --file <path> reads JSON from <path> instead of stdin', () => {
+      const importPath = path.join(TEST_HOME, 'in.json');
+      fs.writeFileSync(
+        importPath,
+        JSON.stringify([{ id: 'file-id', title: 'From file', state: 'pending', createdAt: Date.now(), dueDate: null }]),
+        'utf-8'
+      );
+
+      const result = runCli(['import', '--file', importPath], TEST_HOME);
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Imported 1');
+      const todos = readStorage(TEST_HOME);
+      expect(todos).toHaveLength(1);
+      expect(todos[0].title).toBe('From file');
+    });
+
+    test('import --replace replaces the existing list wholesale', () => {
+      runCli(['add', 'Old todo'], TEST_HOME);
+      const importPath = path.join(TEST_HOME, 'in.json');
+      fs.writeFileSync(
+        importPath,
+        JSON.stringify([{ id: 'new-id', title: 'New', state: 'pending', createdAt: Date.now(), dueDate: null }]),
+        'utf-8'
+      );
+
+      const result = runCli(['import', '--file', importPath, '--replace'], TEST_HOME);
+      expect(result.status).toBe(0);
+      const todos = readStorage(TEST_HOME);
+      expect(todos).toHaveLength(1);
+      expect(todos[0].id).toBe('new-id');
+    });
+
+    test('export | import round-trips without any flags', () => {
+      runCli(['add', 'Round trip'], TEST_HOME);
+
+      const exportResult = runCli(['export'], TEST_HOME);
+      expect(exportResult.status).toBe(0);
+
+      const importResult = runCliWithStdin(['import'], exportResult.stdout, TEST_HOME);
+      expect(importResult.status).toBe(0);
+      expect(importResult.stdout).toContain('Imported 0');
+      expect(importResult.stdout).toContain('skipped 1 (id collision)');
+      expect(readStorage(TEST_HOME)).toHaveLength(1);
+    });
+
+    test('aborts entirely with an error when the payload is not a JSON array', () => {
+      const result = runCliWithStdin(['import'], JSON.stringify({ not: 'an array' }), TEST_HOME);
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain('expected a JSON array');
+      expect(readStorage(TEST_HOME)).toEqual([]);
+    });
+
+    test('aborts entirely with an error on malformed JSON', () => {
+      const result = runCliWithStdin(['import'], '{not valid json', TEST_HOME);
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain('not valid JSON');
+      expect(readStorage(TEST_HOME)).toEqual([]);
+    });
+
+    test('skips invalid entries and counts them separately from id collisions', () => {
+      const payload = JSON.stringify([
+        { id: 'ok-1', title: 'Valid', state: 'pending', createdAt: Date.now(), dueDate: null },
+        { id: 'bad-1', title: 'Bad state', state: 'nope', createdAt: Date.now(), dueDate: null },
+        { title: 'No id', state: 'pending', createdAt: Date.now(), dueDate: null },
+      ]);
+
+      const result = runCliWithStdin(['import'], payload, TEST_HOME);
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Imported 1');
+      expect(result.stdout).toContain('skipped 2 invalid');
+      expect(readStorage(TEST_HOME)).toHaveLength(1);
+    });
   });
 
   describe('interactive mode', () => {

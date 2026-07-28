@@ -84,6 +84,23 @@ Output:
 Deleted todo a1b2c3d4
 ```
 
+#### Export todos
+```bash
+npm start -- export
+npm start -- export --file backup.json
+```
+With no flags, prints the full todos array as JSON to stdout. With `--file <path>`, writes it to that path instead.
+
+#### Import todos
+```bash
+npm start -- import < backup.json
+npm start -- import --file backup.json
+npm start -- import --file backup.json --replace
+```
+With no flags, reads a JSON todos array from stdin and merges it into the existing list — an imported todo whose `id` already exists locally is skipped. With `--file <path>`, reads from that path instead of stdin. With `--replace`, the imported list wholesale replaces the existing todos instead of merging.
+
+If the parsed payload isn't a JSON array, the import aborts entirely with an error and no todos are added. Individual entries that fail validation (missing/wrong-typed fields, bad `state`, malformed `dueDate`, missing `id`) are skipped and counted separately from id collisions; `id` is never auto-generated. The command reports counts of imported, skipped (id collision), and skipped (invalid) todos.
+
 ## Development
 
 Run tests:

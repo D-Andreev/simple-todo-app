@@ -116,6 +116,18 @@ export function clearTodos(state?: 'pending' | 'done'): number {
   return clearedCount;
 }
 
+export function writeTodosToFile(filePath: string, todos: Todo[]): void {
+  fs.writeFileSync(filePath, JSON.stringify(todos, null, 2), 'utf-8');
+}
+
+export function readTextFile(filePath: string): string {
+  return fs.readFileSync(filePath, 'utf-8');
+}
+
+export function readStdinText(): string {
+  return fs.readFileSync(0, 'utf-8');
+}
+
 function findTodoByIdOrPrefix(todos: Todo[], idOrPrefix: string): Todo | undefined {
   const exact = todos.find((t) => t.id === idOrPrefix);
   if (exact) return exact;

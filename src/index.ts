@@ -128,6 +128,35 @@ program
   });
 
 program
+  .command('export')
+  .description('Export todos as JSON to stdout, or to a file with --file')
+  .option('--file <path>', 'Write to this file instead of stdout')
+  .action((options: { file?: string }) => {
+    try {
+      const message = commands.handleExport(options.file);
+      console.log(message);
+    } catch (error) {
+      console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('import')
+  .description('Import todos from stdin, or from a file with --file (merges by default)')
+  .option('--file <path>', 'Read from this file instead of stdin')
+  .option('--replace', 'Replace the existing todos with the imported list')
+  .action((options: { file?: string; replace?: boolean }) => {
+    try {
+      const message = commands.handleImport(options.file, options.replace);
+      console.log(message);
+    } catch (error) {
+      console.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      process.exit(1);
+    }
+  });
+
+program
   .command('interactive')
   .description('Start interactive mode')
   .action(() => {
