@@ -4,8 +4,8 @@
   "issue_url": "https://github.com/D-Andreev/simple-todo-app/issues/36",
   "mode": "feature",
   "task": "Improve help command",
-  "phase": "implement",
-  "status": "done",
+  "phase": "review",
+  "status": "ai_running",
   "workflow_label": "workflow:review",
   "base_branch": "main",
   "state_branch": "workflow/state",
@@ -18,8 +18,8 @@
   "pr_number": 37,
   "pr_url": "https://github.com/D-Andreev/simple-todo-app/pull/37",
   "created_at": "2026-07-28T18:48:02.000Z",
-  "updated_at": "2026-07-28T19:03:32.000Z",
-  "last_session_url": "https://claude.ai/code/session_01W4FHbdA2ZPya6Y9dmYQ9Xz",
+  "updated_at": "2026-07-28T19:10:00.000Z",
+  "last_session_url": "https://claude.ai/code/session_011gUL4Zsrkizbsk9p8y1wME",
   "history": [
     {
       "phase": "clarify",
@@ -116,6 +116,12 @@
       "event": "labels_updated",
       "at": "2026-07-28T19:03:32.000Z",
       "note": "intended next label workflow:review"
+    },
+    {
+      "phase": "review",
+      "event": "started",
+      "at": "2026-07-28T19:10:00.000Z",
+      "note": "work_branch=workflow/issue-36 pr=37"
     }
   ],
   "human_feedback": [],
