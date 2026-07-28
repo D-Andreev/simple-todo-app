@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "ts": "2026-07-28T19:24:13.000Z",
+  "issue_number": 36,
+  "phase": "close",
+  "event": "close_completed",
+  "session_id": null,
+  "method": "llm",
+  "suggestions_applicable": true,
+  "findings_total": 2,
+  "findings_addressed": 2,
+  "findings_partial": 0,
+  "findings_ignored": 0,
+  "findings_unknown": 0,
+  "critical_total": 0,
+  "critical_addressed": 0,
+  "minor_total": 1,
+  "minor_addressed": 1,
+  "notes_total": 1,
+  "notes_addressed": 1,
+  "commits_since_review": 1,
+  "dispositions": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "summary": "Command descriptions duplicated between src/index.ts Commander .description() calls and src/help.ts GROUPS — risk of drift",
+      "required": false,
+      "disposition": "addressed",
+      "paths_touched": 2,
+      "paths_total": 2,
+      "method": "llm"
+    },
+    {
+      "id": "F2",
+      "severity": "note",
+      "summary": "filter usage example in src/help.ts omits --due and --overdue flags; not required but would be more representative",
+      "required": false,
+      "disposition": "addressed",
+      "paths_touched": 1,
+      "paths_total": 1,
+      "method": "llm"
+    }
+  ]
+}
