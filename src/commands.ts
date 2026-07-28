@@ -33,6 +33,22 @@ function validatePriority(value: string): void {
   }
 }
 
+function normalizeTag(rawTag: string): string {
+  const trimmed = rawTag.trim();
+  if (!trimmed) {
+    throw new Error('Tag cannot be empty');
+  }
+  return trimmed.toLowerCase();
+}
+
+function normalizeTags(rawTags?: string[]): string[] {
+  if (!rawTags || rawTags.length === 0) {
+    return [];
+  }
+  const normalized = rawTags.map(normalizeTag);
+  return Array.from(new Set(normalized));
+}
+
 function getTodayDateString(): string {
   const now = new Date();
   const year = now.getFullYear();
@@ -48,7 +64,8 @@ function isOverdue(todo: storage.Todo, today: string): boolean {
 function formatTodoRow(todo: storage.Todo): string {
   const iso = new Date(todo.createdAt).toISOString();
   const dueSuffix = todo.dueDate ? ` due: ${todo.dueDate}` : '';
-  return `${todo.id.substring(0, 8)} ${todo.state} ${todo.title} (created: ${iso}) priority: ${todo.priority}${dueSuffix}`;
+  const tagsSuffix = todo.tags && todo.tags.length > 0 ? ` tags: ${todo.tags.join(', ')}` : '';
+  return `${todo.id.substring(0, 8)} ${todo.state} ${todo.title} (created: ${iso}) priority: ${todo.priority}${dueSuffix}${tagsSuffix}`;
 }
 
 function compareTodos(a: storage.Todo, b: storage.Todo): number {
@@ -65,15 +82,16 @@ function compareTodos(a: storage.Todo, b: storage.Todo): number {
   return a.createdAt - b.createdAt;
 }
 
-export function handleAdd(title: string, dueDate?: string, priority?: string): string {
+export function handleAdd(title: string, dueDate?: string, priority?: string, tags?: string[]): string {
   if (dueDate !== undefined) {
     validateDueDate(dueDate);
   }
   if (priority !== undefined) {
     validatePriority(priority);
   }
+  const normalizedTags = normalizeTags(tags);
   const id = uuidv4();
-  const todo = storage.addTodo(title, id, dueDate ?? null, priority as storage.Priority | undefined);
+  const todo = storage.addTodo(title, id, dueDate ?? null, priority as storage.Priority | undefined, normalizedTags);
   return `Added: ${todo.id.substring(0, 8)} pending ${todo.title}`;
 }
 
@@ -119,7 +137,8 @@ export function handleFilter(
   priority?: string,
   dueBefore?: string,
   dueAfter?: string,
-  dueToday?: boolean
+  dueToday?: boolean,
+  tag?: string
 ): string {
   if (state !== undefined && state !== 'pending' && state !== 'done') {
     throw new Error('Invalid state. Valid values: pending, done');
@@ -153,7 +172,8 @@ export function handleFilter(
     priority === undefined &&
     dueBefore === undefined &&
     dueAfter === undefined &&
-    !dueToday
+    !dueToday &&
+    tag === undefined
   ) {
     throw new Error(hasName ? 'Filter term cannot be empty' : 'Provide a name or --state to filter by');
   }
@@ -161,6 +181,7 @@ export function handleFilter(
   const todos = storage.getTodos();
   const lowerSearch = trimmedTerm.toLowerCase();
   const today = getTodayDateString();
+  const lowerTag = tag !== undefined ? tag.trim().toLowerCase() : undefined;
   const matches = todos
     .filter((todo) => {
       const nameMatches = !nameFilterActive || todo.title.toLowerCase().includes(lowerSearch);
@@ -171,6 +192,7 @@ export function handleFilter(
       const dueBeforeMatches = dueBefore === undefined || (todo.dueDate !== null && todo.dueDate < dueBefore);
       const dueAfterMatches = dueAfter === undefined || (todo.dueDate !== null && todo.dueDate > dueAfter);
       const dueTodayMatches = !dueToday || (todo.dueDate !== null && todo.dueDate === today);
+      const tagMatches = lowerTag === undefined || todo.tags.some((t) => t.toLowerCase() === lowerTag);
       return (
         nameMatches &&
         stateMatches &&
@@ -179,7 +201,8 @@ export function handleFilter(
         priorityMatches &&
         dueBeforeMatches &&
         dueAfterMatches &&
-        dueTodayMatches
+        dueTodayMatches &&
+        tagMatches
       );
     })
     .sort(compareTodos);
@@ -200,6 +223,9 @@ export function handleFilter(
     }
     if (priority !== undefined) {
       return `No todos with priority "${priority}".`;
+    }
+    if (tag !== undefined) {
+      return `No todos with tag "${tag}".`;
     }
     if (overdue) {
       return 'No overdue todos.';
@@ -273,6 +299,20 @@ function isValidImportEntry(entry: unknown): entry is storage.Todo {
   return true;
 }
 
+function isValidTagsArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((tag) => typeof tag === 'string' && tag.trim() !== '');
+}
+
+function validateImportTags(entry: unknown): void {
+  if (typeof entry !== 'object' || entry === null) {
+    return;
+  }
+  const candidate = entry as Record<string, unknown>;
+  if (candidate.tags !== undefined && !isValidTagsArray(candidate.tags)) {
+    throw new Error('Invalid import data: malformed tags field');
+  }
+}
+
 export function handleImport(filePath?: string, replace?: boolean): string {
   const raw = filePath ? storage.readTextFile(filePath) : storage.readStdinText();
 
@@ -289,8 +329,9 @@ export function handleImport(filePath?: string, replace?: boolean): string {
   const valid: storage.Todo[] = [];
   let skippedInvalid = 0;
   for (const entry of parsed) {
+    validateImportTags(entry);
     if (isValidImportEntry(entry)) {
-      valid.push({ ...entry, priority: entry.priority ?? 'mid' });
+      valid.push({ ...entry, priority: entry.priority ?? 'mid', tags: entry.tags ?? [] });
     } else {
       skippedInvalid++;
     }

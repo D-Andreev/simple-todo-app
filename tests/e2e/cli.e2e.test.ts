@@ -559,6 +559,53 @@ describe('CLI e2e', () => {
     expect(parsed[0].priority).toBe('high');
   });
 
+  test('add --tag <name> repeatable attaches multiple tags, shown in list', () => {
+    runCli(['add', 'Buy milk', '--tag', 'Errand', '--tag', 'URGENT'], TEST_HOME);
+
+    const list = runCli(['list'], TEST_HOME);
+    expect(list.stdout).toContain('tags: errand, urgent');
+
+    const listJson = runCli(['list', '--json'], TEST_HOME);
+    const parsed = JSON.parse(listJson.stdout);
+    expect(parsed[0].tags).toEqual(['errand', 'urgent']);
+  });
+
+  test('add --tag with an empty/whitespace-only value errors and does not create the todo', () => {
+    const result = runCli(['add', 'Buy milk', '--tag', '   '], TEST_HOME);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('Tag cannot be empty');
+
+    const list = runCli(['list'], TEST_HOME);
+    expect(list.stdout.trim()).toBe('No todos.');
+  });
+
+  test('add --tag deduplicates case-insensitive duplicates in the same call', () => {
+    runCli(['add', 'Buy milk', '--tag', 'Work', '--tag', 'work'], TEST_HOME);
+
+    const listJson = runCli(['list', '--json'], TEST_HOME);
+    const parsed = JSON.parse(listJson.stdout);
+    expect(parsed[0].tags).toEqual(['work']);
+  });
+
+  test('filter --tag <name> matches todos containing that tag, case-insensitively', () => {
+    runCli(['add', 'Buy milk', '--tag', 'errand'], TEST_HOME);
+    runCli(['add', 'Walk dog', '--tag', 'pet'], TEST_HOME);
+
+    const result = runCli(['filter', '--tag', 'ERRAND'], TEST_HOME);
+    expect(result.status).toBe(0);
+    const lines = result.stdout.trim().split('\n');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('Buy milk');
+  });
+
+  test('filter --tag with no matches returns a tag-specific message', () => {
+    runCli(['add', 'Buy milk', '--tag', 'errand'], TEST_HOME);
+
+    const result = runCli(['filter', '--tag', 'missing'], TEST_HOME);
+    expect(result.status).toBe(0);
+    expect(result.stdout.trim()).toBe('No todos with tag "missing".');
+  });
+
   test('filter --due-before <date> matches todos with a due date strictly before it', () => {
     runCli(['add', 'Earlier', '--due', '2026-08-14'], TEST_HOME);
     runCli(['add', 'Boundary', '--due', '2026-08-15'], TEST_HOME);
@@ -1105,6 +1152,30 @@ describe('CLI e2e', () => {
       expect(result.stdout).not.toContain('Walk dog');
     });
 
+    test('add <title> --tag <name> repeatable attaches multiple tags', () => {
+      const result = runInteractive(
+        ['add Buy milk --tag Errand --tag URGENT', 'list', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('tags: errand, urgent');
+    });
+
+    test('filter --tag <name> matches todos containing that tag, case-insensitively', () => {
+      runCli(['add', 'Buy milk', '--tag', 'errand'], TEST_HOME);
+      runCli(['add', 'Walk dog', '--tag', 'pet'], TEST_HOME);
+
+      const result = runInteractive(
+        ['filter --tag ERRAND', 'exit', ''].join('\n'),
+        TEST_HOME,
+      );
+
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain('Buy milk');
+      expect(result.stdout).not.toContain('Walk dog');
+    });
+
     test('filter --due-before <date> parses correctly', () => {
       runCli(['add', 'Earlier', '--due', '2026-08-14'], TEST_HOME);
       runCli(['add', 'Later', '--due', '2026-08-16'], TEST_HOME);
@@ -1183,6 +1254,7 @@ describe('CLI e2e', () => {
       expect(result.stdout).toContain('--due-before');
       expect(result.stdout).toContain('--due-after');
       expect(result.stdout).toContain('--due-today');
+      expect(result.stdout).toContain('--tag');
     });
   });
 });

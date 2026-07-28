@@ -4,13 +4,13 @@ import * as commands from './commands';
 const PROMPT = 'todo> ';
 
 const HELP_TEXT = [
-  'add <title> [--due <date>] [--priority <priority>]  Add a new todo',
+  'add <title> [--due <date>] [--priority <priority>] [--tag <name> ...]  Add a new todo',
   'list [--json]            List all todos',
   'done <id>                Mark a todo as done',
   'reopen <id>              Move a done todo back to pending',
   'update <id> <newTitle>   Update a todo\'s title',
   'delete <id>              Delete a todo',
-  'filter [name] [--state <state>] [--due <date>] [--overdue] [--priority <priority>] [--due-before <date>] [--due-after <date>] [--due-today] [--json]  Filter todos by name, state, priority, due date, date range, and/or JSON output',
+  'filter [name] [--state <state>] [--due <date>] [--overdue] [--priority <priority>] [--due-before <date>] [--due-after <date>] [--due-today] [--tag <name>] [--json]  Filter todos by name, state, priority, tag, due date, date range, and/or JSON output',
   'clear [--state <state>]  Clear todos, optionally by state',
   'exit                     Exit interactive mode',
   'quit                     Exit interactive mode',
@@ -20,8 +20,8 @@ type Handler = (rest: string) => string;
 
 const handlers: Record<string, Handler> = {
   add: (rest) => {
-    const { title, due, priority } = parseAddArgs(rest);
-    return commands.handleAdd(title, due, priority);
+    const { title, due, priority, tags } = parseAddArgs(rest);
+    return commands.handleAdd(title, due, priority, tags);
   },
   list: (rest) => {
     const { json } = parseListArgs(rest);
@@ -37,8 +37,8 @@ const handlers: Record<string, Handler> = {
   },
   delete: (rest) => commands.handleDelete(rest.trim()),
   filter: (rest) => {
-    const { name, state, due, overdue, priority, dueBefore, dueAfter, dueToday, json } = parseFilterArgs(rest);
-    return commands.handleFilter(name, state, json, due, overdue, priority, dueBefore, dueAfter, dueToday);
+    const { name, state, due, overdue, priority, dueBefore, dueAfter, dueToday, tag, json } = parseFilterArgs(rest);
+    return commands.handleFilter(name, state, json, due, overdue, priority, dueBefore, dueAfter, dueToday, tag);
   },
   clear: (rest) => {
     const { state } = parseClearArgs(rest);
@@ -46,7 +46,7 @@ const handlers: Record<string, Handler> = {
   },
 };
 
-function parseAddArgs(rest: string): { title: string; due?: string; priority?: string } {
+function parseAddArgs(rest: string): { title: string; due?: string; priority?: string; tags: string[] } {
   let remaining = rest;
 
   const priorityMatch = remaining.match(/--priority\s+(\S+)/);
@@ -56,10 +56,16 @@ function parseAddArgs(rest: string): { title: string; due?: string; priority?: s
       remaining.slice(0, priorityMatch.index) + remaining.slice(priorityMatch.index! + priorityMatch[0].length);
   }
 
+  const tags: string[] = [];
+  remaining = remaining.replace(/--tag\s+(\S+)/g, (_match, tagValue: string) => {
+    tags.push(tagValue);
+    return '';
+  });
+
   const dueMatch = remaining.match(/--due\s+(\S+)/);
   const due = dueMatch ? dueMatch[1] : undefined;
   const title = (dueMatch ? remaining.slice(0, dueMatch.index) : remaining).trim();
-  return { title, due, priority };
+  return { title, due, priority, tags };
 }
 
 function parseFilterArgs(
@@ -73,6 +79,7 @@ function parseFilterArgs(
   dueBefore?: string;
   dueAfter?: string;
   dueToday?: boolean;
+  tag?: string;
   json?: boolean;
 } {
   let remaining = rest;
@@ -81,6 +88,12 @@ function parseFilterArgs(
   const state = stateMatch ? stateMatch[1] : undefined;
   if (stateMatch) {
     remaining = remaining.slice(0, stateMatch.index) + remaining.slice(stateMatch.index! + stateMatch[0].length);
+  }
+
+  const tagMatch = remaining.match(/--tag\s+(\S+)/);
+  const tag = tagMatch ? tagMatch[1] : undefined;
+  if (tagMatch) {
+    remaining = remaining.slice(0, tagMatch.index) + remaining.slice(tagMatch.index! + tagMatch[0].length);
   }
 
   const dueBeforeMatch = remaining.match(/--due-before\s+(\S+)/);
@@ -129,7 +142,18 @@ function parseFilterArgs(
   }
 
   const nameOnly = remaining.trim();
-  return { name: nameOnly === '' ? undefined : nameOnly, state, due, overdue, priority, dueBefore, dueAfter, dueToday, json };
+  return {
+    name: nameOnly === '' ? undefined : nameOnly,
+    state,
+    due,
+    overdue,
+    priority,
+    dueBefore,
+    dueAfter,
+    dueToday,
+    tag,
+    json,
+  };
 }
 
 function parseClearArgs(rest: string): { state?: string } {
