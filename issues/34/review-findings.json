@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "issue_number": 34,
+  "pr_number": 35,
+  "review_head_sha": "60355b5873ff2e3309f7b40fcc8600b45ee76fb3",
+  "verdict": "REQUEST CHANGES",
+  "created_at": "2026-07-28T12:25:00.000Z",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "critical",
+      "summary": "Interactive REPL --tag parsing only captures a single whitespace-delimited token, silently truncating multi-word tags and leaking the remainder into the title",
+      "paths": ["src/interactive.ts"],
+      "required": true
+    },
+    {
+      "id": "F2",
+      "severity": "minor",
+      "summary": "workflow/PROJECT.md links the new 'Malformed tags (import)' entry to docs/adr/0001-tags-import-abort.md, which does not exist; the ADR added by this PR is docs/adr/0034-tags-import-abort.md",
+      "paths": ["workflow/PROJECT.md"],
+      "required": false
+    },
+    {
+      "id": "F3",
+      "severity": "note",
+      "summary": "Imported tags are stored as-is (no trim/lowercase) unlike tags added via --tag, so an imported tag with stray whitespace will never match filter --tag",
+      "paths": ["src/commands.ts"],
+      "required": false
+    }
+  ]
+}
