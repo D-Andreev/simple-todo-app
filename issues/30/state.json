@@ -12,9 +12,9 @@
   "work_branch": null,
   "handoff_path": "issues/30",
   "requirements_approved": false,
-  "clarify_rounds": 5,
+  "clarify_rounds": 6,
   "created_at": "2026-07-28T05:52:40.000Z",
-  "updated_at": "2026-07-28T06:01:52.000Z",
+  "updated_at": "2026-07-28T06:03:00.000Z",
   "last_session_url": "https://claude.ai/code/session_01Ey51Qfo13kUxq3V6TwVAjt",
   "history": [
     {
@@ -58,6 +58,12 @@
       "event": "human_answered",
       "at": "2026-07-28T06:01:52.000Z",
       "note": "Q5 editable after creation -> out of scope for now"
+    },
+    {
+      "phase": "clarify",
+      "event": "human_answered",
+      "at": "2026-07-28T06:03:00.000Z",
+      "note": "Q6 legacy data missing priority -> treat as mid everywhere"
     }
   ],
   "human_feedback": [
@@ -85,6 +91,11 @@
       "at": "2026-07-28T06:01:52.000Z",
       "question": "Editable after creation (--priority on update)?",
       "answer": "out of scope for now"
+    },
+    {
+      "at": "2026-07-28T06:03:00.000Z",
+      "question": "Legacy todos/exports with no priority field -> treat as mid, or unset/invalid?",
+      "answer": "treat missing priority as mid everywhere"
     }
   ],
   "comprehension_attempt": 0,
