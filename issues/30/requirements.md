@@ -10,6 +10,7 @@ I want to be able to add a priority for todods when creating them and later to b
 | 2 | Should priority affect `list`/`filter` sort order? | No — keep existing `state → title → createdAt` order unchanged | Leave sort order unchanged |
 | 3 | Show priority in text rows (like `due: ...`) and in `--json` output? | Yes to both | Yes to both |
 | 4 | `--priority` on `filter`: standalone + AND'd with other filters, and invalid value errors like `--state` does? | Yes to all three | Yes to all three |
+| 5 | Editable after creation (e.g. `--priority` on `update`)? | Out of scope for now | Out of scope, matches `dueDate` precedent |
 
 ## Acceptance criteria
 - [ ] ...
