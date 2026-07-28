@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "issue_number": 36,
+  "pr_number": 37,
+  "review_head_sha": "de6b17d042bcdf358528f4389f4ab44bb2602cdb",
+  "verdict": "APPROVE WITH NOTES",
+  "created_at": "2026-07-28T19:12:00.000Z",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "minor",
+      "summary": "Command descriptions duplicated between src/index.ts Commander .description() calls and src/help.ts GROUPS — risk of drift",
+      "paths": ["src/index.ts", "src/help.ts"],
+      "required": false
+    },
+    {
+      "id": "F2",
+      "severity": "note",
+      "summary": "filter usage example in src/help.ts omits --due and --overdue flags; not required but would be more representative",
+      "paths": ["src/help.ts"],
+      "required": false
+    }
+  ]
+}
