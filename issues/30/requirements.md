@@ -6,6 +6,7 @@ I want to be able to add a priority for todods when creating them and later to b
 ## Clarifications
 | # | Question | Answer | Recommended |
 |---|----------|--------|-------------|
+| 1 | Is priority required on `add`, or optional with a default? | Optional; defaults to `mid` when omitted | Optional `--priority <low\|mid\|high>`, default `mid` |
 
 ## Acceptance criteria
 - [ ] ...
