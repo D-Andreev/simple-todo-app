@@ -5,7 +5,7 @@
   "mode": "feature",
   "task": "Add priority (Low/Mid/High) to todos, settable on create and filterable",
   "phase": "clarify",
-  "status": "ai_running",
+  "status": "awaiting_human",
   "workflow_label": "workflow:clarify",
   "base_branch": "main",
   "state_branch": "workflow/state",
