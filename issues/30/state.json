@@ -4,8 +4,8 @@
   "issue_url": "https://github.com/D-Andreev/simple-todo-app/issues/30",
   "mode": "feature",
   "task": "Add priority (Low/Mid/High) to todos, settable on create and filterable",
-  "phase": "implement",
-  "status": "done",
+  "phase": "review",
+  "status": "ai_running",
   "workflow_label": "workflow:review",
   "base_branch": "main",
   "state_branch": "workflow/state",
@@ -14,8 +14,8 @@
   "requirements_approved": true,
   "clarify_rounds": 6,
   "created_at": "2026-07-28T05:52:40.000Z",
-  "updated_at": "2026-07-28T06:26:00.000Z",
-  "last_session_url": "https://claude.ai/code/session_01L5PyykMszUZTdrQHGifgXu",
+  "updated_at": "2026-07-28T07:00:00.000Z",
+  "last_session_url": "https://claude.ai/code/session_01S1cA8ycXfvwSnJND2wpc5X",
   "pr_url": "https://github.com/D-Andreev/simple-todo-app/pull/31",
   "history": [
     {
@@ -107,6 +107,12 @@
       "event": "labels_updated",
       "at": "2026-07-28T06:26:00.000Z",
       "note": "workflow:implement -> workflow:review"
+    },
+    {
+      "phase": "review",
+      "event": "started",
+      "at": "2026-07-28T07:00:00.000Z",
+      "note": "base_branch=main, work_branch=workflow/issue-30, PR #31"
     }
   ],
   "human_feedback": [
