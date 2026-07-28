@@ -8,6 +8,7 @@ Make the help command better, more descriptive. Maybe add some ascii art
 |---|----------|--------|-------------|
 | 1 | Should the improved help cover the one-shot CLI (`todo --help`), interactive mode's `help` command, or both? | Both — keep them consistent | Both, kept consistent |
 | 2 | Where should the ASCII art appear — help output only, interactive startup too, or every subcommand's `--help`? | Help output only (`todo --help` and interactive `help`) | Same |
+| 3 | What should "more descriptive" change beyond wording — flat list, grouped sections, or grouped sections + per-command usage examples? | Grouped sections + per-command usage examples | Same |
 
 ## Acceptance criteria
 - [ ] ...
